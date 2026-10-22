@@ -46,7 +46,7 @@ function askHidden(question) {
   });
 }
 
-async function login(email, password) {
+async function login(email, password, label) {
   const r = await fetch(`${PROJECT_URL}/auth/v1/token?grant_type=password`, {
     method: "POST",
     headers: { apikey: PUBLISHABLE_KEY, "content-type": "application/json" },
@@ -54,8 +54,10 @@ async function login(email, password) {
   });
   const body = await r.json().catch(() => ({}));
   if (!r.ok || typeof body.access_token !== "string") {
-    const detail = [body.msg, body.message, body.error_description, body.code].filter(x => typeof x === "string").join(" | ");
-    throw new Error(`Login gagal untuk salah satu akun (HTTP ${r.status})${detail ? `: ${detail}` : ""}`);
+    // Supabase Auth may return diagnostic fields as error / error_code rather than message.
+    const detail = [body.msg, body.message, body.error_description, body.error, body.error_code, body.code]
+      .filter(x => typeof x === "string").join(" | ");
+    throw new Error(`Login akun ${label} gagal (HTTP ${r.status})${detail ? `: ${detail}` : ""}`);
   }
   return body.access_token;
 }
@@ -96,8 +98,8 @@ try {
   const passwordA = await askHidden("Password akun A: ");
   const passwordB = await askHidden("Password akun B: ");
   stdout.write("Login kedua akun... ");
-  const tokenA = await login(emailA, passwordA);
-  const tokenB = await login(emailB, passwordB);
+  const tokenA = await login(emailA, passwordA, "A");
+  const tokenB = await login(emailB, passwordB, "B");
   stdout.write("OK\nMembuat memori penanda terpisah... ");
   const markerA = `ISOLATION_A_${crypto.randomUUID()}`;
   const markerB = `ISOLATION_B_${crypto.randomUUID()}`;
