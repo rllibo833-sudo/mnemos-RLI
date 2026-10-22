@@ -38,8 +38,8 @@ function askHidden(question) {
           reject(new Error("Cancelled."));
           return;
         }
-        if (ch === "\u007f" || ch === "\b") value = value.slice(0, -1);
-        else if (ch >= " ") value += ch;
+        if (ch === "\u007f" || ch === "\b") { if (value.length) { value = value.slice(0, -1); stdout.write("\b \b"); } }
+        else if (ch >= " ") { value += ch; stdout.write("*"); }
       }
     };
     stdin.on("data", onData);
@@ -86,7 +86,8 @@ try {
   });
   const session = await loginResponse.json().catch(() => ({}));
   if (!loginResponse.ok || typeof session.access_token !== "string") {
-    throw new Error(`Login gagal (HTTP ${loginResponse.status}). Periksa email/password dan status konfirmasi akun di Supabase Auth.`);
+    const detail = [session.msg, session.message, session.error_description, session.error, session.code].filter((x) => typeof x === "string" && x.length).join(" | ");
+    throw new Error(`Login gagal (HTTP ${loginResponse.status})${detail ? `: ${detail}` : ""}. Periksa email/password dan status akun di Supabase Auth.`);
   }
   const token = session.access_token;
   stdout.write("OK\nMenguji MCP initialize... ");
