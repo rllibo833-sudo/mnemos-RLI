@@ -30,6 +30,7 @@ From a source checkout:
 ```bash
 python -m pip install -e .
 mnemos init
+mnemos doctor
 mnemos add "Prefer small, reviewable changes" --kind decision --tag engineering
 mnemos add "The parser rejects empty input" --kind fact --tag parser
 mnemos link <FIRST_ID> <SECOND_ID> --relation relates_to
@@ -38,7 +39,7 @@ mnemos graph --output mnemos-graph.html
 mnemos export --output mnemos-export.json
 ```
 
-Replace the example IDs with IDs printed by `mnemos add`. Run `mnemos --help` for all commands.
+Replace the example IDs with IDs printed by `mnemos add`. Run `mnemos doctor` to check SQLite integrity, relationship constraints, and local record counts without network access. Run `mnemos --help` for all commands.
 
 ## Using Mnemos with an AI agent
 
