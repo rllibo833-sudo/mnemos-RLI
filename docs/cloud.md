@@ -11,7 +11,7 @@
 
 ## Security notes
 
-The function uses the server-side `SUPABASE_DB_URL` environment variable and does not embed database credentials in source control. Do not publish a service-role/secret key, database password, or user access token in a repository or chat. The function currently uses a single shared memory space for authenticated users of this project; per-user data isolation is not implemented yet, so only connect trusted users until ownership scoping is added.
+The function uses the server-side `SUPABASE_DB_URL` environment variable and does not embed database credentials in source control. Do not publish a service-role/secret key, database password, or user access token in a repository or chat. Each memory and link has an `owner_id` derived from the authenticated user's JWT subject. Reads, search, list, add, and export are scoped to that owner; link creation checks that both memories belong to the same owner. A real authenticated database round trip still needs verification.
 
 ## Connection request shape
 
