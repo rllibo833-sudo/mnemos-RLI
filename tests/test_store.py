@@ -74,6 +74,20 @@ class MemoryStoreTests(unittest.TestCase):
         self.assertTrue(any('Duplicate memory ID' in error for error in report['errors']))
         self.assertTrue(any('target_id' in error for error in report['errors']))
 
+    def test_import_rejects_invalid_export_without_partial_changes(self):
+        payload = {
+            'format': 'mnemos-export-v1',
+            'memories': [
+                {'id': 'valid-id', 'content': 'Would otherwise be imported'},
+                {'id': 'broken-id', 'content': '   '},
+            ],
+            'links': [],
+        }
+        with self.assertRaisesRegex(ValueError, 'Invalid Mnemos export'):
+            self.store.import_data(payload)
+        self.assertEqual(self.store.list(), [])
+        self.assertEqual(self.store.links(), [])
+
     def test_import_rejects_unknown_format(self):
         with self.assertRaises(ValueError): self.store.import_data({'format':'unknown'})
     def test_graph_contains_actual_records(self):
