@@ -42,10 +42,11 @@ Replace the example IDs with IDs printed by `mnemos add`. Run `mnemos --help` fo
 
 ## Using Mnemos with an AI agent
 
-Mnemos currently integrates through its CLI and a portable agent skill, rather than an automatic background service. The host agent must be able to run shell commands in the environment where the Mnemos database lives.
+Mnemos supports CLI use, a portable agent skill, and a local stdio MCP adapter for hosts that support MCP. The host agent must run in the environment where the Mnemos database lives and must be configured to launch the adapter.
 
 - [Agent Integration Guide](docs/agent-integration.md) — practical recall, capture, links, and backup/restore workflows, including safety boundaries.
 - [Mnemos Memory Skill](skills/mnemos-memory/SKILL.md) — instructions a compatible agent host can load.
+- [MCP Integration](docs/mcp-integration.md) — structured tools for compatible hosts supporting a local stdio MCP server.
 
 **Important environment boundary:** installing Mnemos in Android Termux makes it available to commands running in Termux. It does not automatically make that local database accessible to ChatGPT or a cloud-hosted agent. Cross-device access requires a separate, deliberately designed secure bridge; do not upload a private memory database casually.
 
@@ -68,7 +69,7 @@ Mnemos memory API
      +-- self-contained HTML graph viewer
 ```
 
-No server, cloud database, external service, or provider key is required for core functionality. AI-provider integrations, if added later, will be optional adapters and must never be required to read or export a user's data.
+No server, cloud database, external service, or provider key is required for core functionality. The MCP adapter exposes structured search/add/get/list/link/export tools without an AI-provider key. AI-provider integrations remain optional and must never be required to read or export a user's data.
 
 ## Repository map
 
