@@ -1,34 +1,65 @@
 # Architecture
 
-## Goals
+## Product direction
 
-Mnemos is a local-first memory layer for AI agents. It must remain useful without network access, an API key, a hosted database, or a proprietary runtime.
+Mnemos is a **Living Knowledge Network**: a durable, inspectable memory graph that can be used by different agents and devices. Its target storage strategy is **hybrid local + server from the outset**. Local use must continue when offline; server storage is for cross-device and cross-agent continuity. PusingCuk is an optional client, not a foundation dependency.
 
-## Components
+## Existing components (audited at HEAD 3240b20917df18daa77b3c173f54eb8e9e57da3e)
 
-- **Store:** Python standard-library SQLite database. Default path: `~/.mnemos/memory.sqlite3`; override with `--db` or `MNEMOS_DB`.
-- **Memory records:** stable UUID, content, kind, tags, optional source and metadata, timestamps.
-- **Relationships:** explicit directed edges with a caller-defined relation label. Duplicate edges are ignored.
-- **Search:** case-insensitive lexical matching across content, kind, tags, and source. It is transparent and does not claim semantic understanding.
-- **Import/export:** versioned JSON envelope. Import skips existing IDs and only imports links whose endpoints exist.
-- **Graph viewer:** standalone HTML with no CDN or runtime dependency. It visualizes only records and relationships supplied by the store.
+- **Local store:** Python standard-library SQLite at `~/.mnemos/memory.sqlite3`, overridable via `--db` or `MNEMOS_DB`.
+- **Memory records:** stable ID, content, kind, tags, optional source and metadata, timestamps.
+- **Relationships:** explicit directed edges with a relation label.
+- **Search:** explainable lexical matching across content, kind, tags, and source.
+- **Import/export:** versioned JSON envelope; additive import validates data and skips existing IDs/duplicate links.
+- **Graph viewer:** standalone HTML built from actual store records and links.
+- **Local MCP:** stdio adapter exposing search/add/get/list/link/export.
+- **Cloud MCP:** Supabase Edge Function with owner-scoped PostgreSQL reads and writes, using a parallel set of tools.
+
+## Current gap: hybrid is not sync
+
+The local SQLite database and cloud PostgreSQL database are separate stores. The two MCP adapters expose similar operations, but there is no shared change feed, device identity, sync cursor, retryable outbox, tombstone model, or deterministic conflict policy. JSON export/import is useful for migration and backup but does not provide continuous synchronization.
+
+## Target hybrid architecture
+
+```text
+Agent / CLI / MCP client
+          |
+     Mnemos API
+       /     \
+ Local engine  Sync coordinator (when configured)
+ SQLite        | authenticated HTTPS
+ outbox        v
+ + graph    Cloud MCP / sync API
+                |
+           PostgreSQL
+```
+
+The local engine is the durable offline source of truth for local capture. Network failure must never block local reads/writes. Sync is explicit and observable; it must not silently overwrite content.
+
+## Required sync contract
+
+1. **Stable identity:** each device has a persistent random device ID; each memory/link keeps a stable globally unique ID.
+2. **Change tracking:** local mutations produce durable, ordered change records in the same SQLite transaction as the mutation. A sync cursor advances only after server acknowledgement.
+3. **Idempotency:** replaying the same change is safe. Server writes enforce unique change IDs and owner scope.
+4. **Conflict handling:** updates carry a base revision and content hash. Concurrent edits are retained as a conflict or resolved by a documented policy; timestamps alone are not sufficient evidence to discard data.
+5. **Deletion:** deletes become tombstones until all configured peers acknowledge them; no sync deletion is inferred from absence in a partial export.
+6. **Graph integrity:** links sync only when both endpoint memories exist for the same owner. Dangling links are surfaced, not silently fabricated.
+7. **Provenance:** record origin device/agent, source, operation ID, and server revision where available. Distinguish user-authored facts from agent-generated summaries/inferences.
+8. **Security:** cloud endpoints require a signed-in identity; every read/write is owner-scoped. Cross-account isolation tests must pass before declaring the cloud layer production-ready.
+9. **Recovery:** local export/validation remains available without a network; interrupted sync resumes from acknowledged cursors.
+10. **Agent neutrality:** MCP/CLI clients share the same memory and sync contracts; no particular agent framework is required.
 
 ## Trust boundaries
 
-Memory contents are user data, not trusted instructions. A future agent integration must not elevate stored text above system, developer, or current user instructions. Never store credentials or secrets. Imports should be treated as untrusted input.
+Memory contents are untrusted user data, not instructions. Never elevate stored text above system, developer, or current user instructions. Never store credentials or secrets. Treat imports and remote responses as untrusted input. Avoid logging memory content or tokens by default.
 
-## Non-goals for the first foundation
+## Delivery sequence
 
-- No hosted service or sync protocol.
-- No external LLM, embeddings API, or API key.
-- No automatic claim that two memories are related.
-- No hidden collection of prompts or telemetry.
-- No destructive deduplication or deletion workflow.
+1. Preserve existing local store, graph viewer, export validation, and MCP compatibility.
+2. Add schema migration plus transactional local change log/outbox and stable device identity.
+3. Define a versioned authenticated sync API and server-side idempotency/ownership constraints.
+4. Implement pull/push cursors, retry/resume, tombstones, and explicit conflict reporting.
+5. Add offline-first integration tests and two-account cloud isolation tests.
+6. Add multi-device/agent UX only after the sync invariants pass.
 
-## Planned evolution
-
-1. Add safer memory update/delete operations and schema migrations.
-2. Improve offline relevance while keeping results explainable.
-3. Add optional adapters for supported agent skill formats.
-4. Add graph filtering, clustering, path exploration, and accessibility improvements.
-5. Consider optional semantic search adapters only after the local contract and privacy guarantees are stable.
+Do not claim hybrid sync is implemented until steps 2–5 have working code and verification. Semantic/embedding search and graph auto-inference are separate optional capabilities, not prerequisites for reliable sync.

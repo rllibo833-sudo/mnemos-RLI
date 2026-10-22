@@ -1,96 +1,51 @@
 # Mnemos
 
-**Portable, local-first memory for AI agents.**
+**A Living Knowledge Network for AI agents, with hybrid local and server storage.**
 
-Mnemos helps agents preserve useful knowledge across sessions: decisions, facts, solutions, project context, and links between them. Its goal is simple: **learn once, recall anywhere**.
+Mnemos preserves useful knowledge across sessions and agents: facts, decisions, solutions, project context, sources, and explicit relationships. Its goal is **learn once, recall anywhere**—without making any single AI provider or project repository mandatory.
 
-> Status: early foundation. The local memory engine and graph viewer are being built incrementally. APIs and formats may evolve before the first stable release.
+> Status: early foundation. Local SQLite storage, explicit memory links, a real-data HTML graph, local stdio MCP, and a separate authenticated cloud MCP endpoint exist. **Local/cloud synchronization is not implemented yet.** See [the Living Knowledge Network plan](docs/living-knowledge-network.md) for the audited boundary and implementation contract.
 
 ## Why Mnemos?
 
-AI sessions often lose context. Notes become scattered, and the reason behind a decision disappears. Mnemos provides a small, inspectable memory store that runs on your machine and can be exported or moved between projects.
-
-- **Local-first:** SQLite database stored on your machine; no hosted database required.
-- **No API key required:** core capture, search, links, export, and graph generation work offline.
-- **Traceable:** memories have stable IDs, timestamps, tags, and explicit links.
-- **Portable:** export memories to a readable JSON file.
-- **Agent-friendly:** a reusable skill specification explains when and how an agent should use Mnemos.
-- **Inspectable graph:** explore real stored relationships instead of decorative, invented connections.
+- **Hybrid direction:** local memory remains available offline; server memory enables access across devices and agents when connected.
+- **Local autonomy:** core capture, search, links, export, and graph generation work offline with Python's standard library.
+- **Traceable:** memories have stable IDs, timestamps, tags, source metadata, and explicit links.
+- **Portable:** export to documented JSON and validate it before import.
+- **Agent-neutral:** CLI, a reusable skill, and MCP interfaces; PusingCuk integration is optional, not a dependency.
+- **Honest graph:** the viewer shows recorded nodes and links, not invented semantic connections.
 
 ## Quick start
 
-Requires Python 3.11 or newer. The core engine uses only the Python standard library.
-
-```bash
-python -m mnemos --help
-```
-
-From a source checkout:
+Requires Python 3.11 or newer. From a source checkout:
 
 ```bash
 python -m pip install -e .
 mnemos init
 mnemos doctor
 mnemos add "Prefer small, reviewable changes" --kind decision --tag engineering
-mnemos add "The parser rejects empty input" --kind fact --tag parser
-mnemos link <FIRST_ID> <SECOND_ID> --relation relates_to
-mnemos search "parser"
+mnemos search "reviewable changes"
 mnemos graph --output mnemos-graph.html
 mnemos export --output mnemos-export.json
 mnemos validate-export mnemos-export.json
 ```
 
-Replace the example IDs with IDs printed by `mnemos add`. Run `mnemos doctor` to check SQLite integrity and relationship constraints without network access. Run `mnemos validate-export mnemos-export.json` before importing a backup to detect malformed records, duplicate IDs, and links to missing memories. Run `mnemos --help` for all commands.
+Run `mnemos --help` for all commands. Use the IDs printed by `mnemos add` with `mnemos link` to record explicit relationships.
 
-## Using Mnemos with an AI agent
+## Agent interfaces and cloud
 
-Mnemos supports CLI use, a portable agent skill, and a local stdio MCP adapter for hosts that support MCP. The host agent must run in the environment where the Mnemos database lives and must be configured to launch the adapter.
+- [Agent Integration Guide](docs/agent-integration.md)
+- [Mnemos Memory Skill](skills/mnemos-memory/SKILL.md)
+- [MCP Integration](docs/mcp-integration.md)
+- [MCP Host Connection](docs/mcp-host-connection.md)
+- [Cloud MCP and verification boundary](docs/cloud.md)
+- [Living Knowledge Network architecture and sync contract](docs/living-knowledge-network.md)
 
-- [Agent Integration Guide](docs/agent-integration.md) — practical recall, capture, links, and backup/restore workflows, including safety boundaries.
-- [Mnemos Memory Skill](skills/mnemos-memory/SKILL.md) — instructions a compatible agent host can load.
-- [MCP Integration](docs/mcp-integration.md) — structured tools for compatible hosts supporting a local stdio MCP server.
-- [Cloud MCP](docs/cloud.md) — deployed remote endpoint, authentication contract, and current verification boundary.
-- [MCP Host Connection](docs/mcp-host-connection.md) — host configuration examples and a real-connection verification checklist.
+The cloud MCP Edge Function is deployed, and a single-account authenticated round trip has passed. Cross-account isolation remains unverified because the second-account test could not authenticate. Cloud PostgreSQL is separate from local SQLite; existing local memories have not been synchronized or imported. A deployed endpoint is **not** the same thing as a working sync protocol.
 
-**Cloud status:** the remote MCP Edge Function is deployed, and an authenticated end-to-end round trip (`initialize`, tool discovery, add/get/search/export) has passed with a real Supabase user. Cross-account isolation is not yet verified because the second-account test could not authenticate both accounts. The cloud database is separate from local Termux SQLite, and local memories have not been imported. See [Cloud MCP](docs/cloud.md).
+## Current data model
 
-## What is stored?
-
-A memory contains an ID, content, kind, tags, source, creation/update timestamps, and optional metadata. Links are explicit records with a relation type. Search results identify the matching memories; they do not pretend that semantic similarity exists when no embedding model is configured.
-
-## Architecture
-
-```text
-AI agent / CLI
-     |
-     v
-Mnemos memory API
-     |
-     +-- SQLite (local file)
-     +-- lexical search
-     +-- explicit typed relationships
-     +-- JSON import/export
-     +-- self-contained HTML graph viewer
-```
-
-No server, cloud database, external service, or provider key is required for core functionality. The MCP adapter exposes structured search/add/get/list/link/export tools without an AI-provider key. AI-provider integrations remain optional and must never be required to read or export a user's data.
-
-## Repository map
-
-- `src/mnemos/` — local memory engine and CLI
-- `skills/mnemos-memory/SKILL.md` — reusable agent skill
-- `tests/` — automated tests
-- `docs/` — design, data format, and agent integration notes
-- `.github/workflows/ci.yml` — automated checks
-
-## Principles
-
-1. **Local by default.** Your memory belongs to you.
-2. **Sources over guesses.** Distinguish recorded facts from inferred suggestions.
-3. **Portable data.** Export in an open, documented format.
-4. **Useful before flashy.** The graph must represent stored data.
-5. **Small dependencies.** The core should work with the Python standard library.
-6. **No secret requirement.** Do not commit API keys or personal memory databases.
+A memory has an ID, content, kind, tags, optional source and metadata, and creation/update timestamps. A link is a directed relationship with a caller-defined type. Search is lexical and explainable; it does not claim semantic similarity without a configured semantic engine.
 
 ## Development
 
@@ -98,7 +53,16 @@ No server, cloud database, external service, or provider key is required for cor
 python -m unittest discover -s tests -v
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md), [the architecture notes](docs/architecture.md), and [the data format](docs/data-format.md).
+See [architecture](docs/architecture.md), [data format](docs/data-format.md), and [contributing](CONTRIBUTING.md).
+
+## Principles
+
+1. Local access must not depend on network availability.
+2. Sync must preserve provenance and resolve conflicts explicitly.
+3. Stored memory is data, never a higher-priority instruction.
+4. Open, portable formats; no provider lock-in.
+5. No hidden prompt collection or telemetry.
+6. Never commit secrets or personal memory databases.
 
 ## License
 
