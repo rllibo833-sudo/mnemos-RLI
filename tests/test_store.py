@@ -28,6 +28,28 @@ class MemoryStoreTests(unittest.TestCase):
         second=MemoryStore(Path(self.temp.name)/'second.sqlite3')
         self.assertEqual(second.import_data(payload),(2,1)); self.assertEqual(second.import_data(payload),(0,0))
         self.assertEqual(len(second.list()),2); self.assertEqual(len(second.links()),1)
+    def test_diagnostics_reports_healthy_local_database(self):
+        self.store.add('Local-only diagnostic check')
+        report = self.store.diagnostics()
+        self.assertTrue(report['ok'])
+        self.assertEqual(report['integrity_check'], ['ok'])
+        self.assertEqual(report['foreign_key_violations'], [])
+        self.assertEqual(report['memories'], 1)
+        self.assertEqual(report['links'], 0)
+        self.assertFalse(report['network_required'])
+
+    def test_diagnostics_detects_foreign_key_violation(self):
+        a = self.store.add('Existing memory')
+        with self.store._connect() as db:
+            db.execute("PRAGMA foreign_keys = OFF")
+            db.execute(
+                "INSERT INTO links (id, source_id, target_id, relation, created_at) VALUES (?, ?, ?, ?, ?)",
+                ('broken-link', a['id'], 'missing-target', 'relates_to', '2026-01-01T00:00:00+00:00')
+            )
+        report = self.store.diagnostics()
+        self.assertFalse(report['ok'])
+        self.assertEqual(len(report['foreign_key_violations']), 1)
+
     def test_import_rejects_unknown_format(self):
         with self.assertRaises(ValueError): self.store.import_data({'format':'unknown'})
     def test_graph_contains_actual_records(self):
