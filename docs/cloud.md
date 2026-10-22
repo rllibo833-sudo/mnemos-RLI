@@ -11,7 +11,7 @@
 
 ## Security notes
 
-The function uses the server-side `SUPABASE_DB_URL` environment variable and does not embed database credentials in source control. Do not publish a service-role/secret key, database password, or user access token in a repository or chat. Each memory and link has an `owner_id` derived from the authenticated user's JWT subject. Reads, search, list, add, and export are scoped to that owner; link creation checks that both memories belong to the same owner. A real authenticated database round trip still needs verification.
+The function uses the server-side `SUPABASE_DB_URL` environment variable and does not embed database credentials in source control. Do not publish a service-role/secret key, database password, or user access token in a repository or chat. Each memory and link has an `owner_id` derived from the authenticated user's JWT subject. Reads, search, list, add, and export are scoped to that owner; link creation checks that both memories belong to the same owner. A real authenticated database round trip has passed for one account (`mnemos_add`, `mnemos_get`, `mnemos_search`, and `mnemos_export`). Cross-account isolation remains unverified; the two-account test currently cannot complete login for both test users.
 
 ## Connection request shape
 
@@ -36,4 +36,4 @@ Example tool discovery body:
 
 ## Verification boundary
 
-The deployed function is active and its source is checked into `supabase/functions/mnemos-mcp/index.ts`. A full end-to-end call using a real authenticated user session is still needed. Do not treat deployment status alone as proof of a successful database round trip. This service currently starts with an empty cloud database; local SQLite memories have not been imported.
+The deployed function is active and its source is checked into `supabase/functions/mnemos-mcp/index.ts`. A single-account authenticated end-to-end round trip has passed. The two-account ownership/isolation test has not passed or failed at the database layer: it stops at Supabase Auth with `invalid_credentials`. Do not interpret that login failure as evidence of a cross-user data leak. This service's cloud database is separate from local SQLite; local memories have not been imported. Do not change Supabase configuration just to repeat the blocked two-account test.
