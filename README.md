@@ -50,7 +50,7 @@ Mnemos supports CLI use, a portable agent skill, and a local stdio MCP adapter f
 - [Cloud MCP](docs/cloud.md) — deployed remote endpoint, authentication contract, and current verification boundary.
 - [MCP Host Connection](docs/mcp-host-connection.md) — host configuration examples and a real-connection verification checklist.
 
-**Cloud status:** a remote MCP Edge Function is deployed in the dedicated Supabase project. It requires an authenticated Supabase user JWT; host compatibility and a full authenticated round-trip still need verification. The cloud database is separate from local Termux SQLite. See [Cloud MCP](docs/cloud.md).
+**Cloud status:** a remote MCP Edge Function is deployed in the dedicated Supabase project with per-user memory ownership enforced in the tool queries. It requires an authenticated Supabase user JWT; a full authenticated database round-trip and host compatibility still need verification. The cloud database is separate from local Termux SQLite. See [Cloud MCP](docs/cloud.md).
 
 ## What is stored?
 
