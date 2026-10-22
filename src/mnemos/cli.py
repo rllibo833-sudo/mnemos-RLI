@@ -35,6 +35,8 @@ def _parser() -> argparse.ArgumentParser:
     imp = commands.add_parser("import", help="Import a Mnemos JSON export without overwriting existing IDs.")
     imp.add_argument("input")
     commands.add_parser("doctor", help="Check local SQLite integrity and relationship constraints.")
+    validate = commands.add_parser("validate-export", help="Validate an export JSON before importing it.")
+    validate.add_argument("input")
     return parser
 
 
@@ -46,6 +48,11 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Mnemos database ready: {store.path}")
         elif args.command == "doctor":
             report = store.diagnostics()
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0 if report["ok"] else 1
+        elif args.command == "validate-export":
+            payload = json.loads(Path(args.input).read_text(encoding="utf-8"))
+            report = MemoryStore.validate_export(payload)
             print(json.dumps(report, ensure_ascii=False, indent=2))
             return 0 if report["ok"] else 1
         elif args.command == "add":
