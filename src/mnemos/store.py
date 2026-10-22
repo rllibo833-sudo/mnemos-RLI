@@ -251,44 +251,42 @@ class MemoryStore:
         }
 
     def import_data(self, payload: dict[str, Any]) -> tuple[int, int]:
-        if payload.get("format") != "mnemos-export-v1":
-            raise ValueError("Unsupported export format; expected mnemos-export-v1.")
-        memories = payload.get("memories", [])
-        links = payload.get("links", [])
-        if not isinstance(memories, list) or not isinstance(links, list):
-            raise ValueError("Export memories and links must be arrays.")
+        """Import a complete, validated export atomically; reject malformed input."""
+        report = self.validate_export(payload)
+        if not report["ok"]:
+            details = "; ".join(report["errors"])
+            raise ValueError(f"Invalid Mnemos export: {details}")
+
+        memories = payload["memories"]
+        links = payload["links"]
         added_memories = added_links = 0
+        # The connection context rolls back the whole import if any insert fails.
         with self._connect() as db:
             for item in memories:
-                if not isinstance(item, dict) or not item.get("id") or not str(item.get("content", "")).strip():
-                    continue
-                exists = db.execute("SELECT 1 FROM memories WHERE id = ?", (item["id"],)).fetchone()
+                exists = db.execute(
+                    "SELECT 1 FROM memories WHERE id = ?", (item["id"],)
+                ).fetchone()
                 if exists:
                     continue
+                created_at = item.get("created_at") or utc_now()
                 db.execute(
                     """INSERT INTO memories
                     (id, content, kind, tags_json, source, metadata_json, created_at, updated_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (str(item["id"]), str(item["content"]), str(item.get("kind", "note")),
+                    (item["id"], item["content"], item.get("kind", "note"),
                      json.dumps(item.get("tags", [])), item.get("source"),
-                     json.dumps(item.get("metadata", {})), item.get("created_at", utc_now()),
-                     item.get("updated_at", item.get("created_at", utc_now()))),
+                     json.dumps(item.get("metadata", {})), created_at,
+                     item.get("updated_at") or created_at),
                 )
                 added_memories += 1
             for item in links:
-                if not isinstance(item, dict):
-                    continue
-                source_id, target_id = item.get("source_id"), item.get("target_id")
-                if not source_id or not target_id or source_id == target_id:
-                    continue
-                if not all(db.execute("SELECT 1 FROM memories WHERE id = ?", (mid,)).fetchone()
-                           for mid in (source_id, target_id)):
-                    continue
+                source_id, target_id = item["source_id"], item["target_id"]
                 cursor = db.execute(
                     """INSERT OR IGNORE INTO links
-                    (id, source_id, target_id, relation, created_at) VALUES (?, ?, ?, ?, ?)""",
+                    (id, source_id, target_id, relation, created_at)
+                    VALUES (?, ?, ?, ?, ?)""",
                     (str(item.get("id") or uuid.uuid4()), source_id, target_id,
-                     str(item.get("relation", "relates_to")), str(item.get("created_at", utc_now()))),
+                     item.get("relation", "relates_to"), item.get("created_at") or utc_now()),
                 )
                 added_links += cursor.rowcount
         return added_memories, added_links
