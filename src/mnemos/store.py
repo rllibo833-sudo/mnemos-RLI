@@ -164,6 +164,28 @@ class MemoryStore:
                 rows = db.execute("SELECT * FROM links ORDER BY created_at").fetchall()
         return [dict(row) for row in rows]
 
+    def diagnostics(self) -> dict[str, Any]:
+        """Inspect local SQLite integrity without modifying data or using the network."""
+        with self._connect() as db:
+            integrity_rows = db.execute("PRAGMA integrity_check").fetchall()
+            foreign_key_rows = db.execute("PRAGMA foreign_key_check").fetchall()
+            memories = db.execute("SELECT COUNT(*) FROM memories").fetchone()[0]
+            links = db.execute("SELECT COUNT(*) FROM links").fetchone()[0]
+        integrity = [row[0] for row in integrity_rows]
+        violations = [
+            {"table": row[0], "rowid": row[1], "parent": row[2], "fkid": row[3]}
+            for row in foreign_key_rows
+        ]
+        return {
+            "database": str(self.path),
+            "network_required": False,
+            "integrity_check": integrity,
+            "foreign_key_violations": violations,
+            "memories": memories,
+            "links": links,
+            "ok": integrity == ["ok"] and not violations,
+        }
+
     def export_data(self) -> dict[str, Any]:
         return {"format": "mnemos-export-v1", "exported_at": utc_now(),
                 "memories": self.list(limit=10000), "links": self.links()}
