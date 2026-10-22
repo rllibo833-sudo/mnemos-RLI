@@ -47,8 +47,9 @@ Mnemos supports CLI use, a portable agent skill, and a local stdio MCP adapter f
 - [Agent Integration Guide](docs/agent-integration.md) — practical recall, capture, links, and backup/restore workflows, including safety boundaries.
 - [Mnemos Memory Skill](skills/mnemos-memory/SKILL.md) — instructions a compatible agent host can load.
 - [MCP Integration](docs/mcp-integration.md) — structured tools for compatible hosts supporting a local stdio MCP server.
+- [Cloud Foundation](docs/cloud-foundation.md) — status, private Supabase schema, and secure remote MCP deployment plan.
 
-**Important environment boundary:** installing Mnemos in Android Termux makes it available to commands running in Termux. It does not automatically make that local database accessible to ChatGPT or a cloud-hosted agent. Cross-device access requires a separate, deliberately designed secure bridge; do not upload a private memory database casually.
+**Important environment boundary:** the current MCP adapter is local stdio. A dedicated cloud storage foundation is being prepared, but this does not yet mean ChatGPT or another cloud-hosted agent is connected. See [Cloud Foundation](docs/cloud-foundation.md) for the verified status and remaining work.
 
 ## What is stored?
 
