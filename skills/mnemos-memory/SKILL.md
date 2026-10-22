@@ -69,7 +69,7 @@ mnemos search "parser empty input"
 mnemos add "Parser rejects empty input; validate before parsing" --kind solution --tag parser --source src/parser.py
 ```
 
-This skill is a set of instructions for a host agent. It does not itself grant shell access or run commands. The host must be able to execute the Mnemos CLI in the environment where the database resides. See [the Agent Integration Guide](../../docs/agent-integration.md) for environment boundaries, backup/restore, and safety details.
+This skill is a set of instructions for a host agent. When available, prefer the structured Mnemos MCP tools (`mnemos_search`, `mnemos_add`, `mnemos_get`, `mnemos_list`, `mnemos_link`, `mnemos_export`); otherwise use the CLI workflow below. The host must run in the environment where the database resides. See [the Agent Integration Guide](../../docs/agent-integration.md) and [MCP Integration](../../docs/mcp-integration.md) for setup, environment boundaries, backup/restore, and safety details.
 
 ## Current limits
 
