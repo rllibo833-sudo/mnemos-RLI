@@ -50,6 +50,30 @@ class MemoryStoreTests(unittest.TestCase):
         self.assertFalse(report['ok'])
         self.assertEqual(len(report['foreign_key_violations']), 1)
 
+    def test_validate_export_accepts_valid_export(self):
+        a = self.store.add('Portable memory')
+        b = self.store.add('Portable decision', kind='decision')
+        self.store.link(a['id'], b['id'])
+        report = MemoryStore.validate_export(self.store.export_data())
+        self.assertTrue(report['ok'])
+        self.assertEqual(report['memories'], 2)
+        self.assertEqual(report['links'], 1)
+        self.assertEqual(report['errors'], [])
+
+    def test_validate_export_rejects_dangling_link_and_duplicate_id(self):
+        payload = {
+            'format': 'mnemos-export-v1',
+            'memories': [
+                {'id': 'same', 'content': 'one'},
+                {'id': 'same', 'content': 'two'},
+            ],
+            'links': [{'source_id': 'same', 'target_id': 'missing', 'relation': 'related'}],
+        }
+        report = MemoryStore.validate_export(payload)
+        self.assertFalse(report['ok'])
+        self.assertTrue(any('Duplicate memory ID' in error for error in report['errors']))
+        self.assertTrue(any('target_id' in error for error in report['errors']))
+
     def test_import_rejects_unknown_format(self):
         with self.assertRaises(ValueError): self.store.import_data({'format':'unknown'})
     def test_graph_contains_actual_records(self):
