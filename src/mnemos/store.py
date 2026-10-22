@@ -190,6 +190,66 @@ class MemoryStore:
         return {"format": "mnemos-export-v1", "exported_at": utc_now(),
                 "memories": self.list(limit=10000), "links": self.links()}
 
+    @staticmethod
+    def validate_export(payload: Any) -> dict[str, Any]:
+        """Validate an export before importing it; never changes the database."""
+        errors: list[str] = []
+        if not isinstance(payload, dict):
+            return {"ok": False, "errors": ["Top-level JSON value must be an object."]}
+        if payload.get("format") != "mnemos-export-v1":
+            errors.append("Unsupported export format; expected mnemos-export-v1.")
+        memories = payload.get("memories")
+        links = payload.get("links")
+        if not isinstance(memories, list):
+            errors.append("memories must be an array.")
+            memories = []
+        if not isinstance(links, list):
+            errors.append("links must be an array.")
+            links = []
+        ids: set[str] = set()
+        for index, item in enumerate(memories):
+            if not isinstance(item, dict):
+                errors.append(f"memories[{index}] must be an object.")
+                continue
+            memory_id = item.get("id")
+            if not isinstance(memory_id, str) or not memory_id.strip():
+                errors.append(f"memories[{index}].id must be a non-empty string.")
+            elif memory_id in ids:
+                errors.append(f"Duplicate memory ID: {memory_id}.")
+            else:
+                ids.add(memory_id)
+            if not isinstance(item.get("content"), str) or not item["content"].strip():
+                errors.append(f"memories[{index}].content must be non-empty text.")
+            if "tags" in item and (not isinstance(item["tags"], list) or not all(isinstance(tag, str) for tag in item["tags"])):
+                errors.append(f"memories[{index}].tags must be an array of strings.")
+            if "metadata" in item and not isinstance(item["metadata"], dict):
+                errors.append(f"memories[{index}].metadata must be an object.")
+        seen_links: set[tuple[str, str, str]] = set()
+        for index, item in enumerate(links):
+            if not isinstance(item, dict):
+                errors.append(f"links[{index}] must be an object.")
+                continue
+            source_id, target_id = item.get("source_id"), item.get("target_id")
+            relation = item.get("relation", "relates_to")
+            if not isinstance(source_id, str) or source_id not in ids:
+                errors.append(f"links[{index}].source_id does not reference an exported memory.")
+            if not isinstance(target_id, str) or target_id not in ids:
+                errors.append(f"links[{index}].target_id does not reference an exported memory.")
+            if source_id and source_id == target_id:
+                errors.append(f"links[{index}] cannot link a memory to itself.")
+            if not isinstance(relation, str) or not relation.strip():
+                errors.append(f"links[{index}].relation must be non-empty text.")
+            key = (str(source_id), str(target_id), str(relation))
+            if key in seen_links:
+                errors.append(f"Duplicate link at links[{index}].")
+            seen_links.add(key)
+        return {
+            "ok": not errors,
+            "memories": len(memories),
+            "links": len(links),
+            "errors": errors,
+        }
+
     def import_data(self, payload: dict[str, Any]) -> tuple[int, int]:
         if payload.get("format") != "mnemos-export-v1":
             raise ValueError("Unsupported export format; expected mnemos-export-v1.")
