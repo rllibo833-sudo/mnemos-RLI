@@ -37,9 +37,10 @@ mnemos link <FIRST_ID> <SECOND_ID> --relation relates_to
 mnemos search "parser"
 mnemos graph --output mnemos-graph.html
 mnemos export --output mnemos-export.json
+mnemos validate-export mnemos-export.json
 ```
 
-Replace the example IDs with IDs printed by `mnemos add`. Run `mnemos doctor` to check SQLite integrity, relationship constraints, and local record counts without network access. Run `mnemos --help` for all commands.
+Replace the example IDs with IDs printed by `mnemos add`. Run `mnemos doctor` to check SQLite integrity and relationship constraints without network access. Run `mnemos validate-export mnemos-export.json` before importing a backup to detect malformed records, duplicate IDs, and links to missing memories. Run `mnemos --help` for all commands.
 
 ## Using Mnemos with an AI agent
 
