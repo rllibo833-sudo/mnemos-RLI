@@ -45,7 +45,7 @@ const tools = [
   { name: "mnemos_export", description: "Return a portable JSON snapshot of all cloud memories and links.", inputSchema: { type: "object", properties: {}, additionalProperties: false } },
 ];
 
-async function callTool(name: string, rawArgs: unknown) {
+async function callTool(name: string, rawArgs: unknown, ownerId: string) {
   const a = parseArgs(rawArgs);
   if (name === "mnemos_add") {
     if (typeof a.content !== "string" || !a.content.trim()) throw new Error("content must be a non-empty string");
@@ -56,26 +56,26 @@ async function callTool(name: string, rawArgs: unknown) {
     if (typeof kind !== "string" || !Array.isArray(tags) || !tags.every(x => typeof x === "string") || (source !== null && typeof source !== "string") || !metadata || typeof metadata !== "object" || Array.isArray(metadata)) throw new Error("invalid memory fields");
     const timestamp = now();
     const id = uuid();
-    const rows = await sql`insert into mnemos.memories (id, content, kind, tags, source, metadata, created_at, updated_at)
-      values (${id}::uuid, ${a.content.trim()}, ${kind.trim() || "note"}, ${[...new Set((tags as string[]).map(x => x.trim()).filter(Boolean))]}, ${source}, ${sql.json(metadata)}, ${timestamp}::timestamptz, ${timestamp}::timestamptz)
+    const rows = await sql`insert into mnemos.memories (id, owner_id, content, kind, tags, source, metadata, created_at, updated_at)
+      values (${id}::uuid, ${ownerId}::uuid, ${a.content.trim()}, ${kind.trim() || "note"}, ${[...new Set((tags as string[]).map(x => x.trim()).filter(Boolean))]}, ${source}, ${sql.json(metadata)}, ${timestamp}::timestamptz, ${timestamp}::timestamptz)
       returning id, content, kind, tags, source, metadata, created_at, updated_at`;
     return rows[0];
   }
   if (name === "mnemos_get") {
     if (typeof a.memory_id !== "string") throw new Error("memory_id must be a UUID string");
-    const rows = await sql`select id, content, kind, tags, source, metadata, created_at, updated_at from mnemos.memories where id = ${a.memory_id}::uuid`;
+    const rows = await sql`select id, content, kind, tags, source, metadata, created_at, updated_at from mnemos.memories where id = ${a.memory_id}::uuid and owner_id = ${ownerId}::uuid`;
     return rows[0] ?? null;
   }
   if (name === "mnemos_list") {
     const limit = boundedInt(a.limit, 50, 1, 10000);
-    return await sql`select id, content, kind, tags, source, metadata, created_at, updated_at from mnemos.memories order by created_at desc limit ${limit}`;
+    return await sql`select id, content, kind, tags, source, metadata, created_at, updated_at from mnemos.memories where owner_id = ${ownerId}::uuid order by created_at desc limit ${limit}`;
   }
   if (name === "mnemos_search") {
     if (typeof a.query !== "string") throw new Error("query must be a string");
     const limit = boundedInt(a.limit, 20, 1, 1000);
     const terms = a.query.toLocaleLowerCase().split(/\s+/).filter(Boolean).slice(0, 32);
     if (!terms.length) return [];
-    const rows = await sql`select id, content, kind, tags, source, metadata, created_at, updated_at from mnemos.memories order by created_at desc limit 10000`;
+    const rows = await sql`select id, content, kind, tags, source, metadata, created_at, updated_at from mnemos.memories where owner_id = ${ownerId}::uuid order by created_at desc limit 10000`;
     const scored = rows.map((row: Record<string, unknown>) => {
       const haystack = [row.content, row.kind, ...(Array.isArray(row.tags) ? row.tags : []), row.source ?? ""].join(" ").toLocaleLowerCase();
       const score = terms.reduce((n, term) => n + (haystack.includes(term) ? 1 : 0), 0);
@@ -87,15 +87,17 @@ async function callTool(name: string, rawArgs: unknown) {
     if (typeof a.source_id !== "string" || typeof a.target_id !== "string") throw new Error("source_id and target_id must be UUID strings");
     const relation = a.relation === undefined ? "relates_to" : a.relation;
     if (typeof relation !== "string" || !relation.trim()) throw new Error("relation must be a non-empty string");
-    const rows = await sql`insert into mnemos.links (id, source_id, target_id, relation, created_at)
-      values (${uuid()}::uuid, ${a.source_id}::uuid, ${a.target_id}::uuid, ${relation.trim()}, ${now()}::timestamptz)
+    const owned = await sql`select id from mnemos.memories where owner_id = ${ownerId}::uuid and id in (${a.source_id}::uuid, ${a.target_id}::uuid)`;
+    if (owned.length !== 2) throw new Error("both memories must exist and belong to the authenticated user");
+    const rows = await sql`insert into mnemos.links (id, owner_id, source_id, target_id, relation, created_at)
+      values (${uuid()}::uuid, ${ownerId}::uuid, ${a.source_id}::uuid, ${a.target_id}::uuid, ${relation.trim()}, ${now()}::timestamptz)
       on conflict (source_id, target_id, relation) do update set relation = excluded.relation
       returning id, source_id, target_id, relation, created_at`;
     return rows[0];
   }
   if (name === "mnemos_export") {
-    const memories = await sql`select id, content, kind, tags, source, metadata, created_at, updated_at from mnemos.memories order by created_at`;
-    const links = await sql`select id, source_id, target_id, relation, created_at from mnemos.links order by created_at`;
+    const memories = await sql`select id, content, kind, tags, source, metadata, created_at, updated_at from mnemos.memories where owner_id = ${ownerId}::uuid order by created_at`;
+    const links = await sql`select id, source_id, target_id, relation, created_at from mnemos.links where owner_id = ${ownerId}::uuid order by created_at`;
     return { format: "mnemos-export-v1", exported_at: now(), memories, links };
   }
   throw new Error(`unknown tool: ${name}`);
@@ -136,7 +138,7 @@ Deno.serve(async (req: Request) => {
     const params = parseArgs(body.params);
     if (typeof params.name !== "string") return response(rpcError(id, -32602, "tool name is required"), 400);
     try {
-      const result = await callTool(params.name, params.arguments ?? {});
+      const result = await callTool(params.name, params.arguments ?? {}, claims.sub as string);
       return response(jsonRpc(id, { content: [{ type: "text", text: JSON.stringify(result) }], structuredContent: result, isError: false }));
     } catch (e) {
       const message = e instanceof Error ? e.message : "tool execution failed";
