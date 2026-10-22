@@ -60,6 +60,28 @@ class MemoryStore:
                 CREATE INDEX IF NOT EXISTS idx_memories_kind ON memories(kind);
                 CREATE INDEX IF NOT EXISTS idx_links_source ON links(source_id);
                 CREATE INDEX IF NOT EXISTS idx_links_target ON links(target_id);
+                CREATE TABLE IF NOT EXISTS mnemos_meta (
+                    key TEXT PRIMARY KEY,
+                    value TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS sync_outbox (
+                    seq INTEGER PRIMARY KEY AUTOINCREMENT,
+                    operation_id TEXT NOT NULL UNIQUE,
+                    entity_type TEXT NOT NULL CHECK(entity_type IN ('memory', 'link')),
+                    entity_id TEXT NOT NULL,
+                    operation TEXT NOT NULL CHECK(operation IN ('upsert')),
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    acknowledged_at TEXT,
+                    attempts INTEGER NOT NULL DEFAULT 0,
+                    last_error TEXT
+                );
+                CREATE INDEX IF NOT EXISTS idx_sync_outbox_pending
+                    ON sync_outbox(acknowledged_at, seq);
+                INSERT OR IGNORE INTO mnemos_meta(key, value)
+                    VALUES ('schema_version', '2');
+                INSERT OR IGNORE INTO mnemos_meta(key, value)
+                    VALUES ('device_id', lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(4))));
             """)
 
     def add(
@@ -93,6 +115,7 @@ class MemoryStore:
                 (item["id"], item["content"], item["kind"], json.dumps(item["tags"]),
                  item["source"], json.dumps(item["metadata"]), now, now),
             )
+            self._enqueue(db, "memory", item["id"], item)
         return item
 
     @staticmethod
@@ -151,7 +174,64 @@ class MemoryStore:
                 "SELECT * FROM links WHERE source_id = ? AND target_id = ? AND relation = ?",
                 (source_id, target_id, relation),
             ).fetchone()
+            if row and row["id"] == link_id:
+                self._enqueue(db, "link", row["id"], dict(row))
         return dict(row)
+
+    @staticmethod
+    def _enqueue(db: sqlite3.Connection, entity_type: str, entity_id: str, payload: dict[str, Any]) -> None:
+        """Append a change in the same SQLite transaction as its source record."""
+        db.execute(
+            """INSERT INTO sync_outbox
+            (operation_id, entity_type, entity_id, operation, payload_json, created_at)
+            VALUES (?, ?, ?, 'upsert', ?, ?)""",
+            (str(uuid.uuid4()), entity_type, entity_id,
+             json.dumps(payload, ensure_ascii=False, sort_keys=True), utc_now()),
+        )
+
+    def device_id(self) -> str:
+        with self._connect() as db:
+            row = db.execute("SELECT value FROM mnemos_meta WHERE key = 'device_id'").fetchone()
+        return str(row["value"])
+
+    def sync_status(self) -> dict[str, Any]:
+        """Return local sync readiness; does not claim a remote sync is configured."""
+        with self._connect() as db:
+            pending = db.execute(
+                "SELECT COUNT(*) FROM sync_outbox WHERE acknowledged_at IS NULL"
+            ).fetchone()[0]
+            total = db.execute("SELECT COUNT(*) FROM sync_outbox").fetchone()[0]
+            last = db.execute(
+                "SELECT created_at FROM sync_outbox ORDER BY seq DESC LIMIT 1"
+            ).fetchone()
+            version = db.execute(
+                "SELECT value FROM mnemos_meta WHERE key = 'schema_version'"
+            ).fetchone()
+        return {
+            "device_id": self.device_id(),
+            "schema_version": int(version["value"]) if version else 1,
+            "outbox_pending": pending,
+            "outbox_total": total,
+            "last_change_at": last["created_at"] if last else None,
+            "remote_sync_implemented": False,
+            "online_required": False,
+        }
+
+    def pending_changes(self, *, limit: int = 100) -> list[dict[str, Any]]:
+        with self._connect() as db:
+            rows = db.execute(
+                """SELECT seq, operation_id, entity_type, entity_id, operation,
+                          payload_json, created_at, attempts, last_error
+                   FROM sync_outbox WHERE acknowledged_at IS NULL
+                   ORDER BY seq LIMIT ?""",
+                (max(1, min(limit, 1000)),),
+            ).fetchall()
+        return [
+            {**{key: row[key] for key in ("seq", "operation_id", "entity_type",
+                "entity_id", "operation", "created_at", "attempts", "last_error")},
+             "payload": json.loads(row["payload_json"])}
+            for row in rows
+        ]
 
     def links(self, memory_id: str | None = None) -> list[dict[str, Any]]:
         with self._connect() as db:

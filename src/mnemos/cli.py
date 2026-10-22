@@ -35,6 +35,9 @@ def _parser() -> argparse.ArgumentParser:
     imp = commands.add_parser("import", help="Import a Mnemos JSON export without overwriting existing IDs.")
     imp.add_argument("input")
     commands.add_parser("doctor", help="Check local SQLite integrity and relationship constraints.")
+    commands.add_parser("sync-status", help="Show device identity and locally queued changes.")
+    pending = commands.add_parser("outbox", help="List pending local changes awaiting sync.")
+    pending.add_argument("--limit", type=int, default=100)
     validate = commands.add_parser("validate-export", help="Validate an export JSON before importing it.")
     validate.add_argument("input")
     return parser
@@ -50,6 +53,10 @@ def main(argv: list[str] | None = None) -> int:
             report = store.diagnostics()
             print(json.dumps(report, ensure_ascii=False, indent=2))
             return 0 if report["ok"] else 1
+        elif args.command == "sync-status":
+            print(json.dumps(store.sync_status(), ensure_ascii=False, indent=2))
+        elif args.command == "outbox":
+            print(json.dumps(store.pending_changes(limit=args.limit), ensure_ascii=False, indent=2))
         elif args.command == "validate-export":
             payload = json.loads(Path(args.input).read_text(encoding="utf-8"))
             report = MemoryStore.validate_export(payload)
