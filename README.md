@@ -40,6 +40,15 @@ mnemos export --output mnemos-export.json
 
 Replace the example IDs with IDs printed by `mnemos add`. Run `mnemos --help` for all commands.
 
+## Using Mnemos with an AI agent
+
+Mnemos currently integrates through its CLI and a portable agent skill, rather than an automatic background service. The host agent must be able to run shell commands in the environment where the Mnemos database lives.
+
+- [Agent Integration Guide](docs/agent-integration.md) — practical recall, capture, links, and backup/restore workflows, including safety boundaries.
+- [Mnemos Memory Skill](skills/mnemos-memory/SKILL.md) — instructions a compatible agent host can load.
+
+**Important environment boundary:** installing Mnemos in Android Termux makes it available to commands running in Termux. It does not automatically make that local database accessible to ChatGPT or a cloud-hosted agent. Cross-device access requires a separate, deliberately designed secure bridge; do not upload a private memory database casually.
+
 ## What is stored?
 
 A memory contains an ID, content, kind, tags, source, creation/update timestamps, and optional metadata. Links are explicit records with a relation type. Search results identify the matching memories; they do not pretend that semantic similarity exists when no embedding model is configured.
@@ -66,7 +75,7 @@ No server, cloud database, external service, or provider key is required for cor
 - `src/mnemos/` — local memory engine and CLI
 - `skills/mnemos-memory/SKILL.md` — reusable agent skill
 - `tests/` — automated tests
-- `docs/` — design and data-format notes
+- `docs/` — design, data format, and agent integration notes
 - `.github/workflows/ci.yml` — automated checks
 
 ## Principles
