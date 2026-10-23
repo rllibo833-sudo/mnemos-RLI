@@ -181,6 +181,8 @@ def analyze_graph(
         )
         if active_users:
             status = "active_dependency"
+        elif selected_paths and not any(item["id"] in scoped_artifact_ids for item in all_users):
+            status = "unknown"
         elif scope_uncertain:
             status = "unknown"
         elif all_users:
@@ -229,6 +231,8 @@ def analyze_graph(
             })
 
     for artifact in sorted((item for item in memories if item.get("kind") == "binary_artifact"), key=lambda item: item["id"]):
+        if selected_paths and artifact["id"] not in scoped_artifact_ids:
+            continue
         meta = _metadata(artifact)
         if not meta.get("sha256") and meta.get("sample_sha256"):
             findings.append({
@@ -246,6 +250,8 @@ def analyze_graph(
             continue
         source, target = by_id.get(link.get("source_id")), by_id.get(link.get("target_id"))
         if not source or not target or source.get("kind") != "binary_artifact" or target.get("kind") != "binary_artifact":
+            continue
+        if selected_paths and (source["id"] not in scoped_artifact_ids or target["id"] not in scoped_artifact_ids):
             continue
         source_meta, target_meta = _metadata(source), _metadata(target)
         path = str(source_meta.get("path", ""))
