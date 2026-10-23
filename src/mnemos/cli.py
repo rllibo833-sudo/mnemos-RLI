@@ -38,6 +38,8 @@ def _parser() -> argparse.ArgumentParser:
     link.add_argument("--relation", default="relates_to")
     graph = commands.add_parser("graph", help="Generate a self-contained HTML graph from stored records.")
     graph.add_argument("--output", default="mnemos-graph.html")
+    graph.add_argument("--format", choices=("html", "json"), default="html",
+                       help="Output an interactive HTML graph or graph JSON.")
     export = commands.add_parser("export", help="Export all memories and links to JSON.")
     export.add_argument("--output", default="mnemos-export.json")
     imp = commands.add_parser("import", help="Import a Mnemos JSON export without overwriting existing IDs.")
@@ -397,7 +399,14 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "link":
             print(json.dumps(store.link(args.source_id, args.target_id, relation=args.relation), indent=2))
         elif args.command == "graph":
-            path = render_graph(store.list_all(), store.links(), args.output)
+            memories, links = store.list_all(), store.links()
+            if args.format == "json":
+                path = Path(args.output)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                from .graph import graph_payload
+                path.write_text(json.dumps(graph_payload(memories, links), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            else:
+                path = render_graph(memories, links, args.output)
             print(f"Graph written to {path.resolve()}")
         elif args.command == "export":
             path = Path(args.output)

@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from mnemos.store import MemoryStore
-from mnemos.graph import render_graph
+from mnemos.graph import graph_payload, render_graph
 
 class MemoryStoreTests(unittest.TestCase):
     def setUp(self):
@@ -142,6 +142,37 @@ class MemoryStoreTests(unittest.TestCase):
 
     def test_import_rejects_unknown_format(self):
         with self.assertRaises(ValueError): self.store.import_data({'format':'unknown'})
+    def test_graph_payload_stats_and_edges_are_real_and_deduplicated(self):
+        a = self.store.add('Graph decision', kind='decision')
+        b = self.store.add('Graph agent', kind='agent')
+        self.store.link(a['id'], b['id'], relation='uses')
+        records = self.store.list_all()
+        links = self.store.links()
+        payload = graph_payload(records + [records[0]], links + [links[0], {
+            'id': 'dangling', 'source_id': a['id'], 'target_id': 'missing', 'relation': 'uses'
+        }])
+        self.assertEqual(payload['stats']['memories'], 2)
+        self.assertEqual(payload['stats']['nodes'], 2)
+        self.assertEqual(payload['stats']['relationships'], 1)
+        self.assertEqual(payload['stats']['agents'], 1)
+        self.assertEqual(payload['stats']['kinds'], {'agent': 1, 'decision': 1})
+        self.assertEqual(len(payload['links']), 1)
+
+    def test_graph_json_cli_exports_canonical_graph_payload(self):
+        from mnemos.cli import main
+        import json
+        a = self.store.add('JSON node A')
+        b = self.store.add('JSON node B', kind='agent')
+        self.store.link(a['id'], b['id'], relation='uses')
+        output = Path(self.temp.name) / 'graph.json'
+        self.assertEqual(main(['--db', str(self.store.path), 'graph', '--format', 'json',
+                               '--output', str(output)]), 0)
+        payload = json.loads(output.read_text(encoding='utf-8'))
+        self.assertEqual(payload['stats']['nodes'], 2)
+        self.assertEqual(payload['stats']['relationships'], 1)
+        self.assertEqual(payload['stats']['agents'], 1)
+        self.assertEqual(len(payload['links']), 1)
+
     def test_graph_contains_actual_records(self):
         a=self.store.add('A known decision',kind='decision'); b=self.store.add('A recorded solution',kind='solution')
         self.store.link(a['id'],b['id'],relation='leads_to'); output=Path(self.temp.name)/'graph.html'

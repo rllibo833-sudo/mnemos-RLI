@@ -6,10 +6,45 @@ from pathlib import Path
 from typing import Any
 
 
+def graph_payload(memories: list[dict[str, Any]], links: list[dict[str, Any]]) -> dict[str, Any]:
+    """Build graph data and statistics from actual records, excluding invalid or duplicate edges."""
+    nodes_by_id: dict[str, dict[str, Any]] = {}
+    for memory in memories:
+        memory_id = memory.get("id")
+        if isinstance(memory_id, str) and memory_id:
+            nodes_by_id.setdefault(memory_id, memory)
+    nodes = [nodes_by_id[key] for key in sorted(nodes_by_id)]
+    node_ids = set(nodes_by_id)
+    edges_by_key: dict[tuple[str, str, str], dict[str, Any]] = {}
+    for link in links:
+        source, target, relation = link.get("source_id"), link.get("target_id"), link.get("relation")
+        if not all(isinstance(value, str) and value for value in (source, target, relation)):
+            continue
+        if source not in node_ids or target not in node_ids or source == target:
+            continue
+        edges_by_key.setdefault((source, target, relation), link)
+    edges = [edges_by_key[key] for key in sorted(edges_by_key)]
+    kinds: dict[str, int] = {}
+    for node in nodes:
+        kind = str(node.get("kind") or "unknown")
+        kinds[kind] = kinds.get(kind, 0) + 1
+    return {
+        "nodes": nodes,
+        "links": edges,
+        "stats": {
+            "memories": len(nodes),
+            "nodes": len(nodes),
+            "relationships": len(edges),
+            "agents": kinds.get("agent", 0),
+            "kinds": dict(sorted(kinds.items())),
+        },
+    }
+
+
 def render_graph(memories: list[dict[str, Any]], links: list[dict[str, Any]], output: str | Path) -> Path:
     target = Path(output)
     target.parent.mkdir(parents=True, exist_ok=True)
-    payload = json.dumps({"nodes": memories, "links": links}, ensure_ascii=False).replace("</", "<\\/")
+    payload = json.dumps(graph_payload(memories, links), ensure_ascii=False).replace("</", "<\\/")
     document = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mnemos Memory Graph</title>
@@ -27,7 +62,8 @@ header{position:absolute;z-index:2;top:16px;left:18px;pointer-events:none}h1{fon
 const data = __DATA__;
 const svg = document.getElementById('graph'), detail = document.getElementById('detail');
 const NS='http://www.w3.org/2000/svg';
-document.getElementById('stats').textContent = data.nodes.length+' memories · '+data.links.length+' recorded links';
+const stats=data.stats||{memories:data.nodes.length,nodes:data.nodes.length,relationships:data.links.length,agents:data.nodes.filter(n=>n.kind==='agent').length};
+document.getElementById('stats').textContent = stats.memories+' memories · '+stats.nodes+' nodes · '+stats.relationships+' relationships · '+stats.agents+' agents';
 if(!data.nodes.length) document.getElementById('empty').style.display='block';
 const width=()=>innerWidth, height=()=>innerHeight;
 const nodes=data.nodes.map((d,i)=>({...d,x:width()/2+(Math.random()-.5)*width()*.7,y:height()/2+(Math.random()-.5)*height()*.7,vx:0,vy:0,r:Math.max(4,Math.min(10,4+Math.log2(1+(d.tags||[]).length)*2))}));
