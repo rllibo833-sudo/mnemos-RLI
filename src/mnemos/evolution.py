@@ -32,7 +32,7 @@ def evolve_graph(store: MemoryStore) -> dict[str, Any]:
     }
     repaired = 0
     for versions in artifacts_by_path.values():
-        versions.sort(key=lambda item: (item.get("created_at", ""), item["id"]))
+        versions.sort(key=lambda item: (item.get("created_at", ""), int((item.get("metadata") or {}).get("mtime_ns") or 0), item["id"]))
         for previous, current in zip(versions, versions[1:]):
             key = (previous["id"], current["id"], "superseded_by")
             if key not in existing:

@@ -11,8 +11,8 @@ class GraphEvolutionTests(unittest.TestCase):
     def test_evolution_repairs_missing_history_edge_idempotently(self):
         with tempfile.TemporaryDirectory() as temp:
             store = MemoryStore(Path(temp) / "memory.sqlite3")
-            first = store.add("old binary", kind="binary_artifact", metadata={"path": "/opt/demo", "sha256": "a"})
-            second = store.add("new binary", kind="binary_artifact", metadata={"path": "/opt/demo", "sha256": "b"})
+            first = store.add("old binary", kind="binary_artifact", metadata={"path": "/opt/demo", "sha256": "a", "mtime_ns": 1})
+            second = store.add("new binary", kind="binary_artifact", metadata={"path": "/opt/demo", "sha256": "b", "mtime_ns": 2})
             report = evolve_graph(store)
             self.assertTrue(report["ok"])
             self.assertEqual(report["supersession_edges_repaired"], 1)
