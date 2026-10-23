@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from .device_mapper import collect_device_map
+from .analysis import analyze_graph
 from .daemon import run_daemon
 from .evolution import evolve_graph
 from .graph import render_graph
@@ -44,6 +45,11 @@ def _parser() -> argparse.ArgumentParser:
     mapping.add_argument("--path", action="append", default=[], help="File or directory to inspect for binary artifacts; repeatable.")
     mapping.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected across selected directories.")
     evolution = commands.add_parser("evolve", help="Reconcile artifact history and validate binary graph invariants.")
+    analyze = commands.add_parser("analyze", help="Aggregate graph evidence into deterministic, traceable conclusions.")
+    analyze.add_argument("--path", action="append", default=[], help="Restrict analysis to snapshots with this exact scan scope; repeatable.")
+    analyze.add_argument("--critical-threshold", type=int, default=20, help="Flag dependencies used by more than this many active artifact versions.")
+    analyze.add_argument("--churn-threshold", type=int, default=3, help="Flag paths with more than this many supersessions in the observation window.")
+    analyze.add_argument("--window-days", type=int, default=30, help="Observation window for churn analysis (default: 30 days).")
     daemon = commands.add_parser("daemon", help="Continuously refresh an offline device map for explicitly selected paths.")
     daemon.add_argument("--path", action="append", default=[], help="File or directory to scan; repeatable.")
     daemon.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected per scan.")
@@ -68,6 +74,24 @@ def main(argv: list[str] | None = None) -> int:
             report = evolve_graph(store)
             print(json.dumps(report, ensure_ascii=False, indent=2))
             return 0 if report["ok"] else 1
+        elif args.command == "analyze":
+            result, created = analyze_graph(
+                store, paths=args.path or None,
+                critical_threshold=args.critical_threshold,
+                churn_threshold=args.churn_threshold,
+                window_days=args.window_days,
+            )
+            metadata = result.get("metadata") or {}
+            print(json.dumps({
+                "analysis_id": result["id"], "created": created,
+                "input_fingerprint": metadata.get("input_fingerprint"),
+                "source_snapshot_ids": metadata.get("source_snapshot_ids", []),
+                "scope_status": metadata.get("scope_status", "unknown_scope_incomplete"),
+                "counts": metadata.get("counts", {}),
+                "unknown_scopes": metadata.get("unknown_scopes", []),
+                "findings": metadata.get("findings", []),
+                "dependency_states": metadata.get("dependency_states", []),
+            }, ensure_ascii=False, indent=2))
         elif args.command == "daemon":
             if not args.path:
                 raise ValueError("daemon requires at least one explicit --path.")
