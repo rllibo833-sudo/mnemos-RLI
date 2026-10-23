@@ -36,7 +36,7 @@ class DeviceMapperTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "symbols.elf"
             header = bytearray(64)
-            header[:4] = b"\\x7fELF"
+            header[:4] = bytes((127, 69, 76, 70))
             header[4:6] = bytes((2, 1))
             shstr = b"\\0.shstrtab\\0.strtab\\0.symtab\\0.text\\0"
             strtab = b"\\0demo_function\\0"
