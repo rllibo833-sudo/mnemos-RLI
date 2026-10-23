@@ -96,7 +96,7 @@ def _dependencies_for_artifacts(
 
 
 def _library_version(name: str) -> str | None:
-    match = re.search(r"(?<![A-Za-z0-9])(?:v)?(\d+\.\d+(?:\.\d+)?)(?!\d)", name, re.IGNORECASE)
+    match = re.search(r"(?<![A-Za-z0-9])(?:v)?(\d+(?:\.\d+){0,2})(?!\d)", name, re.IGNORECASE)
     return match.group(1) if match else None
 
 
@@ -156,6 +156,16 @@ def analyze_graph(
         if link.get("relation") == "depends_on" and link.get("source_id") in by_id and link.get("target_id") in by_id:
             dep_links.setdefault(link["target_id"], []).append(by_id[link["source_id"]])
 
+    parser_uncertainty = any(
+        (_metadata(artifact).get("binary_details") or {}).get("status") != "parsed"
+        for snapshot in latest_complete.values()
+        for artifact in snapshot_artifacts.get(snapshot["id"], [])
+    )
+    scope_uncertain = (
+        not latest_by_scope
+        or len(latest_complete) != len(latest_by_scope)
+        or parser_uncertainty
+    )
     findings: list[dict[str, Any]] = []
     dependency_states: list[dict[str, Any]] = []
     for dep in dep_nodes:
@@ -168,7 +178,7 @@ def analyze_graph(
         )
         if active_users:
             status = "active_dependency"
-        elif latest_by_scope and len(latest_complete) != len(latest_by_scope):
+        elif scope_uncertain:
             status = "unknown"
         elif all_users:
             status = "historical_dependency"
@@ -182,6 +192,10 @@ def analyze_graph(
                 "artifact_id": item["id"], "path": _metadata(item).get("path"),
                 "identity": _artifact_identity(item),
             } for item in sorted(active_users, key=lambda item: item["id"])],
+            "evidence_sources": [
+                source for source in (_metadata(dep).get("evidence_sources") or [])
+                if isinstance(source, dict)
+            ],
             "snapshot_ids": active_snapshot_ids,
         })
         if len(active_ids) > critical_threshold:
