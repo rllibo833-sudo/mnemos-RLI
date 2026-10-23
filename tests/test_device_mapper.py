@@ -278,7 +278,7 @@ class DeviceMapperTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             path = root / "large.elf"
-            original_bytes = bytearray(b"\\x7fELF" + b"A" * 251)
+            original_bytes = bytearray(b"\x7fELF" + b"A" * 251)
             path.write_bytes(original_bytes)
             original = path.stat()
             database = root / "memory.sqlite3"

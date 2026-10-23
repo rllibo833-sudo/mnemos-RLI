@@ -647,8 +647,8 @@ def _sample_sha256(path: Path, file_size: int) -> str | None:
         max(0, file_size - window),
     })
     digest = hashlib.sha256()
-    digest.update(b"mnemos-sampled-content-v1\\0")
-    digest.update(str(file_size).encode("ascii") + b"\\0")
+    digest.update(b"mnemos-sampled-content-v1\0")
+    digest.update(str(file_size).encode("ascii") + b"\0")
     try:
         with path.open("rb") as stream:
             for offset in offsets:
@@ -656,7 +656,7 @@ def _sample_sha256(path: Path, file_size: int) -> str | None:
                 chunk = stream.read(window)
                 if len(chunk) != window:
                     return None
-                digest.update(str(offset).encode("ascii") + b"\\0")
+                digest.update(str(offset).encode("ascii") + b"\0")
                 digest.update(len(chunk).to_bytes(8, "big"))
                 digest.update(chunk)
     except OSError:
