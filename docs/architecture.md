@@ -16,6 +16,7 @@ Mnemos is a **Living Knowledge Network**: a durable, inspectable memory graph th
 - **Cloud MCP:** Supabase Edge Function with owner-scoped PostgreSQL reads and writes, using a parallel set of tools.
 - **Offline device mapper:** opt-in scoped inventory, bounded ELF/PE/Mach-O static metadata parsing, full-hash limits, sampled fingerprints for oversized files, and scan-completeness diagnostics.
 - **Binary evidence graph:** versioned artifact nodes, shared dependency nodes, provenance records, depends_on and superseded_by edges, and deterministic graph reconciliation/validation.
+- **Analysis layer:** deterministic aggregation stores fingerprinted `analysis_result` records and transactional outbox entries. Findings retain source snapshot IDs, artifact identities, paths, parser status, and explicit unknown/incomplete-scope states; version-bearing library names are review flags, not vulnerability claims.
 
 ## Binary evidence and change semantics
 

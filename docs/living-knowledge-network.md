@@ -17,6 +17,7 @@ Audit target: `main` at the current repository head; re-audit after each impleme
 - `tests/test_store.py` and `tests/test_mcp_server.py`: baseline local store/adapter tests.
 - src/mnemos/device_mapper.py: opt-in offline binary inventory, bounded ELF/PE/Mach-O metadata parsing, hashing limits, and explicit scan completeness.
 - src/mnemos/evolution.py: deterministic, idempotent dependency graph reconstruction and validation, preserving historical artifact evidence.
+- src/mnemos/analysis.py: deterministic aggregation and provenance-bearing conclusions; missing dependencies are asserted only across adjacent complete snapshots of the exact same scope with current parser validation successful.
 - Existing docs for data format, cloud connection, agent integration, and recovery.
 
 ### Binary evidence graph — current implementation
