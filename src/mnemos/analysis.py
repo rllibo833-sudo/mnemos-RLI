@@ -120,14 +120,25 @@ def analyze_graph(
     if selected_paths:
         snapshots = [item for item in snapshots if _scope(item) == selected_paths]
 
-    by_scope: dict[tuple[str, ...], list[dict[str, Any]]] = {}
+    def scope_identity(snapshot: dict[str, Any]) -> tuple[str, str, tuple[str, ...]]:
+        metadata = _metadata(snapshot)
+        return (
+            str(metadata.get("device_id") or "legacy-device"),
+            str(metadata.get("host_env") or "legacy-host"),
+            _scope(snapshot),
+        )
+
+    by_scope: dict[tuple[str, str, tuple[str, ...]], list[dict[str, Any]]] = {}
     for snapshot in snapshots:
-        scope = _scope(snapshot)
-        if scope:
-            by_scope.setdefault(scope, []).append(snapshot)
+        identity = scope_identity(snapshot)
+        if identity[2]:
+            by_scope.setdefault(identity, []).append(snapshot)
     for items in by_scope.values():
-        items.sort(key=lambda item: (item.get("created_at", ""), item["id"]))
-    latest_by_scope = {scope: items[-1] for scope, items in by_scope.items()}
+        items.sort(key=lambda item: (
+            int(_metadata(item).get("observation_ts_ns") or 0),
+            item.get("created_at", ""), item["id"],
+        ))
+    latest_by_scope = {identity: items[-1] for identity, items in by_scope.items()}
     source_snapshot_ids = sorted(item["id"] for item in latest_by_scope.values())
 
     snapshot_artifacts: dict[str, list[dict[str, Any]]] = {}
@@ -299,24 +310,26 @@ def analyze_graph(
 
     missing_results: list[dict[str, Any]] = []
     unknown_scopes: list[dict[str, Any]] = []
-    for scope, items in sorted(by_scope.items()):
+    for identity, items in sorted(by_scope.items()):
+        device_id, host_env, scope = identity
         current = items[-1]
+        identity_fields = {"device_id": device_id, "host_env": host_env}
         if not _scan_complete(current):
-            unknown_scopes.append({"scope": list(scope), "snapshot_id": current["id"], "reason": "scope_incomplete"})
+            unknown_scopes.append({**identity_fields, "scope": list(scope), "snapshot_id": current["id"], "reason": "scope_incomplete"})
             continue
         if len(items) < 2:
-            unknown_scopes.append({"scope": list(scope), "snapshot_id": current["id"], "reason": "no_previous_snapshot"})
+            unknown_scopes.append({**identity_fields, "scope": list(scope), "snapshot_id": current["id"], "reason": "no_previous_snapshot"})
             continue
         previous = items[-2]
         if not _scan_complete(previous):
-            unknown_scopes.append({"scope": list(scope), "snapshot_id": current["id"],
+            unknown_scopes.append({**identity_fields, "scope": list(scope), "snapshot_id": current["id"],
                                    "previous_snapshot_id": previous["id"], "reason": "previous_scope_incomplete"})
             continue
         current_artifacts = snapshot_artifacts.get(current["id"], [])
         failed = [item for item in current_artifacts
                   if (_metadata(item).get("binary_details") or {}).get("status") != "parsed"]
         if failed:
-            unknown_scopes.append({"scope": list(scope), "snapshot_id": current["id"],
+            unknown_scopes.append({**identity_fields, "scope": list(scope), "snapshot_id": current["id"],
                                    "reason": "failed_validation", "artifact_ids": sorted(item["id"] for item in failed)})
             continue
         previous_deps = _dependencies_for_artifacts(snapshot_artifacts.get(previous["id"], []), links, by_id)
@@ -330,6 +343,7 @@ def analyze_graph(
                 "evidence": {
                     "format": fmt, "name": name, "previous_snapshot_id": previous["id"],
                     "current_snapshot_id": current["id"], "scope": list(scope),
+                    "device_id": device_id, "host_env": host_env,
                     "status": "proven_absent", "previous_dependency_ids": sorted(previous_deps[key]),
                     "current_dependency_ids": sorted(current_deps.get(key, [])),
                 },
@@ -342,14 +356,20 @@ def analyze_graph(
     dependency_states.sort(key=lambda item: (str(item["format"]), str(item["name"]), item["dependency_id"]))
     graph_fingerprint = _hash({
         "snapshots": [{"id": item["id"], "fingerprint": _metadata(item).get("fingerprint"),
-                       "complete": _scan_complete(item), "scope": _scope(item)}
+                       "complete": _scan_complete(item), "scope": _scope(item),
+                       "device_id": scope_identity(item)[0], "host_env": scope_identity(item)[1]}
                       for item in sorted(latest_by_scope.values(), key=lambda item: item["id"])],
         "artifacts": [{"id": item["id"], "metadata": _metadata(item)}
-                      for item in sorted((item for item in memories if item.get("kind") == "binary_artifact"), key=lambda item: item["id"])],
-        "dependencies": [{"id": item["id"], "metadata": _metadata(item)} for item in sorted(dep_nodes, key=lambda item: item["id"])],
+                      for item in sorted((item for item in memories if item.get("kind") == "binary_artifact"
+                                          and (not selected_paths or item["id"] in scoped_artifact_ids)), key=lambda item: item["id"])],
+        "dependencies": [{"id": item["id"], "metadata": _metadata(item)}
+                         for item in sorted(dep_nodes, key=lambda item: item["id"])
+                         if not selected_paths or any(user["id"] in scoped_artifact_ids for user in dep_links.get(item["id"], []))],
         "links": [{key: link[key] for key in ("source_id", "target_id", "relation")}
                   for link in sorted(links, key=lambda link: (link["source_id"], link["target_id"], link["relation"]))
-                  if link.get("relation") in {"contains_artifact", "depends_on", "superseded_by"}],
+                  if link.get("relation") in {"contains_artifact", "depends_on", "superseded_by"}
+                  and (not selected_paths or link.get("source_id") in scoped_artifact_ids
+                       or link.get("target_id") in scoped_artifact_ids)],
     })
     input_fingerprint = _hash({
         "rule_set": RULE_SET, "graph_fingerprint": graph_fingerprint,

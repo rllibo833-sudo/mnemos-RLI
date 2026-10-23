@@ -6,6 +6,7 @@ import hashlib
 import io
 import json
 import sys
+import time
 from pathlib import Path
 
 from .device_mapper import collect_device_map
@@ -109,8 +110,24 @@ def main(argv: list[str] | None = None) -> int:
                 return 130
         elif args.command == "map-device":
             report = collect_device_map(args.path, max_files=args.max_files)
+            # Explicit host and scope identity keeps imported graph history isolated.
+            report["device_id"] = store.device_id()
+            system = str((report.get("device") or {}).get("os") or sys.platform).casefold()
+            environment = str((report.get("device") or {}).get("environment_class") or "")
+            report["host_env"] = (
+                "linux-termux" if "termux" in environment or "android" in system
+                else "macos" if system == "darwin"
+                else "windows" if system == "windows"
+                else "linux" if system == "linux"
+                else system
+            )
+            report["scope_path"] = sorted({
+                str(Path(path).expanduser().resolve()) for path in args.path
+            })
+            report["observation_ts_ns"] = time.time_ns()
             fingerprint_payload = dict(report)
             fingerprint_payload.pop("captured_at", None)
+            fingerprint_payload.pop("observation_ts_ns", None)
             # Observation timestamps order artifact history but must not make an
             # unchanged device snapshot look different on every scan.
             fingerprint_payload["artifacts"] = [
@@ -122,7 +139,25 @@ def main(argv: list[str] | None = None) -> int:
             ).hexdigest()
             report["fingerprint"] = fingerprint
             snapshots = store.list_all(kind="device_snapshot")
-            latest_snapshot = max(snapshots, key=lambda item: (item.get("created_at", ""), item["id"]), default=None)
+            scope_identity = (report["device_id"], report["host_env"], report["scope_path"])
+            scoped_snapshots = [
+                item for item in snapshots
+                if (
+                    (item.get("metadata") or {}).get("device_id", report["device_id"]),
+                    (item.get("metadata") or {}).get("host_env", report["host_env"]),
+                    (item.get("metadata") or {}).get("scope_path",
+                        sorted(str(Path(path).expanduser().resolve()) for path in
+                               ((item.get("metadata") or {}).get("scan") or {}).get("scope", []))),
+                ) == scope_identity
+            ]
+            latest_snapshot = max(
+                scoped_snapshots,
+                key=lambda item: (
+                    int((item.get("metadata") or {}).get("observation_ts_ns") or 0),
+                    item.get("created_at", ""), item["id"],
+                ),
+                default=None,
+            )
             if latest_snapshot and (latest_snapshot.get("metadata") or {}).get("fingerprint") == fingerprint:
                 snapshot = latest_snapshot
             else:

@@ -304,6 +304,39 @@ class DeviceMapperTests(unittest.TestCase):
             self.assertEqual(len(artifacts), 2)
             self.assertEqual(len({item["metadata"]["sample_sha256"] for item in artifacts}), 2)
 
+    def test_snapshot_idempotency_isolated_by_scope_and_returns_to_prior_scope(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            scope_a, scope_b = root / "prefix-bin", root / "other-bin"
+            scope_a.mkdir()
+            scope_b.mkdir()
+            (scope_a / "a.elf").write_bytes(b"\x7fELFscope-a")
+            (scope_b / "b.elf").write_bytes(b"\x7fELFscope-b")
+            database = root / "memory.sqlite3"
+
+            def scan(path):
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    self.assertEqual(main(["--db", str(database), "map-device", "--path", str(path)]), 0)
+                return json.loads(output.getvalue())["snapshot_id"]
+
+            first_a, first_b, second_a = scan(scope_a), scan(scope_b), scan(scope_a)
+            snapshots = MemoryStore(database).list_all(kind="device_snapshot")
+            self.assertEqual(first_a, second_a)
+            self.assertNotEqual(first_a, first_b)
+            self.assertEqual(len(snapshots), 2)
+
+    def test_daemon_once_repeated_does_not_duplicate_snapshot(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            binary = root / "daemon.elf"
+            binary.write_bytes(b"\x7fELFdaemon")
+            database = root / "memory.sqlite3"
+            for _ in range(2):
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                    self.assertEqual(main(["--db", str(database), "daemon", "--path", str(binary), "--once"]), 0)
+            self.assertEqual(len(MemoryStore(database).list_all(kind="device_snapshot")), 1)
+
     def test_device_map_persists_offline_snapshot_and_artifact_links(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
