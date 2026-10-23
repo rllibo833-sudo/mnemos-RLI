@@ -1,6 +1,9 @@
 """Command-line interface for the Mnemos local memory engine."""
 
 import argparse
+import contextlib
+import hashlib
+import io
 import json
 import sys
 from pathlib import Path
@@ -73,7 +76,8 @@ def main(argv: list[str] | None = None) -> int:
                 scan_args.extend(["--path", path])
             scan_args.extend(["--max-files", str(args.max_files)])
             def scan() -> int:
-                return main(scan_args)
+                with contextlib.redirect_stdout(io.StringIO()):
+                    return main(scan_args)
             try:
                 return run_daemon(scan, interval_seconds=args.interval, once=args.once,
                                   emit=lambda message: print(message, file=sys.stderr))
@@ -81,12 +85,23 @@ def main(argv: list[str] | None = None) -> int:
                 return 130
         elif args.command == "map-device":
             report = collect_device_map(args.path, max_files=args.max_files)
-            snapshot = store.add(
-                f"Device map: {report['device']['os']} {report['device']['os_release']} ({report['device']['architecture']})",
-                kind="device_snapshot",
-                source="mnemos-device-mapper",
-                metadata=report,
-            )
+            fingerprint_payload = dict(report)
+            fingerprint_payload.pop("captured_at", None)
+            fingerprint = hashlib.sha256(
+                json.dumps(fingerprint_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            ).hexdigest()
+            report["fingerprint"] = fingerprint
+            snapshots = store.list_all(kind="device_snapshot")
+            latest_snapshot = max(snapshots, key=lambda item: (item.get("created_at", ""), item["id"]), default=None)
+            if latest_snapshot and (latest_snapshot.get("metadata") or {}).get("fingerprint") == fingerprint:
+                snapshot = latest_snapshot
+            else:
+                snapshot = store.add(
+                    f"Device map: {report['device']['os']} {report['device']['os_release']} ({report['device']['architecture']})",
+                    kind="device_snapshot",
+                    source="mnemos-device-mapper",
+                    metadata=report,
+                )
             artifact_ids = []
             dependency_ids = {}
             existing_dependency_ids = {}

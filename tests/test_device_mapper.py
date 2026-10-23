@@ -192,6 +192,7 @@ class DeviceMapperTests(unittest.TestCase):
             artifacts = [item for item in memories if item["kind"] == "binary_artifact"]
             self.assertEqual(len(dependencies), 1)
             self.assertEqual(len(artifacts), 3)
+            self.assertEqual(len([item for item in memories if item["kind"] == "device_snapshot"]), 3)
             dependency_links = [link for link in store.links() if link["relation"] == "depends_on"]
             self.assertEqual(len(dependency_links), 3)
             superseded_links = [link for link in store.links() if link["relation"] == "superseded_by"]
