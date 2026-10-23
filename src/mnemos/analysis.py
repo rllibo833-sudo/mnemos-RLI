@@ -131,7 +131,7 @@ def analyze_graph(
     source_snapshot_ids = sorted(item["id"] for item in latest_by_scope.values())
 
     snapshot_artifacts: dict[str, list[dict[str, Any]]] = {}
-    for snapshot in latest_by_scope.values():
+    for snapshot in snapshots:
         contained = {
             link["target_id"] for link in links
             if link.get("source_id") == snapshot["id"] and link.get("relation") == "contains_artifact"
