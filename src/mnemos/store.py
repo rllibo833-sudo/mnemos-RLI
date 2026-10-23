@@ -168,6 +168,45 @@ class MemoryStore:
             self._enqueue(db, "memory", memory_id, item)
         return item
 
+
+    def add_once(
+        self, content: str, *, kind: str, fingerprint: str,
+        tags: Iterable[str] = (), source: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> tuple[dict[str, Any], bool]:
+        """Atomically insert a fingerprinted record once and enqueue it with the record."""
+        content = content.strip()
+        if not content or not fingerprint.strip():
+            raise ValueError("Content and fingerprint must not be empty.")
+        metadata_value = dict(metadata or {})
+        metadata_value["fingerprint"] = fingerprint
+        tags_value = sorted({str(tag).strip() for tag in tags if str(tag).strip()})
+        with self._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            rows = db.execute(
+                "SELECT * FROM memories WHERE kind = ? ORDER BY created_at, id", (kind,)
+            ).fetchall()
+            for row in rows:
+                existing = self._memory(row)
+                if (existing.get("metadata") or {}).get("fingerprint") == fingerprint:
+                    return existing, False
+            now = utc_now()
+            item = {
+                "id": str(uuid.uuid4()), "content": content,
+                "kind": kind.strip() or "note", "tags": tags_value,
+                "source": source, "metadata": metadata_value,
+                "created_at": now, "updated_at": now,
+            }
+            db.execute(
+                """INSERT INTO memories
+                (id, content, kind, tags_json, source, metadata_json, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (item["id"], item["content"], item["kind"], json.dumps(item["tags"]),
+                 item["source"], json.dumps(item["metadata"], ensure_ascii=False, sort_keys=True), now, now),
+            )
+            self._enqueue(db, "memory", item["id"], item)
+        return item, True
+
     def list(self, *, limit: int = 100) -> list[dict[str, Any]]:
         with self._connect() as db:
             rows = db.execute(
