@@ -356,7 +356,7 @@ def _inspect_pe(stream: Any, dos_header: bytes) -> dict[str, Any]:
             stream.seek(export_offset)
             raw = stream.read(40)
             if len(raw) == 40:
-                (_, _, _, name_rva, ordinal_base, function_count, name_count,
+                (_, _, _, _, name_rva, ordinal_base, function_count, name_count,
                  functions_rva, names_rva, ordinals_rva) = struct.unpack("<IIHHIIIIIII", raw)
                 result["export_library"] = read_c_string(rva_offset(name_rva)) if rva_offset(name_rva) is not None else ""
                 function_count = min(function_count, 10000)
