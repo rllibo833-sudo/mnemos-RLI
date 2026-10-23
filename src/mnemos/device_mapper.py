@@ -244,17 +244,21 @@ def _inspect_elf(stream: Any, header: bytes) -> dict[str, Any]:
         return stream.read(size)
 
     names = b""
-    if string_index < len(raw_sections):
+    if string_index and string_index >= len(raw_sections):
+        base["analysis_limits"].append("invalid_section_name_table_index")
+    elif string_index < len(raw_sections):
         section = raw_sections[string_index]
         if section["size"] <= 8 * 1024 * 1024:
             names = read_region(section["offset"], section["size"])
+        else:
+            base["analysis_limits"].append("section_name_table_exceeds_limit")
 
     def string_at(table: bytes, offset: int) -> str:
         if offset < 0 or offset >= len(table):
             return ""
         end = table.find(bytes((0,)), offset, min(len(table), offset + 4096))
         if end < 0:
-            end = min(len(table), offset + 4096)
+            return ""
         return table[offset:end].decode("utf-8", errors="replace")
 
     for section in raw_sections:
@@ -270,12 +274,18 @@ def _inspect_elf(stream: Any, header: bytes) -> dict[str, Any]:
     symbol_format = endian + ("IBBHQQ" if bits == 64 else "IIIBBH")
     symbol_size = struct.calcsize(symbol_format)
     for section in raw_sections:
-        if section["type_code"] not in (2, 11) or section["link"] >= len(raw_sections):
+        if section["type_code"] not in (2, 11):
+            continue
+        if section["link"] >= len(raw_sections):
+            base["analysis_limits"].append(f"symbols_skipped_invalid_string_table_{section['index']}")
             continue
         if section["size"] > 16 * 1024 * 1024:
             base["analysis_limits"].append(f"symbols_skipped_large_section_{section['index']}")
             continue
         symbol_strings_section = raw_sections[section["link"]]
+        if symbol_strings_section["size"] > 8 * 1024 * 1024:
+            base["analysis_limits"].append(f"symbols_skipped_large_string_table_{section['index']}")
+            continue
         strings = read_region(symbol_strings_section["offset"], symbol_strings_section["size"])
         entry_size = section["entry_size"] or symbol_size
         if entry_size < symbol_size or entry_size == 0:
