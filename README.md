@@ -50,7 +50,7 @@ The cloud MCP Edge Function is deployed, and a single-account authenticated roun
 
 A memory has an ID, content, kind, tags, optional source and metadata, and creation/update timestamps. A link is a directed relationship with a caller-defined type. Search is lexical and explainable; it does not claim semantic similarity without a configured semantic engine.
 
-Automatic whole-disk scanning, robust historical revisions, contradiction reconciliation, semantic retrieval, and evidence-grounded AI synthesis are **not yet implemented**. The local-first contract defines these boundaries without claiming they already work. Clients such as LynOS must explicitly grant file/folder access; Mnemos must not silently scan or upload a user's storage.
+Whole-disk scanning is intentionally not automatic. The offline device mapper records OS/runtime/tool availability and can inspect explicitly selected files or directories for ELF, PE, Mach-O, WebAssembly, and archive signatures, SHA-256, and metadata without executing binaries. It is an initial REA bridge, not a disassembler: instruction decoding, symbol/dependency analysis, and evidence-grounded AI synthesis are **not yet implemented**. Robust historical revisions, contradiction reconciliation, and semantic retrieval are also not yet implemented. The local-first contract defines these boundaries without claiming they already work. Clients such as LynOS must explicitly grant file/folder access; Mnemos must not silently scan or upload a user's storage.
 
 ## Development
 

@@ -5,6 +5,7 @@ import json
 import sys
 from pathlib import Path
 
+from .device_mapper import collect_device_map
 from .graph import render_graph
 from .store import MemoryStore
 
@@ -34,6 +35,9 @@ def _parser() -> argparse.ArgumentParser:
     export.add_argument("--output", default="mnemos-export.json")
     imp = commands.add_parser("import", help="Import a Mnemos JSON export without overwriting existing IDs.")
     imp.add_argument("input")
+    mapping = commands.add_parser("map-device", help="Inventory this device offline; scan only explicitly supplied paths.")
+    mapping.add_argument("--path", action="append", default=[], help="File or directory to inspect for binary artifacts; repeatable.")
+    mapping.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected across selected directories.")
     commands.add_parser("doctor", help="Check local SQLite integrity and relationship constraints.")
     commands.add_parser("sync-status", help="Show device identity and locally queued changes.")
     pending = commands.add_parser("outbox", help="List pending local changes awaiting sync.")
@@ -49,6 +53,29 @@ def main(argv: list[str] | None = None) -> int:
         store = MemoryStore(args.db)
         if args.command == "init":
             print(f"Mnemos database ready: {store.path}")
+        elif args.command == "map-device":
+            report = collect_device_map(args.path, max_files=args.max_files)
+            snapshot = store.add(
+                f"Device map: {report['device']['os']} {report['device']['os_release']} ({report['device']['architecture']})",
+                kind="device_snapshot",
+                source="mnemos-device-mapper",
+                metadata=report,
+            )
+            artifact_ids = []
+            for artifact in report["artifacts"]:
+                record = store.add(
+                    f"Binary artifact: {artifact['path']}",
+                    kind="binary_artifact",
+                    source="mnemos-device-mapper",
+                    metadata=artifact,
+                )
+                store.link(snapshot["id"], record["id"], relation="contains_artifact")
+                artifact_ids.append(record["id"])
+            print(json.dumps({
+                "snapshot_id": snapshot["id"],
+                "artifact_records": len(artifact_ids),
+                "report": report,
+            }, ensure_ascii=False, indent=2))
         elif args.command == "doctor":
             report = store.diagnostics()
             print(json.dumps(report, ensure_ascii=False, indent=2))
