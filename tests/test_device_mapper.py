@@ -38,8 +38,8 @@ class DeviceMapperTests(unittest.TestCase):
             header = bytearray(64)
             header[:4] = bytes((127, 69, 76, 70))
             header[4:6] = bytes((2, 1))
-            shstr = b"\\0.shstrtab\\0.strtab\\0.symtab\\0.text\\0"
-            strtab = b"\\0demo_function\\0"
+            shstr = bytes((0,)) + b".shstrtab" + bytes((0,)) + b".strtab" + bytes((0,)) + b".symtab" + bytes((0,)) + b".text" + bytes((0,))
+            strtab = bytes((0,)) + b"demo_function" + bytes((0,))
             symtab = struct.pack("<IBBHQQ", 0, 0, 0, 0, 0, 0) + struct.pack("<IBBHQQ", 1, 0x12, 0, 4, 0x401000, 12)
             offset_shstr = 64
             offset_strtab = offset_shstr + len(shstr)
@@ -59,7 +59,7 @@ class DeviceMapperTests(unittest.TestCase):
             data[offset_shstr:offset_shstr + len(shstr)] = shstr
             data[offset_strtab:offset_strtab + len(strtab)] = strtab
             data[offset_symtab:offset_symtab + len(symtab)] = symtab
-            data[offset_text:offset_text + 16] = b"\\x90" * 16
+            data[offset_text:offset_text + 16] = bytes((0x90,)) * 16
             for index, section in enumerate(sections):
                 start = offset_sections + index * 64
                 data[start:start + 64] = section
