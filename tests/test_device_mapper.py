@@ -178,18 +178,22 @@ class DeviceMapperTests(unittest.TestCase):
             for _ in range(2):
                 with contextlib.redirect_stdout(io.StringIO()):
                     self.assertEqual(main(["--db", str(database), "map-device", "--path", str(path)]), 0)
+            copy_path = root / "dynamic-copy.elf"
+            copy_path.write_bytes(data)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["--db", str(database), "map-device", "--path", str(root)]), 0)
             data[0x2F0] = 0xA5
             path.write_bytes(data)
             with contextlib.redirect_stdout(io.StringIO()):
-                self.assertEqual(main(["--db", str(database), "map-device", "--path", str(path)]), 0)
+                self.assertEqual(main(["--db", str(database), "map-device", "--path", str(root)]), 0)
             store = MemoryStore(database)
             memories = store.list(limit=10000)
             dependencies = [item for item in memories if item["kind"] == "runtime_dependency"]
             artifacts = [item for item in memories if item["kind"] == "binary_artifact"]
             self.assertEqual(len(dependencies), 1)
-            self.assertEqual(len(artifacts), 2)
+            self.assertEqual(len(artifacts), 3)
             dependency_links = [link for link in store.links() if link["relation"] == "depends_on"]
-            self.assertEqual(len(dependency_links), 2)
+            self.assertEqual(len(dependency_links), 3)
             superseded_links = [link for link in store.links() if link["relation"] == "superseded_by"]
             self.assertEqual(len(superseded_links), 1)
             self.assertEqual(dependencies[0]["metadata"]["name"], "libshared.so")
