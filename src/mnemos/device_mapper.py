@@ -195,6 +195,206 @@ def _inspect_elf(stream: Any, header: bytes) -> dict[str, Any]:
     return base
 
 
+
+def _inspect_pe(stream: Any, dos_header: bytes) -> dict[str, Any]:
+    """Parse bounded PE sections, imports, and exports without loading the image."""
+    file_size = os.fstat(stream.fileno()).st_size
+    if len(dos_header) < 64:
+        return {"status": "truncated_dos_header", "format": "PE"}
+    pe_offset = struct.unpack_from("<I", dos_header, 0x3C)[0]
+    if pe_offset > file_size or 24 > file_size - pe_offset:
+        return {"status": "invalid_pe_offset", "format": "PE"}
+    stream.seek(pe_offset)
+    signature_and_coff = stream.read(24)
+    if len(signature_and_coff) != 24 or signature_and_coff[:4] != bytes((80, 69, 0, 0)):
+        return {"status": "invalid_pe_header", "format": "PE"}
+    machine, section_count, timestamp, symbol_pointer, symbol_count, optional_size, characteristics = struct.unpack_from("<HHIIIHH", signature_and_coff, 4)
+    result: dict[str, Any] = {
+        "status": "parsed", "format": "PE",
+        "architecture": PE_MACHINES.get(machine, f"machine-0x{machine:04x}"),
+        "machine_code": machine, "section_count": section_count,
+        "timestamp": timestamp, "characteristics": characteristics,
+        "sections": [], "imports": [], "exports": [], "analysis_limits": [],
+    }
+    if section_count > 4096 or optional_size > 4096 or optional_size < 2:
+        result["analysis_limits"].append("invalid_or_excessive_pe_tables")
+        return result
+    optional = stream.read(optional_size)
+    if len(optional) != optional_size:
+        result["analysis_limits"].append("truncated_optional_header")
+        return result
+    magic = struct.unpack_from("<H", optional, 0)[0]
+    if magic == 0x10B:
+        bits, directory_offset, count_offset, image_base_offset = 32, 96, 92, 28
+        image_base_format = "<I"
+    elif magic == 0x20B:
+        bits, directory_offset, count_offset, image_base_offset = 64, 112, 108, 24
+        image_base_format = "<Q"
+    else:
+        result["analysis_limits"].append("unsupported_optional_header")
+        return result
+    if len(optional) < directory_offset:
+        result["analysis_limits"].append("truncated_optional_header")
+        return result
+    result.update({
+        "bits": bits, "optional_header": "PE32" if bits == 32 else "PE32+",
+        "entry_point": hex(struct.unpack_from("<I", optional, 16)[0]),
+        "image_base": hex(struct.unpack_from(image_base_format, optional, image_base_offset)[0]),
+        "subsystem": struct.unpack_from("<H", optional, 68)[0] if len(optional) >= 70 else None,
+    })
+    directory_count = struct.unpack_from("<I", optional, count_offset)[0] if len(optional) >= count_offset + 4 else 0
+    directory_count = min(directory_count, (len(optional) - directory_offset) // 8, 16)
+    directories = [struct.unpack_from("<II", optional, directory_offset + i * 8) for i in range(directory_count)]
+    section_table_offset = pe_offset + 24 + optional_size
+    table_size = section_count * 40
+    if section_table_offset > file_size or table_size > file_size - section_table_offset:
+        result["analysis_limits"].append("section_table_out_of_bounds")
+        return result
+    stream.seek(section_table_offset)
+    sections = []
+    for index in range(section_count):
+        raw = stream.read(40)
+        if len(raw) != 40:
+            result["analysis_limits"].append("truncated_section_table")
+            return result
+        name = raw[:8].split(bytes((0,)), 1)[0].decode("ascii", errors="replace")
+        virtual_size, virtual_address, raw_size, raw_offset = struct.unpack_from("<IIII", raw, 8)
+        if raw_offset > file_size or raw_size > file_size - raw_offset:
+            result["analysis_limits"].append(f"section_{index}_out_of_bounds")
+            raw_size = 0
+        section = {
+            "name": name or f"section_{index}", "virtual_address": virtual_address,
+            "virtual_size": virtual_size, "file_offset": raw_offset, "size_bytes": raw_size,
+            "characteristics": struct.unpack_from("<I", raw, 36)[0],
+        }
+        sections.append(section)
+        result["sections"].append(section.copy())
+
+    def rva_offset(rva: int, size: int = 1) -> int | None:
+        if rva == 0:
+            return None
+        for section in sections:
+            span = max(section["virtual_size"], section["size_bytes"])
+            delta = rva - section["virtual_address"]
+            if 0 <= delta < span and delta <= section["size_bytes"] and size <= section["size_bytes"] - delta:
+                offset = section["file_offset"] + delta
+                if offset <= file_size and size <= file_size - offset:
+                    return offset
+        # Headers can contain RVAs directly.
+        if rva < section_table_offset and size <= section_table_offset - rva and rva <= file_size and size <= file_size - rva:
+            return rva
+        return None
+
+    def read_c_string(offset: int, limit: int = 4096) -> str:
+        if offset < 0 or offset >= file_size:
+            return ""
+        stream.seek(offset)
+        raw = stream.read(min(limit, file_size - offset))
+        raw = raw.split(bytes((0,)), 1)[0]
+        return raw.decode("utf-8", errors="replace")
+
+    # IMAGE_DIRECTORY_ENTRY_IMPORT = 1. Import descriptors are 20 bytes.
+    if len(directories) > 1:
+        import_rva, import_size = directories[1]
+        import_offset = rva_offset(import_rva, 20) if import_rva else None
+        if import_rva and import_offset is None:
+            result["analysis_limits"].append("import_directory_rva_invalid")
+        elif import_offset is not None:
+            count = min(import_size // 20 if import_size else 256, 256)
+            stream.seek(import_offset)
+            for _ in range(count):
+                descriptor = stream.read(20)
+                if len(descriptor) != 20:
+                    result["analysis_limits"].append("truncated_import_directory")
+                    break
+                original_thunk, stamp, chain, name_rva, first_thunk = struct.unpack("<IIIII", descriptor)
+                if not any((original_thunk, stamp, chain, name_rva, first_thunk)):
+                    break
+                name_offset = rva_offset(name_rva)
+                dll = read_c_string(name_offset) if name_offset is not None else ""
+                imported = []
+                thunk_rva = original_thunk or first_thunk
+                thunk_size = 8 if bits == 64 else 4
+                thunk_offset = rva_offset(thunk_rva, thunk_size)
+                if thunk_offset is not None:
+                    for index in range(4096):
+                        item_offset = thunk_offset + index * thunk_size
+                        if item_offset > file_size or thunk_size > file_size - item_offset:
+                            break
+                        stream.seek(item_offset)
+                        item_raw = stream.read(thunk_size)
+                        if len(item_raw) != thunk_size:
+                            break
+                        thunk = int.from_bytes(item_raw, "little")
+                        if thunk == 0:
+                            break
+                        ordinal_flag = 1 << (bits - 1)
+                        if thunk & ordinal_flag:
+                            imported.append({"ordinal": thunk & 0xFFFF})
+                        else:
+                            hint_name_offset = rva_offset(thunk, 2)
+                            if hint_name_offset is not None:
+                                name = read_c_string(hint_name_offset + 2)
+                                if name:
+                                    imported.append({"name": name})
+                        if len(imported) >= 4096:
+                            result["analysis_limits"].append("import_symbol_limit_reached")
+                            break
+                if dll:
+                    result["imports"].append({"library": dll, "symbols": imported})
+                if len(result["imports"]) >= 256:
+                    result["analysis_limits"].append("import_library_limit_reached")
+                    break
+
+    # IMAGE_DIRECTORY_ENTRY_EXPORT = 0. Export arrays are bounded by file size and caps.
+    if directories:
+        export_rva, export_size = directories[0]
+        export_offset = rva_offset(export_rva, 40) if export_rva else None
+        if export_rva and export_offset is None:
+            result["analysis_limits"].append("export_directory_rva_invalid")
+        elif export_offset is not None:
+            stream.seek(export_offset)
+            raw = stream.read(40)
+            if len(raw) == 40:
+                (_, _, _, name_rva, ordinal_base, function_count, name_count,
+                 functions_rva, names_rva, ordinals_rva) = struct.unpack("<IIHHIIIIIII", raw)
+                result["export_library"] = read_c_string(rva_offset(name_rva)) if rva_offset(name_rva) is not None else ""
+                function_count = min(function_count, 10000)
+                name_count = min(name_count, function_count, 10000)
+                functions_offset = rva_offset(functions_rva, function_count * 4) if function_count else None
+                names_offset = rva_offset(names_rva, name_count * 4) if name_count else None
+                ordinals_offset = rva_offset(ordinals_rva, name_count * 2) if name_count else None
+                name_by_index = {}
+                if names_offset is not None and ordinals_offset is not None:
+                    stream.seek(names_offset)
+                    name_rvas_raw = stream.read(name_count * 4)
+                    stream.seek(ordinals_offset)
+                    ordinal_raw = stream.read(name_count * 2)
+                    for index in range(min(len(name_rvas_raw) // 4, len(ordinal_raw) // 2)):
+                        name_rva = struct.unpack_from("<I", name_rvas_raw, index * 4)[0]
+                        ordinal_index = struct.unpack_from("<H", ordinal_raw, index * 2)[0]
+                        name_pos = rva_offset(name_rva)
+                        if name_pos is not None and ordinal_index < function_count:
+                            name_by_index[ordinal_index] = read_c_string(name_pos)
+                if functions_offset is not None:
+                    stream.seek(functions_offset)
+                    function_raw = stream.read(function_count * 4)
+                    for index in range(len(function_raw) // 4):
+                        function_rva = struct.unpack_from("<I", function_raw, index * 4)[0]
+                        if function_rva:
+                            item = {"ordinal": ordinal_base + index, "rva": hex(function_rva)}
+                            if name_by_index.get(index):
+                                item["name"] = name_by_index[index]
+                            # Export RVAs within the export directory are forwarder strings.
+                            if export_rva <= function_rva < export_rva + export_size:
+                                forwarder_offset = rva_offset(function_rva)
+                                if forwarder_offset is not None:
+                                    item["forwarder"] = read_c_string(forwarder_offset)
+                            result["exports"].append(item)
+                if function_count >= 10000 or name_count >= 10000:
+                    result["analysis_limits"].append("export_symbol_limit_reached")
+    return result
+
 def inspect_binary(path: str | Path, fmt: str | None = None) -> dict[str, Any]:
     """Read fixed-format headers only; no disassembly, dynamic loading, or execution."""
     target = Path(path)
@@ -202,21 +402,7 @@ def inspect_binary(path: str | Path, fmt: str | None = None) -> dict[str, Any]:
         with target.open("rb") as stream:
             header = stream.read(64)
             if fmt == "PE/DOS" and header.startswith(b"MZ"):
-                if len(header) < 64:
-                    return {"status": "truncated_header"}
-                pe_offset = struct.unpack_from("<I", header, 0x3C)[0]
-                stream.seek(pe_offset)
-                pe = stream.read(26)
-                if len(pe) < 26 or pe[:4] != b"PE\0\0":
-                    return {"status": "invalid_pe_header"}
-                machine, sections = struct.unpack_from("<HH", pe, 4)
-                optional_magic = struct.unpack_from("<H", pe, 24)[0]
-                return {
-                    "status": "parsed", "format": "PE",
-                    "architecture": PE_MACHINES.get(machine, f"machine-0x{machine:04x}"),
-                    "machine_code": machine, "section_count": sections,
-                    "optional_header": {0x10B: "PE32", 0x20B: "PE32+"}.get(optional_magic, "unknown"),
-                }
+                return _inspect_pe(stream, header)
             if fmt == "ELF" and header.startswith(b"\x7fELF"):
                 return _inspect_elf(stream, header)
             macho = {
