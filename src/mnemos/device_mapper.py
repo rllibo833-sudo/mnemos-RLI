@@ -506,7 +506,19 @@ def _artifact(path: Path) -> dict[str, Any] | None:
         if fmt is None and not (info.st_mode & 0o111):
             return None
         digest = _sha256(path)
+        details = inspect_binary(path, fmt)
         return {
+            "evidence": {
+                "schema": "mnemos-binary-evidence-v1",
+                "method": "static-file-metadata",
+                "source_path": str(path),
+                "sha256": digest,
+                "file_size_bytes": info.st_size,
+                "observed_mtime_ns": info.st_mtime_ns,
+                "parser": "mnemos-device-mapper",
+                "execution_performed": False,
+                "network_used": False,
+            },
             "path": str(path),
             "name": path.name,
             "format": fmt or "executable-unknown",
@@ -518,7 +530,7 @@ def _artifact(path: Path) -> dict[str, Any] | None:
                 "file exceeds 256 MiB limit or could not be read"
                 if digest is None else None
             ),
-            "binary_details": inspect_binary(path, fmt),
+            "binary_details": details,
         }
     except OSError:
         return None

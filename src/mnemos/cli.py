@@ -62,6 +62,8 @@ def main(argv: list[str] | None = None) -> int:
                 metadata=report,
             )
             artifact_ids = []
+            dependency_ids = {}
+            dependency_links = 0
             for artifact in report["artifacts"]:
                 record = store.add(
                     f"Binary artifact: {artifact['path']}",
@@ -71,9 +73,56 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 store.link(snapshot["id"], record["id"], relation="contains_artifact")
                 artifact_ids.append(record["id"])
+                details = artifact.get("binary_details") or {}
+                dependencies = []
+                for item in details.get("dependencies", []):
+                    dependencies.append({
+                        "name": item.get("name", ""),
+                        "kind": item.get("kind", "load"),
+                        "format": "Mach-O",
+                    })
+                for library in details.get("imports", []):
+                    dependencies.append({
+                        "name": library.get("library", ""),
+                        "kind": "import",
+                        "format": "PE",
+                        "symbols": library.get("symbols", []),
+                    })
+                for dependency in dependencies:
+                    name = dependency["name"].strip()
+                    if not name:
+                        continue
+                    key = (dependency["format"], name.casefold())
+                    if key not in dependency_ids:
+                        dep_record = store.add(
+                            f"Runtime dependency: {name}",
+                            kind="runtime_dependency",
+                            tags=[dependency["format"].lower(), dependency["kind"]],
+                            source="mnemos-static-binary-metadata",
+                            metadata={
+                                "schema": "mnemos-dependency-evidence-v1",
+                                "name": name,
+                                "format": dependency["format"],
+                                "kind": dependency["kind"],
+                                "symbols": dependency.get("symbols", []),
+                                "evidence": {
+                                    "artifact_sha256": artifact.get("sha256"),
+                                    "artifact_path": artifact.get("path"),
+                                    "parser_status": details.get("status"),
+                                    "method": "static-file-metadata",
+                                    "execution_performed": False,
+                                    "network_used": False,
+                                },
+                            },
+                        )
+                        dependency_ids[key] = dep_record["id"]
+                    store.link(record["id"], dependency_ids[key], relation="depends_on")
+                    dependency_links += 1
             print(json.dumps({
                 "snapshot_id": snapshot["id"],
                 "artifact_records": len(artifact_ids),
+                "dependency_records": len(dependency_ids),
+                "dependency_links": dependency_links,
                 "report": report,
             }, ensure_ascii=False, indent=2))
         elif args.command == "doctor":
