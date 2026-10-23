@@ -45,6 +45,38 @@ class DeviceMapperTests(unittest.TestCase):
             self.assertEqual(details["sections"][0]["name"], ".rdata")
             self.assertEqual(details["imports"][0]["library"], "KERNEL32.dll")
 
+    def test_extracts_pe_export_name_and_ordinal(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "exports.exe"
+            data = bytearray(0x400)
+            data[:2] = b"MZ"
+            struct.pack_into("<I", data, 0x3C, 0x80)
+            data[0x80:0x84] = bytes((80, 69, 0, 0))
+            struct.pack_into("<HHIIIHH", data, 0x84, 0x8664, 1, 0, 0, 0, 240, 0x2022)
+            optional = 0x98
+            struct.pack_into("<H", data, optional, 0x20B)
+            struct.pack_into("<I", data, optional + 16, 0x1010)
+            struct.pack_into("<Q", data, optional + 24, 0x140000000)
+            struct.pack_into("<I", data, optional + 108, 16)
+            struct.pack_into("<II", data, optional + 112, 0x1000, 40)
+            section = optional + 240
+            data[section:section + 8] = b".rdata\x00\x00"
+            struct.pack_into("<IIII", data, section + 8, 0x200, 0x1000, 0x200, 0x200)
+            struct.pack_into("<I", data, section + 36, 0x40000040)
+            struct.pack_into("<IIHHIIIIIII", data, 0x200, 0, 0, 0, 0, 0x1050, 1, 1, 1, 0x1040, 0x1044, 0x1048)
+            struct.pack_into("<I", data, 0x240, 0x1070)
+            struct.pack_into("<I", data, 0x244, 0x1060)
+            struct.pack_into("<H", data, 0x248, 0)
+            data[0x250:0x25B] = b"sample.dll\x00"
+            data[0x260:0x26E] = b"ExportedEntry\x00"
+            path.write_bytes(data)
+            details = inspect_binary(path, "PE/DOS")
+            self.assertEqual(details["status"], "parsed")
+            self.assertEqual(details["export_library"], "sample.dll")
+            self.assertEqual(details["exports"][0]["name"], "ExportedEntry")
+            self.assertEqual(details["exports"][0]["ordinal"], 1)
+            self.assertEqual(details["exports"][0]["rva"], "0x1070")
+
     def test_extracts_elf_header_metadata_without_execution(self):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "minimal.elf"
