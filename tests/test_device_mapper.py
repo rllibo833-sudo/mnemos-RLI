@@ -1,8 +1,12 @@
+import contextlib
+import io
+import json
 import struct
 import tempfile
 import unittest
 from pathlib import Path
 
+from mnemos.cli import main
 from mnemos.device_mapper import classify_binary, collect_device_map, discover_artifacts, inspect_binary
 from mnemos.store import MemoryStore
 
@@ -122,6 +126,32 @@ class DeviceMapperTests(unittest.TestCase):
             self.assertEqual(details["dynamic_status"], "parsed")
             self.assertEqual(details["dependencies"], [{"name": "libdemo.so", "kind": "needed"}])
             self.assertEqual(details["runpaths"], ["$ORIGIN/lib"])
+
+    def test_map_device_reuses_runtime_dependency_nodes_between_scans(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            path = root / "dynamic.elf"
+            data = bytearray(0x300)
+            data[:6] = b"\x7fELF\x02\x01"
+            struct.pack_into("<HHIQQQIHHHHHH", data, 16, 3, 62, 1, 0, 64, 0, 0, 64, 56, 2, 0, 0, 0)
+            struct.pack_into("<IIQQQQQQ", data, 64, 1, 4, 0, 0x400000, 0, len(data), len(data), 0x1000)
+            struct.pack_into("<IIQQQQQQ", data, 120, 2, 4, 0x100, 0x400100, 0, 64, 64, 8)
+            entries = [(1, 1), (5, 0x400180), (10, 32), (0, 0)]
+            for i, (tag, value) in enumerate(entries):
+                struct.pack_into("<qQ", data, 0x100 + i * 16, tag, value)
+            strings = b"\x00libshared.so\x00"
+            data[0x180:0x180 + len(strings)] = strings
+            path.write_bytes(data)
+            database = root / "memory.sqlite3"
+            for _ in range(2):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(main(["--db", str(database), "map-device", "--path", str(path)]), 0)
+            store = MemoryStore(database)
+            dependencies = [item for item in store.list(limit=10000) if item["kind"] == "runtime_dependency"]
+            self.assertEqual(len(dependencies), 1)
+            dependency_links = [link for link in store.links() if link["relation"] == "depends_on"]
+            self.assertEqual(len(dependency_links), 2)
+            self.assertEqual(dependencies[0]["metadata"]["name"], "libshared.so")
 
     def test_scans_only_explicit_scope_and_hashes_binary(self):
         with tempfile.TemporaryDirectory() as temp:

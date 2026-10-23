@@ -63,6 +63,16 @@ def main(argv: list[str] | None = None) -> int:
             )
             artifact_ids = []
             dependency_ids = {}
+            existing_dependency_ids = {}
+            for existing in store.list(limit=10000):
+                metadata = existing.get("metadata") or {}
+                if existing.get("kind") != "runtime_dependency" or metadata.get("schema") != "mnemos-dependency-evidence-v1":
+                    continue
+                existing_name = str(metadata.get("name", "")).strip()
+                existing_format = str(metadata.get("format", "")).strip()
+                if existing_name and existing_format:
+                    existing_dependency_ids[(existing_format, existing_name.casefold())] = existing["id"]
+            dependency_records_created = 0
             dependency_links = 0
             for artifact in report["artifacts"]:
                 record = store.add(
@@ -101,34 +111,40 @@ def main(argv: list[str] | None = None) -> int:
                         continue
                     key = (dependency["format"], name.casefold())
                     if key not in dependency_ids:
-                        dep_record = store.add(
-                            f"Runtime dependency: {name}",
-                            kind="runtime_dependency",
-                            tags=[dependency["format"].lower(), dependency["kind"]],
-                            source="mnemos-static-binary-metadata",
-                            metadata={
-                                "schema": "mnemos-dependency-evidence-v1",
-                                "name": name,
-                                "format": dependency["format"],
-                                "kind": dependency["kind"],
-                                "symbols": dependency.get("symbols", []),
-                                "evidence": {
-                                    "artifact_sha256": artifact.get("sha256"),
-                                    "artifact_path": artifact.get("path"),
-                                    "parser_status": details.get("status"),
-                                    "method": "static-file-metadata",
-                                    "execution_performed": False,
-                                    "network_used": False,
+                        if key in existing_dependency_ids:
+                            dependency_ids[key] = existing_dependency_ids[key]
+                        else:
+                            dep_record = store.add(
+                                f"Runtime dependency: {name}",
+                                kind="runtime_dependency",
+                                tags=[dependency["format"].lower(), dependency["kind"]],
+                                source="mnemos-static-binary-metadata",
+                                metadata={
+                                    "schema": "mnemos-dependency-evidence-v1",
+                                    "name": name,
+                                    "format": dependency["format"],
+                                    "kind": dependency["kind"],
+                                    "symbols": dependency.get("symbols", []),
+                                    "evidence": {
+                                        "artifact_sha256": artifact.get("sha256"),
+                                        "artifact_path": artifact.get("path"),
+                                        "parser_status": details.get("status"),
+                                        "method": "static-file-metadata",
+                                        "execution_performed": False,
+                                        "network_used": False,
+                                    },
                                 },
-                            },
-                        )
-                        dependency_ids[key] = dep_record["id"]
+                            )
+                            dependency_ids[key] = dep_record["id"]
+                            existing_dependency_ids[key] = dep_record["id"]
+                            dependency_records_created += 1
                     store.link(record["id"], dependency_ids[key], relation="depends_on")
                     dependency_links += 1
             print(json.dumps({
                 "snapshot_id": snapshot["id"],
                 "artifact_records": len(artifact_ids),
                 "dependency_records": len(dependency_ids),
+                "dependency_records_created": dependency_records_created,
                 "dependency_links": dependency_links,
                 "report": report,
             }, ensure_ascii=False, indent=2))
