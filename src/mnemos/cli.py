@@ -85,12 +85,13 @@ def main(argv: list[str] | None = None) -> int:
                 artifact_ids.append(record["id"])
                 details = artifact.get("binary_details") or {}
                 dependencies = []
-                for item in details.get("dependencies", []):
-                    dependencies.append({
-                        "name": item.get("name", ""),
-                        "kind": item.get("kind", "load"),
-                        "format": "Mach-O",
-                    })
+                if details.get("format") == "Mach-O":
+                    for item in details.get("dependencies", []):
+                        dependencies.append({
+                            "name": item.get("name", ""),
+                            "kind": item.get("kind", "load"),
+                            "format": "Mach-O",
+                        })
                 if details.get("format") == "ELF":
                     for item in details.get("dependencies", []):
                         dependencies.append({
