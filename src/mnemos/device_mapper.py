@@ -227,15 +227,65 @@ def inspect_binary(path: str | Path, fmt: str | None = None) -> dict[str, Any]:
             }
             if fmt == "Mach-O" and header[:4] in macho and len(header) >= 28:
                 endian, bits = macho[header[:4]]
+                file_size = os.fstat(stream.fileno()).st_size
                 cpu, subtype, filetype, commands, command_bytes, flags = struct.unpack_from(endian + "IIIIII", header, 4)
-                return {
+                header_size = 32 if bits == 64 else 28
+                result = {
                     "status": "parsed", "format": "Mach-O", "bits": bits,
                     "endianness": "little" if endian == "<" else "big",
                     "architecture": MACHO_CPUS.get(cpu, f"cpu-{cpu}"),
                     "cpu_type": cpu, "cpu_subtype": subtype, "file_type": filetype,
                     "load_command_count": commands, "load_command_bytes": command_bytes,
-                    "flags": flags,
+                    "flags": flags, "dependencies": [], "rpaths": [], "analysis_limits": [],
                 }
+                if header_size > file_size or commands > 4096 or command_bytes > file_size - header_size:
+                    result["analysis_limits"].append("invalid_or_excessive_load_commands")
+                    return result
+                stream.seek(header_size)
+                consumed = 0
+                for command_index in range(commands):
+                    if consumed + 8 > command_bytes:
+                        result["analysis_limits"].append("truncated_load_command_header")
+                        break
+                    command_header = stream.read(8)
+                    if len(command_header) != 8:
+                        result["analysis_limits"].append("truncated_load_command_header")
+                        break
+                    command, command_size = struct.unpack(endian + "II", command_header)
+                    if command_size < 8 or command_size > command_bytes - consumed:
+                        result["analysis_limits"].append("invalid_load_command_size")
+                        break
+                    payload = stream.read(command_size - 8)
+                    if len(payload) != command_size - 8:
+                        result["analysis_limits"].append("truncated_load_command")
+                        break
+                    # Dylib commands store a string offset at byte 8; LC_RPATH does too.
+                    dylib_commands = {
+                        0x0000000C: "load", 0x0000000D: "id",
+                        0x80000018: "weak_load", 0x8000001F: "reexport",
+                        0x80000023: "upward_load",
+                    }
+                    if command in dylib_commands or command == 0x8000001C:
+                        if command_size >= 12:
+                            name_offset = struct.unpack_from(endian + "I", payload, 0)[0]
+                            payload_string_offset = name_offset - 8
+                            if 0 <= payload_string_offset < len(payload):
+                                raw_name = payload[payload_string_offset:]
+                                raw_name = raw_name.split(bytes((0,)), 1)[0][:4096]
+                                name = raw_name.decode("utf-8", errors="replace")
+                                if name:
+                                    if command == 0x8000001C:
+                                        if len(result["rpaths"]) < 256:
+                                            result["rpaths"].append(name)
+                                    elif len(result["dependencies"]) < 2048:
+                                        result["dependencies"].append({
+                                            "name": name, "kind": dylib_commands[command],
+                                        })
+                    consumed += command_size
+                    stream.seek(header_size + consumed)
+                if consumed != command_bytes and not result["analysis_limits"]:
+                    result["analysis_limits"].append("load_command_size_mismatch")
+                return result
             if fmt == "WebAssembly" and header.startswith(b"\x00asm"):
                 version = struct.unpack_from("<I", header, 4)[0] if len(header) >= 8 else None
                 return {"status": "parsed", "format": "WebAssembly", "version": version}
