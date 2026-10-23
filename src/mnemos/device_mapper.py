@@ -111,6 +111,7 @@ def _inspect_elf_dynamic(stream: Any, header: bytes, bits: int, endian: str, fil
         result["dynamic_status"] = "dynamic_segment_capped"
     stream.seek(dyn_offset)
     tags: dict[int, list[int]] = {}
+    terminated = False
     for _ in range(min(dyn_size // entry_size, 4096)):
         raw = stream.read(entry_size)
         if len(raw) != entry_size:
@@ -120,23 +121,32 @@ def _inspect_elf_dynamic(stream: Any, header: bytes, bits: int, endian: str, fil
         else:
             tag, value = struct.unpack(endian + "qQ", raw)
         if tag == 0:
+            terminated = True
             break
         if tag in (1, 5, 10, 15, 29):
             tags.setdefault(tag, []).append(value)
+    if not terminated:
+        result["dynamic_status"] = "missing_dynamic_terminator"
+        return result
     strtab_va = next(iter(tags.get(5, [])), None)
     strtab_size = min(next(iter(tags.get(10, [])), 0), 8 * 1024 * 1024)
     strtab_offset = va_to_offset(strtab_va, strtab_size) if strtab_va is not None and strtab_size else None
     strings = b""
-    if strtab_offset is not None:
-        stream.seek(strtab_offset)
-        strings = stream.read(strtab_size)
+    if strtab_offset is None:
+        result["dynamic_status"] = "invalid_string_table"
+        return result
+    stream.seek(strtab_offset)
+    strings = stream.read(strtab_size)
+    if len(strings) != strtab_size:
+        result["dynamic_status"] = "truncated_string_table"
+        return result
 
     def dyn_string(offset: int) -> str:
         if offset < 0 or offset >= len(strings):
             return ""
         end = strings.find(bytes((0,)), offset, min(len(strings), offset + 4096))
         if end < 0:
-            end = min(len(strings), offset + 4096)
+            return ""
         return strings[offset:end].decode("utf-8", errors="replace")
 
     for offset in tags.get(1, [])[:256]:
@@ -377,6 +387,20 @@ def _inspect_pe(stream: Any, dos_header: bytes) -> dict[str, Any]:
             return rva
         return None
 
+    def rva_available(rva: int) -> int:
+        """Return bytes remaining in the single mapped file-backed region for an RVA."""
+        if rva == 0:
+            return 0
+        for section in sections:
+            delta = rva - section["virtual_address"]
+            if 0 <= delta < section["size_bytes"]:
+                if section["file_offset"] > file_size:
+                    return 0
+                return min(section["size_bytes"] - delta, file_size - section["file_offset"] - delta)
+        if rva < section_table_offset and rva <= file_size:
+            return min(section_table_offset - rva, file_size - rva)
+        return 0
+
     def read_c_string(offset: int, limit: int = 4096) -> str:
         if offset < 0 or offset >= file_size:
             return ""
@@ -392,7 +416,11 @@ def _inspect_pe(stream: Any, dos_header: bytes) -> dict[str, Any]:
         if import_rva and import_offset is None:
             result["analysis_limits"].append("import_directory_rva_invalid")
         elif import_offset is not None:
-            count = min(import_size // 20 if import_size else 256, 256)
+            available_descriptors = rva_available(import_rva) // 20
+            if import_size and import_size < 20:
+                result["analysis_limits"].append("import_directory_size_too_small")
+                available_descriptors = 0
+            count = min(import_size // 20 if import_size else available_descriptors, available_descriptors, 256)
             stream.seek(import_offset)
             for _ in range(count):
                 descriptor = stream.read(20)
@@ -409,10 +437,9 @@ def _inspect_pe(stream: Any, dos_header: bytes) -> dict[str, Any]:
                 thunk_size = 8 if bits == 64 else 4
                 thunk_offset = rva_offset(thunk_rva, thunk_size)
                 if thunk_offset is not None:
-                    for index in range(4096):
+                    thunk_count = min(4096, rva_available(thunk_rva) // thunk_size)
+                    for index in range(thunk_count):
                         item_offset = thunk_offset + index * thunk_size
-                        if item_offset > file_size or thunk_size > file_size - item_offset:
-                            break
                         stream.seek(item_offset)
                         item_raw = stream.read(thunk_size)
                         if len(item_raw) != thunk_size:
@@ -503,11 +530,13 @@ def inspect_binary(path: str | Path, fmt: str | None = None) -> dict[str, Any]:
                 b"\xfe\xed\xfa\xcf": (">", 64),
                 b"\xcf\xfa\xed\xfe": ("<", 64),
             }
-            if fmt == "Mach-O" and header[:4] in macho and len(header) >= 28:
+            if fmt == "Mach-O" and header[:4] in macho:
                 endian, bits = macho[header[:4]]
+                header_size = 32 if bits == 64 else 28
+                if len(header) < header_size:
+                    return {"status": "truncated_mach_o_header", "format": "Mach-O"}
                 file_size = os.fstat(stream.fileno()).st_size
                 cpu, subtype, filetype, commands, command_bytes, flags = struct.unpack_from(endian + "IIIIII", header, 4)
-                header_size = 32 if bits == 64 else 28
                 result = {
                     "status": "parsed", "format": "Mach-O", "bits": bits,
                     "endianness": "little" if endian == "<" else "big",
@@ -571,6 +600,8 @@ def inspect_binary(path: str | Path, fmt: str | None = None) -> dict[str, Any]:
                 return {"status": "container_signature_only", "format": fmt}
     except OSError:
         return {"status": "unreadable"}
+    except (struct.error, OverflowError, ValueError, IndexError):
+        return {"status": "malformed_binary_metadata", "format": fmt or "unknown"}
     return {"status": "unsupported_or_unknown"}
 
 

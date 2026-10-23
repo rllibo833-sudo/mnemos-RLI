@@ -64,25 +64,52 @@ def main(argv: list[str] | None = None) -> int:
             artifact_ids = []
             dependency_ids = {}
             existing_dependency_ids = {}
+            existing_artifact_ids = {}
+            latest_artifact_by_path = {}
             for existing in store.list(limit=10000):
                 metadata = existing.get("metadata") or {}
-                if existing.get("kind") != "runtime_dependency" or metadata.get("schema") != "mnemos-dependency-evidence-v1":
-                    continue
-                existing_name = str(metadata.get("name", "")).strip()
-                existing_format = str(metadata.get("format", "")).strip()
-                if existing_name and existing_format:
-                    existing_dependency_ids[(existing_format, existing_name.casefold())] = existing["id"]
+                if existing.get("kind") == "runtime_dependency" and metadata.get("schema") == "mnemos-dependency-evidence-v1":
+                    existing_name = str(metadata.get("name", "")).strip()
+                    existing_format = str(metadata.get("format", "")).strip()
+                    if existing_name and existing_format:
+                        existing_dependency_ids[(existing_format, existing_name.casefold())] = existing["id"]
+                elif existing.get("kind") == "binary_artifact":
+                    existing_path = str(metadata.get("path", "")).strip()
+                    existing_sha = metadata.get("sha256")
+                    if existing_path and existing_sha:
+                        existing_artifact_ids[(existing_path, existing_sha)] = existing["id"]
+                    if existing_path:
+                        previous = latest_artifact_by_path.get(existing_path)
+                        current_rank = (str(existing.get("created_at", "")), int(metadata.get("mtime_ns") or 0))
+                        previous_metadata = (previous or {}).get("metadata") or {}
+                        previous_rank = (str((previous or {}).get("created_at", "")), int(previous_metadata.get("mtime_ns") or 0))
+                        if previous is None or current_rank > previous_rank:
+                            latest_artifact_by_path[existing_path] = existing
+            artifact_records_created = 0
             dependency_records_created = 0
             dependency_links = 0
             for artifact in report["artifacts"]:
-                record = store.add(
-                    f"Binary artifact: {artifact['path']}",
-                    kind="binary_artifact",
-                    source="mnemos-device-mapper",
-                    metadata=artifact,
-                )
-                store.link(snapshot["id"], record["id"], relation="contains_artifact")
-                artifact_ids.append(record["id"])
+                artifact_path = str(artifact.get("path", ""))
+                artifact_sha = artifact.get("sha256")
+                identity = (artifact_path, artifact_sha) if artifact_sha else None
+                artifact_id = existing_artifact_ids.get(identity) if identity else None
+                if artifact_id is None:
+                    record = store.add(
+                        f"Binary artifact: {artifact_path}",
+                        kind="binary_artifact",
+                        source="mnemos-device-mapper",
+                        metadata=artifact,
+                    )
+                    artifact_id = record["id"]
+                    artifact_records_created += 1
+                    previous = latest_artifact_by_path.get(artifact_path)
+                    if previous and previous.get("id") != artifact_id:
+                        store.link(previous["id"], artifact_id, relation="superseded_by")
+                    if identity:
+                        existing_artifact_ids[identity] = artifact_id
+                    latest_artifact_by_path[artifact_path] = record
+                store.link(snapshot["id"], artifact_id, relation="contains_artifact")
+                artifact_ids.append(artifact_id)
                 details = artifact.get("binary_details") or {}
                 dependencies = []
                 if details.get("format") == "Mach-O":
@@ -144,6 +171,7 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps({
                 "snapshot_id": snapshot["id"],
                 "artifact_records": len(artifact_ids),
+                "artifact_records_created": artifact_records_created,
                 "dependency_records": len(dependency_ids),
                 "dependency_records_created": dependency_records_created,
                 "dependency_links": dependency_links,

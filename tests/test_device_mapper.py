@@ -144,7 +144,7 @@ class DeviceMapperTests(unittest.TestCase):
             # PT_LOAD maps virtual address 0x400000 to file offset 0.
             struct.pack_into("<IIQQQQQQ", data, 64, 1, 4, 0, 0x400000, 0, len(data), len(data), 0x1000)
             # PT_DYNAMIC at file offset 0x100, virtual address 0x400100.
-            struct.pack_into("<IIQQQQQQ", data, 120, 2, 4, 0x100, 0x400100, 0, 64, 64, 8)
+            struct.pack_into("<IIQQQQQQ", data, 120, 2, 4, 0x100, 0x400100, 0, 80, 80, 8)
             entries = [
                 (1, 1), (5, 0x400180), (10, 32), (29, 12), (0, 0),
             ]
@@ -167,7 +167,7 @@ class DeviceMapperTests(unittest.TestCase):
             data[:6] = b"\x7fELF\x02\x01"
             struct.pack_into("<HHIQQQIHHHHHH", data, 16, 3, 62, 1, 0, 64, 0, 0, 64, 56, 2, 0, 0, 0)
             struct.pack_into("<IIQQQQQQ", data, 64, 1, 4, 0, 0x400000, 0, len(data), len(data), 0x1000)
-            struct.pack_into("<IIQQQQQQ", data, 120, 2, 4, 0x100, 0x400100, 0, 64, 64, 8)
+            struct.pack_into("<IIQQQQQQ", data, 120, 2, 4, 0x100, 0x400100, 0, 80, 80, 8)
             entries = [(1, 1), (5, 0x400180), (10, 32), (0, 0)]
             for i, (tag, value) in enumerate(entries):
                 struct.pack_into("<qQ", data, 0x100 + i * 16, tag, value)
@@ -178,12 +178,39 @@ class DeviceMapperTests(unittest.TestCase):
             for _ in range(2):
                 with contextlib.redirect_stdout(io.StringIO()):
                     self.assertEqual(main(["--db", str(database), "map-device", "--path", str(path)]), 0)
+            data[0x2F0] = 0xA5
+            path.write_bytes(data)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["--db", str(database), "map-device", "--path", str(path)]), 0)
             store = MemoryStore(database)
-            dependencies = [item for item in store.list(limit=10000) if item["kind"] == "runtime_dependency"]
+            memories = store.list(limit=10000)
+            dependencies = [item for item in memories if item["kind"] == "runtime_dependency"]
+            artifacts = [item for item in memories if item["kind"] == "binary_artifact"]
             self.assertEqual(len(dependencies), 1)
+            self.assertEqual(len(artifacts), 2)
             dependency_links = [link for link in store.links() if link["relation"] == "depends_on"]
             self.assertEqual(len(dependency_links), 2)
+            superseded_links = [link for link in store.links() if link["relation"] == "superseded_by"]
+            self.assertEqual(len(superseded_links), 1)
             self.assertEqual(dependencies[0]["metadata"]["name"], "libshared.so")
+
+    def test_malformed_binary_headers_fail_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            elf = root / "truncated.elf"
+            elf.write_bytes(b"\x7fELF\x02\x01")
+            self.assertEqual(inspect_binary(elf, "ELF")["status"], "invalid_elf_header")
+
+            pe = root / "bad-offset.exe"
+            header = bytearray(64)
+            header[:2] = b"MZ"
+            struct.pack_into("<I", header, 0x3C, 0xFFFFFFF0)
+            pe.write_bytes(header)
+            self.assertEqual(inspect_binary(pe, "PE/DOS")["status"], "invalid_pe_offset")
+
+            macho = root / "truncated.macho"
+            macho.write_bytes(b"\xcf\xfa\xed\xfe" + b"\x00" * 24)
+            self.assertEqual(inspect_binary(macho, "Mach-O")["status"], "truncated_mach_o_header")
 
     def test_scans_only_explicit_scope_and_hashes_binary(self):
         with tempfile.TemporaryDirectory() as temp:
