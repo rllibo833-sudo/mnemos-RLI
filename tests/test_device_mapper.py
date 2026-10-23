@@ -30,6 +30,46 @@ class DeviceMapperTests(unittest.TestCase):
             self.assertEqual(details["entry_point"], "0x400000")
             self.assertEqual(details["section_count"], 0)
 
+
+    def test_extracts_elf_sections_and_symbols(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "symbols.elf"
+            header = bytearray(64)
+            header[:4] = b"\\x7fELF"
+            header[4:6] = bytes((2, 1))
+            shstr = b"\\0.shstrtab\\0.strtab\\0.symtab\\0.text\\0"
+            strtab = b"\\0demo_function\\0"
+            symtab = struct.pack("<IBBHQQ", 0, 0, 0, 0, 0, 0) + struct.pack("<IBBHQQ", 1, 0x12, 0, 4, 0x401000, 12)
+            offset_shstr = 64
+            offset_strtab = offset_shstr + len(shstr)
+            offset_symtab = offset_strtab + len(strtab)
+            offset_text = offset_symtab + len(symtab)
+            offset_sections = (offset_text + 16 + 7) & ~7
+            path.write_bytes(b"")
+            # ELF64 header and four non-null section headers.
+            struct.pack_into("<HHIQQQIHHHHHH", header, 16, 2, 62, 1, 0x401000, 0, offset_sections, 0, 64, 56, 0, 64, 5, 1)
+            sections = [bytes(64)]
+            sections.append(struct.pack("<IIQQQQIIQQ", 1, 3, 0, 0, offset_shstr, len(shstr), 0, 0, 1, 0))
+            sections.append(struct.pack("<IIQQQQIIQQ", 11, 3, 0, 0, offset_strtab, len(strtab), 0, 0, 1, 0))
+            sections.append(struct.pack("<IIQQQQIIQQ", 19, 2, 0, 0, offset_symtab, len(symtab), 2, 1, 8, 24))
+            sections.append(struct.pack("<IIQQQQIIQQ", 27, 1, 6, 0x401000, offset_text, 16, 0, 0, 16, 0))
+            data = bytearray(offset_sections + 5 * 64)
+            data[:64] = header
+            data[offset_shstr:offset_shstr + len(shstr)] = shstr
+            data[offset_strtab:offset_strtab + len(strtab)] = strtab
+            data[offset_symtab:offset_symtab + len(symtab)] = symtab
+            data[offset_text:offset_text + 16] = b"\\x90" * 16
+            for index, section in enumerate(sections):
+                start = offset_sections + index * 64
+                data[start:start + 64] = section
+            path.write_bytes(data)
+            details = inspect_binary(path, "ELF")
+            self.assertEqual(details["status"], "parsed")
+            self.assertIn(".text", [section["name"] for section in details["sections"]])
+            symbol = next(symbol for symbol in details["symbols"] if symbol["name"] == "demo_function")
+            self.assertEqual(symbol["value"], "0x401000")
+            self.assertEqual(symbol["size_bytes"], 12)
+
     def test_scans_only_explicit_scope_and_hashes_binary(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

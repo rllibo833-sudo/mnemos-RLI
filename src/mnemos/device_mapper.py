@@ -62,6 +62,139 @@ MACHO_CPUS = {
 }
 
 
+
+def _inspect_elf(stream: Any, header: bytes) -> dict[str, Any]:
+    """Parse bounded ELF section and symbol metadata from file bytes only."""
+    if len(header) < 52 or header[4] not in (1, 2) or header[5] not in (1, 2):
+        return {"status": "invalid_elf_header"}
+    bits = 32 if header[4] == 1 else 64
+    endian = "<" if header[5] == 1 else ">"
+    file_size = os.fstat(stream.fileno()).st_size
+    e_type, machine = struct.unpack_from(endian + "HH", header, 16)
+    if bits == 32:
+        if len(header) < 52:
+            return {"status": "truncated_header"}
+        entry = struct.unpack_from(endian + "I", header, 24)[0]
+        section_offset = struct.unpack_from(endian + "I", header, 32)[0]
+        section_entry_size, section_count, string_index = struct.unpack_from(endian + "HHH", header, 46)
+        expected_header_size = 40
+        section_format = endian + "IIIIIIIIII"
+    else:
+        if len(header) < 64:
+            return {"status": "truncated_header"}
+        entry = struct.unpack_from(endian + "Q", header, 24)[0]
+        section_offset = struct.unpack_from(endian + "Q", header, 40)[0]
+        section_entry_size, section_count, string_index = struct.unpack_from(endian + "HHH", header, 58)
+        expected_header_size = 64
+        section_format = endian + "IIQQQQIIQQ"
+    base = {
+        "status": "parsed", "format": "ELF", "bits": bits,
+        "endianness": "little" if endian == "<" else "big",
+        "architecture": ELF_MACHINES.get(machine, f"machine-{machine}"),
+        "machine_code": machine,
+        "object_type": {1: "relocatable", 2: "executable", 3: "shared", 4: "core"}.get(e_type, f"type-{e_type}"),
+        "entry_point": hex(entry), "section_table_offset": section_offset,
+        "section_entry_size": section_entry_size, "section_count": section_count,
+        "sections": [], "symbols": [], "analysis_limits": [],
+    }
+    if section_count == 0:
+        return base
+    if section_entry_size < expected_header_size or section_count > 4096:
+        base["analysis_limits"].append("invalid_or_excessive_section_table")
+        return base
+    table_size = section_entry_size * section_count
+    if section_offset > file_size or table_size > file_size - section_offset:
+        base["analysis_limits"].append("section_table_out_of_bounds")
+        return base
+
+    stream.seek(section_offset)
+    raw_sections = []
+    for index in range(section_count):
+        raw = stream.read(section_entry_size)
+        if len(raw) != section_entry_size:
+            base["analysis_limits"].append("truncated_section_table")
+            return base
+        fields = struct.unpack_from(section_format, raw)
+        if bits == 32:
+            name, section_type, flags, address, offset, size, link, info, alignment, entry_size = fields
+        else:
+            name, section_type, flags, address, offset, size, link, info, alignment, entry_size = fields
+        if offset > file_size or (section_type != 8 and size > file_size - offset):
+            # SHT_NOBITS sections occupy memory but no bytes in the file.
+            base["analysis_limits"].append(f"section_{index}_out_of_bounds")
+            size = 0
+        raw_sections.append({
+            "index": index, "name_offset": name, "type_code": section_type,
+            "flags": flags, "address": address, "offset": offset, "size": size,
+            "link": link, "info": info, "alignment": alignment, "entry_size": entry_size,
+        })
+
+    def read_region(offset: int, size: int) -> bytes:
+        if offset < 0 or size < 0 or offset > file_size or size > file_size - offset:
+            return b""
+        stream.seek(offset)
+        return stream.read(size)
+
+    names = b""
+    if string_index < len(raw_sections):
+        section = raw_sections[string_index]
+        if section["size"] <= 8 * 1024 * 1024:
+            names = read_region(section["offset"], section["size"])
+
+    def string_at(table: bytes, offset: int) -> str:
+        if offset < 0 or offset >= len(table):
+            return ""
+        end = table.find(b"\\0", offset, min(len(table), offset + 4096))
+        if end < 0:
+            end = min(len(table), offset + 4096)
+        return table[offset:end].decode("utf-8", errors="replace")
+
+    for section in raw_sections:
+        section_name = string_at(names, section["name_offset"])
+        section["name"] = section_name or f"section_{section['index']}"
+        base["sections"].append({
+            "index": section["index"], "name": section["name"],
+            "type_code": section["type_code"], "flags": section["flags"],
+            "address": hex(section["address"]), "offset": section["offset"],
+            "size_bytes": section["size"], "entry_size": section["entry_size"],
+        })
+
+    symbol_format = endian + ("IBBHQQ" if bits == 64 else "IIIBBH")
+    symbol_size = struct.calcsize(symbol_format)
+    for section in raw_sections:
+        if section["type_code"] not in (2, 11) or section["link"] >= len(raw_sections):
+            continue
+        if section["size"] > 16 * 1024 * 1024:
+            base["analysis_limits"].append(f"symbols_skipped_large_section_{section['index']}")
+            continue
+        symbol_strings_section = raw_sections[section["link"]]
+        strings = read_region(symbol_strings_section["offset"], symbol_strings_section["size"])
+        entry_size = section["entry_size"] or symbol_size
+        if entry_size < symbol_size or entry_size == 0:
+            base["analysis_limits"].append(f"symbols_skipped_invalid_entry_size_{section['index']}")
+            continue
+        count = min(section["size"] // entry_size, 10000 - len(base["symbols"]))
+        raw = read_region(section["offset"], count * entry_size)
+        for index in range(0, len(raw) - symbol_size + 1, entry_size):
+            values = struct.unpack_from(symbol_format, raw, index)
+            if bits == 64:
+                name_offset, info, other, shndx, value, size = values
+            else:
+                name_offset, value, size, info, other, shndx = values
+            name = string_at(strings, name_offset)
+            if not name:
+                continue
+            base["symbols"].append({
+                "name": name, "value": hex(value), "size_bytes": size,
+                "binding_code": info >> 4, "type_code": info & 0x0F,
+                "section_index": shndx, "source_section": section["name"],
+            })
+        if len(base["symbols"]) >= 10000:
+            base["analysis_limits"].append("symbol_limit_10000_reached")
+            break
+    return base
+
+
 def inspect_binary(path: str | Path, fmt: str | None = None) -> dict[str, Any]:
     """Read fixed-format headers only; no disassembly, dynamic loading, or execution."""
     target = Path(path)
@@ -85,30 +218,7 @@ def inspect_binary(path: str | Path, fmt: str | None = None) -> dict[str, Any]:
                     "optional_header": {0x10B: "PE32", 0x20B: "PE32+"}.get(optional_magic, "unknown"),
                 }
             if fmt == "ELF" and header.startswith(b"\x7fELF"):
-                if len(header) < 52 or header[4] not in (1, 2) or header[5] not in (1, 2):
-                    return {"status": "invalid_elf_header"}
-                bits = 32 if header[4] == 1 else 64
-                endian = "<" if header[5] == 1 else ">"
-                e_type, machine = struct.unpack_from(endian + "HH", header, 16)
-                if bits == 32:
-                    entry = struct.unpack_from(endian + "I", header, 24)[0]
-                    section_offset = struct.unpack_from(endian + "I", header, 32)[0]
-                    section_entry_size, section_count = struct.unpack_from(endian + "HH", header, 46)
-                else:
-                    if len(header) < 64:
-                        return {"status": "truncated_header"}
-                    entry = struct.unpack_from(endian + "Q", header, 24)[0]
-                    section_offset = struct.unpack_from(endian + "Q", header, 40)[0]
-                    section_entry_size, section_count = struct.unpack_from(endian + "HH", header, 58)
-                return {
-                    "status": "parsed", "format": "ELF", "bits": bits,
-                    "endianness": "little" if endian == "<" else "big",
-                    "architecture": ELF_MACHINES.get(machine, f"machine-{machine}"),
-                    "machine_code": machine,
-                    "object_type": {1: "relocatable", 2: "executable", 3: "shared", 4: "core"}.get(e_type, f"type-{e_type}"),
-                    "entry_point": hex(entry), "section_table_offset": section_offset,
-                    "section_entry_size": section_entry_size, "section_count": section_count,
-                }
+                return _inspect_elf(stream, header)
             macho = {
                 b"\xfe\xed\xfa\xce": (">", 32),
                 b"\xce\xfa\xed\xfe": ("<", 32),
