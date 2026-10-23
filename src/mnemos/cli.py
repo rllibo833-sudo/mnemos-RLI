@@ -166,7 +166,7 @@ def main(argv: list[str] | None = None) -> int:
                             dependency_ids[key] = dep_record["id"]
                             existing_dependency_ids[key] = dep_record["id"]
                             dependency_records_created += 1
-                    store.link(record["id"], dependency_ids[key], relation="depends_on")
+                    store.link(artifact_id, dependency_ids[key], relation="depends_on")
                     dependency_links += 1
             print(json.dumps({
                 "snapshot_id": snapshot["id"],
