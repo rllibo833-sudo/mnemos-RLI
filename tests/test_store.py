@@ -28,6 +28,58 @@ class MemoryStoreTests(unittest.TestCase):
         second=MemoryStore(Path(self.temp.name)/'second.sqlite3')
         self.assertEqual(second.import_data(payload),(2,1)); self.assertEqual(second.import_data(payload),(0,0))
         self.assertEqual(len(second.list()),2); self.assertEqual(len(second.links()),1)
+    def test_export_includes_more_than_ten_thousand_memories_and_all_link_endpoints(self):
+        # Seed directly to keep this scale regression test fast and focused on export completeness.
+        count = 10001
+        stamp = '2026-01-01T00:00:00+00:00'
+        with self.store._connect() as db:
+            db.executemany(
+                """INSERT INTO memories
+                (id, content, kind, tags_json, source, metadata_json, created_at, updated_at)
+                VALUES (?, ?, 'note', '[]', NULL, '{}', ?, ?)""",
+                ((f'memory-{i:05d}', f'memory content {i}', stamp, stamp) for i in range(count)),
+            )
+            db.execute(
+                """INSERT INTO links (id, source_id, target_id, relation, created_at)
+                VALUES (?, ?, ?, ?, ?)""",
+                ('link-oldest-newest', 'memory-00000', 'memory-10000', 'relates_to', stamp),
+            )
+        payload = self.store.export_data()
+        self.assertEqual(len(payload['memories']), count)
+        self.assertEqual(len(payload['links']), 1)
+        self.assertTrue(MemoryStore.validate_export(payload)['ok'])
+
+    def test_import_enqueues_only_new_imported_records(self):
+        source = MemoryStore(Path(self.temp.name) / 'source.sqlite3')
+        a = source.add('Imported fact')
+        b = source.add('Imported decision', kind='decision')
+        source.link(a['id'], b['id'], relation='supports')
+        payload = source.export_data()
+
+        target = MemoryStore(Path(self.temp.name) / 'target.sqlite3')
+        self.assertEqual(target.import_data(payload), (2, 1))
+        pending = target.pending_changes()
+        self.assertEqual(len(pending), 3)
+        self.assertEqual(
+            sorted(change['entity_type'] for change in pending),
+            ['link', 'memory', 'memory'],
+        )
+        self.assertTrue(all(change['operation'] == 'upsert' for change in pending))
+
+        self.assertEqual(target.import_data(payload), (0, 0))
+        self.assertEqual(len(target.pending_changes()), 3)
+
+    def test_schema_version_one_is_upgraded_additively(self):
+        legacy_path = Path(self.temp.name) / 'legacy.sqlite3'
+        legacy = MemoryStore(legacy_path)
+        memory = legacy.add('Preserve existing data')
+        with legacy._connect() as db:
+            db.execute("UPDATE mnemos_meta SET value = '1' WHERE key = 'schema_version'")
+        upgraded = MemoryStore(legacy_path)
+        self.assertEqual(upgraded.get(memory['id'])['content'], 'Preserve existing data')
+        self.assertEqual(upgraded.sync_status()['schema_version'], 2)
+        self.assertGreaterEqual(upgraded.sync_status()['outbox_total'], 1)
+
     def test_diagnostics_reports_healthy_local_database(self):
         self.store.add('Local-only diagnostic check')
         report = self.store.diagnostics()

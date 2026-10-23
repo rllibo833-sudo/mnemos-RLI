@@ -1,10 +1,12 @@
 # Mnemos
 
+![Mnemos portable memory platform infographic](Infografik%20Mnemos_%20Platform%20Memori%20Portabel.png)
+
 **A Living Knowledge Network for AI agents, with hybrid local and server storage.**
 
 Mnemos preserves useful knowledge across sessions and agents: facts, decisions, solutions, project context, sources, and explicit relationships. Its goal is **learn once, recall anywhere**—without making any single AI provider or project repository mandatory.
 
-> Status: early foundation. Local SQLite storage, explicit memory links, a real-data HTML graph, local stdio MCP, and a separate authenticated cloud MCP endpoint exist. **Local/cloud synchronization is not implemented yet.** See [the Living Knowledge Network plan](docs/living-knowledge-network.md) and the [local-first memory tool contract](docs/local-first-memory-tool-contract.md).
+> Status: early foundation. Local SQLite storage, explicit memory links, a real-data HTML graph, local stdio MCP, a persistent device ID, a transactional local outbox, and a separate authenticated cloud MCP endpoint exist. **Remote synchronization is not implemented yet: the local outbox records changes but no cloud push/pull, acknowledgement, retry, or conflict protocol is active.** See [the Living Knowledge Network plan](docs/living-knowledge-network.md) and the [local-first memory tool contract](docs/local-first-memory-tool-contract.md).
 
 ## Why Mnemos?
 

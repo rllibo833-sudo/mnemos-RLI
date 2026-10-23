@@ -6,11 +6,11 @@ Mnemos is an independent, agent-neutral Living Knowledge Network with **hybrid l
 
 ## Repository audit
 
-Audit target: `main` at `3240b20917df18daa77b3c173f54eb8e9e57da3e`.
+Audit target: `main` at the current repository head; re-audit after each implementation phase.
 
 ### Already present—preserve it
 
-- `src/mnemos/store.py`: SQLite memory records, lexical search, explicit links, JSON export/import, diagnostics, export validation.
+- `src/mnemos/store.py`: SQLite memory records, lexical search, explicit links, JSON export/import, diagnostics, export validation, persistent device identity, and a transactional local outbox for new memory/link upserts.
 - `src/mnemos/graph.py`: dependency-free HTML graph rendered from real memory/link records.
 - `src/mnemos/mcp_server.py`: local stdio MCP adapter with search/add/get/list/link/export.
 - `supabase/functions/mnemos-mcp/index.ts`: separate authenticated cloud MCP implementation using PostgreSQL and owner-scoped operations.
@@ -19,7 +19,7 @@ Audit target: `main` at `3240b20917df18daa77b3c173f54eb8e9e57da3e`.
 
 ### Confirmed gap
 
-Local SQLite and cloud PostgreSQL are separate. Similar MCP tool names do not synchronize data. Current export/import is a portable snapshot, not continuous sync. The repository does not yet implement a transactional outbox, device identity, sync cursor, server idempotency ledger, conflict records, or tombstones.
+Local SQLite and cloud PostgreSQL are separate. Similar MCP tool names do not synchronize data. Current export/import is a portable snapshot, not continuous sync. The local transactional outbox and persistent device identity now exist for new memory/link upserts. Remote sync cursors, server idempotency ledger, conflict records, and tombstones are still not implemented.
 
 The cloud docs report a successful single-account authenticated round trip but explicitly say cross-account isolation is unverified. That status must remain visible until tested.
 

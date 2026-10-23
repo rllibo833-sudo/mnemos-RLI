@@ -83,6 +83,20 @@ class MemoryStore:
                 INSERT OR IGNORE INTO mnemos_meta(key, value)
                     VALUES ('device_id', lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(4))));
             """)
+            # The outbox/device metadata were added as an additive schema migration.
+            # Tables are created above before advancing existing databases to v2.
+            version_row = db.execute(
+                "SELECT value FROM mnemos_meta WHERE key = 'schema_version'"
+            ).fetchone()
+            version = int(version_row["value"]) if version_row else 1
+            if version > 2:
+                raise RuntimeError(
+                    f"Database schema version {version} is newer than this Mnemos build (2)."
+                )
+            if version < 2:
+                db.execute(
+                    "UPDATE mnemos_meta SET value = '2' WHERE key = 'schema_version'"
+                )
 
     def add(
         self,
@@ -267,8 +281,16 @@ class MemoryStore:
         }
 
     def export_data(self) -> dict[str, Any]:
-        return {"format": "mnemos-export-v1", "exported_at": utc_now(),
-                "memories": self.list(limit=10000), "links": self.links()}
+        """Export every memory and link; portable snapshots must never be silently truncated."""
+        with self._connect() as db:
+            rows = db.execute("SELECT * FROM memories ORDER BY created_at DESC, id").fetchall()
+        memories = [self._memory(row) for row in rows]
+        return {
+            "format": "mnemos-export-v1",
+            "exported_at": utc_now(),
+            "memories": memories,
+            "links": self.links(),
+        }
 
     @staticmethod
     def validate_export(payload: Any) -> dict[str, Any]:
@@ -358,6 +380,16 @@ class MemoryStore:
                      json.dumps(item.get("metadata", {})), created_at,
                      item.get("updated_at") or created_at),
                 )
+                self._enqueue(db, "memory", item["id"], {
+                    "id": item["id"],
+                    "content": item["content"],
+                    "kind": item.get("kind", "note"),
+                    "tags": item.get("tags", []),
+                    "source": item.get("source"),
+                    "metadata": item.get("metadata", {}),
+                    "created_at": created_at,
+                    "updated_at": item.get("updated_at") or created_at,
+                })
                 added_memories += 1
             for item in links:
                 source_id, target_id = item["source_id"], item["target_id"]
@@ -368,5 +400,12 @@ class MemoryStore:
                     (str(item.get("id") or uuid.uuid4()), source_id, target_id,
                      item.get("relation", "relates_to"), item.get("created_at") or utc_now()),
                 )
-                added_links += cursor.rowcount
+                if cursor.rowcount:
+                    row = db.execute(
+                        "SELECT * FROM links WHERE source_id = ? AND target_id = ? AND relation = ?",
+                        (source_id, target_id, item.get("relation", "relates_to")),
+                    ).fetchone()
+                    if row:
+                        self._enqueue(db, "link", row["id"], dict(row))
+                    added_links += 1
         return added_memories, added_links
