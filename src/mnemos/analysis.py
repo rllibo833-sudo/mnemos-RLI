@@ -40,7 +40,9 @@ def _scope(snapshot: dict[str, Any]) -> tuple[str, ...]:
     raw = _scan(snapshot).get("scope", [])
     if not isinstance(raw, list):
         return ()
-    return tuple(sorted(str(Path(item).expanduser()) for item in raw if isinstance(item, str)))
+    # Canonicalize legacy and current snapshots identically. map-device stores
+    # resolved scope_path metadata, while scan.scope may retain relative paths.
+    return tuple(sorted(str(Path(item).expanduser().resolve()) for item in raw if isinstance(item, str)))
 
 
 def _artifact_identity(artifact: dict[str, Any]) -> dict[str, Any]:
@@ -116,7 +118,7 @@ def analyze_graph(
     links = store.links()
     by_id = {item["id"]: item for item in memories}
     snapshots = [item for item in memories if item.get("kind") == "device_snapshot"]
-    selected_paths = tuple(sorted(str(Path(path).expanduser()) for path in (paths or [])))
+    selected_paths = tuple(sorted(str(Path(path).expanduser().resolve()) for path in (paths or [])))
     if selected_paths:
         snapshots = [item for item in snapshots if _scope(item) == selected_paths]
 

@@ -136,6 +136,18 @@ class AnalysisTests(unittest.TestCase):
         finding = next(item for item in result["metadata"]["findings"] if item["rule_id"] == "sampled_only_risk")
         self.assertEqual(finding["evidence"]["identity"]["kind"], "sampled_fingerprint")
 
+    def test_analysis_normalizes_relative_and_dotdot_scope_paths(self):
+        scope = Path(self.temp.name) / "prefix" / "bin"
+        scope.mkdir(parents=True)
+        snapshot(self.store, str(scope))
+        alias = scope.parent / "unused" / ".." / scope.name
+        result, created = analyze_graph(self.store, paths=[str(alias)])
+        self.assertTrue(created)
+        self.assertEqual(result["metadata"]["scope_status"], "known")
+        self.assertEqual(result["metadata"]["source_snapshot_ids"], [
+            item["id"] for item in self.store.list_all(kind="device_snapshot")
+        ])
+
     def test_empty_graph_reports_unknown_scope(self):
         result, _ = analyze_graph(self.store)
         self.assertEqual(result["metadata"]["scope_status"], "unknown_scope_incomplete")
