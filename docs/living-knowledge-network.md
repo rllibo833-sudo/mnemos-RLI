@@ -15,9 +15,17 @@ Audit target: `main` at the current repository head; re-audit after each impleme
 - `src/mnemos/mcp_server.py`: local stdio MCP adapter with search/add/get/list/link/export.
 - `supabase/functions/mnemos-mcp/index.ts`: separate authenticated cloud MCP implementation using PostgreSQL and owner-scoped operations.
 - `tests/test_store.py` and `tests/test_mcp_server.py`: baseline local store/adapter tests.
+- src/mnemos/device_mapper.py: opt-in offline binary inventory, bounded ELF/PE/Mach-O metadata parsing, hashing limits, and explicit scan completeness.
+- src/mnemos/evolution.py: deterministic, idempotent dependency graph reconstruction and validation, preserving historical artifact evidence.
 - Existing docs for data format, cloud connection, agent integration, and recovery.
 
-### Confirmed gap
+### Binary evidence graph — current implementation
+
+The mapper extracts ELF sections/symbols/dynamic dependencies, PE sections/imports/exports, and Mach-O load-command dependencies using bounded static parsing. Artifact versions and provenance are retained; reconciliation reconstructs missing depends_on edges from persisted parsed metadata and validates history. Incomplete scans are explicitly marked when budgets, depth caps, skipped symlink roots, or traversal errors prevent a complete inventory. Missing artifacts are not automatically deleted or marked absent, and missing dependencies in a replacement do not erase older evidence.
+
+Content hashes identify versions when available. For unhashable or oversized files, path/size/mtime are a weaker observation identity and cannot prove byte-for-byte identity if content changes while those metadata remain unchanged.
+
+## Confirmed gap
 
 Local SQLite and cloud PostgreSQL are separate. Similar MCP tool names do not synchronize data. Current export/import is a portable snapshot, not continuous sync. The local transactional outbox and persistent device identity now exist for new memory/link upserts. Remote sync cursors, server idempotency ledger, conflict records, and tombstones are still not implemented.
 
@@ -72,4 +80,4 @@ The cloud docs report a successful single-account authenticated round trip but e
 - Requiring an LLM, embedding service, or proprietary runtime.
 - Treating semantic similarity or an agent's guess as a verified relationship.
 
-This document records the audited boundary and contract; it does not claim that the sync implementation already exists.
+This document records the audited boundary and contract; it does not claim that the sync implementation already exists. Binary graph reconciliation is implemented independently of cloud sync; it does not claim runtime dependency usage or infer deletion from incomplete scans.

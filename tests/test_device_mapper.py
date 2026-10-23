@@ -239,6 +239,38 @@ class DeviceMapperTests(unittest.TestCase):
             self.assertEqual(result[0]["binary_details"]["status"], "invalid_elf_header")
             self.assertEqual(len(result[0]["sha256"]), 64)
 
+    def test_scan_budget_marks_directory_inventory_incomplete(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            for name in ("a.elf", "b.elf"):
+                (root / name).write_bytes(b"\\x7fELF" + name.encode("ascii"))
+            report = collect_device_map([root], max_files=1)
+            self.assertFalse(report["scan"]["complete"])
+            self.assertTrue(report["scan"]["limit_reached"])
+            self.assertEqual(report["scan"]["examined_files"], 1)
+
+    def test_skipped_symlink_root_marks_inventory_incomplete(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            target = root / "target.elf"
+            target.write_bytes(b"\\x7fELFfixture")
+            link = root / "linked.elf"
+            try:
+                link.symlink_to(target)
+            except OSError:
+                self.skipTest("symlinks unavailable")
+            report = collect_device_map([link])
+            self.assertFalse(report["scan"]["complete"])
+            self.assertEqual(report["scan"]["skipped_symlink_roots"], 1)
+
+    def test_single_explicit_file_scan_is_complete(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "single.elf"
+            path.write_bytes(b"\\x7fELFfixture")
+            report = collect_device_map([path])
+            self.assertTrue(report["scan"]["complete"])
+            self.assertEqual(report["scan"]["examined_files"], 1)
+
     def test_device_map_persists_offline_snapshot_and_artifact_links(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

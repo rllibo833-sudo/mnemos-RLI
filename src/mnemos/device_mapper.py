@@ -687,17 +687,29 @@ def _artifact(path: Path) -> dict[str, Any] | None:
         return None
 
 
-def discover_artifacts(paths: Iterable[str | Path] = (), *, max_files: int = 2000) -> list[dict[str, Any]]:
+def discover_artifacts(
+    paths: Iterable[str | Path] = (), *, max_files: int = 2000,
+    scan_status: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
     """Inspect only user-selected files/directories; bound work and do not follow symlinks."""
     if max_files < 1:
         raise ValueError("max_files must be positive")
     found: list[dict[str, Any]] = []
     examined = 0
-    for supplied in paths:
+    status = scan_status if scan_status is not None else {}
+    status.update({
+        "examined_files": 0, "limit_reached": False,
+        "depth_limit_reached": False, "skipped_symlink_roots": 0,
+        "traversal_errors": [],
+    })
+    roots = tuple(paths)
+    for root_index, supplied in enumerate(roots):
         if examined >= max_files:
+            status["limit_reached"] = True
             break
         supplied_path = Path(supplied).expanduser()
         if supplied_path.is_symlink():
+            status["skipped_symlink_roots"] += 1
             continue
         root = supplied_path.resolve()
         if not root.exists():
@@ -708,13 +720,21 @@ def discover_artifacts(paths: Iterable[str | Path] = (), *, max_files: int = 200
         elif root.is_dir():
             def walk() -> Iterable[Path]:
                 nonlocal examined
-                for current, dirs, files in os.walk(root, followlinks=False):
+                def record_walk_error(error: OSError) -> None:
+                    status["traversal_errors"].append({
+                        "path": str(error.filename) if error.filename else None,
+                        "error": type(error).__name__,
+                    })
+                for current, dirs, files in os.walk(root, followlinks=False, onerror=record_walk_error):
                     dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not (Path(current) / d).is_symlink())
                     depth = len(Path(current).relative_to(root).parts)
                     if depth >= 12:
+                        if dirs:
+                            status["depth_limit_reached"] = True
                         dirs[:] = []
                     for name in sorted(files):
                         if examined >= max_files:
+                            status["limit_reached"] = True
                             return
                         examined += 1
                         yield Path(current) / name
@@ -723,6 +743,9 @@ def discover_artifacts(paths: Iterable[str | Path] = (), *, max_files: int = 200
             continue
         for candidate in candidates:
             if examined >= max_files and root.is_dir():
+                # Conservative: reaching a directory budget is not accepted as
+                # a complete inventory, even if this happened to be the last file.
+                status["limit_reached"] = True
                 break
             if root.is_file():
                 examined += 1
@@ -730,7 +753,14 @@ def discover_artifacts(paths: Iterable[str | Path] = (), *, max_files: int = 200
             if item is not None:
                 found.append(item)
             if examined >= max_files:
+                if root.is_file() and root_index < len(roots) - 1:
+                    status["limit_reached"] = True
                 break
+    status["examined_files"] = examined
+    status["complete"] = not (
+        status["limit_reached"] or status["depth_limit_reached"]
+        or status["skipped_symlink_roots"] or status["traversal_errors"]
+    )
     # Stable ordering makes snapshots easy to compare and review.
     found.sort(key=lambda item: item["path"])
     return found
@@ -742,6 +772,8 @@ def collect_device_map(paths: Iterable[str | Path] = (), *, max_files: int = 200
     uname = platform.uname()
     tools = {name: shutil.which(name) for name in TOOL_NAMES}
     prefix = os.environ.get("PREFIX", "")
+    scan_status: dict[str, Any] = {}
+    artifacts = discover_artifacts(paths, max_files=max_files, scan_status=scan_status)
     return {
         "schema": "mnemos-device-map-v1",
         "captured_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -771,8 +803,14 @@ def collect_device_map(paths: Iterable[str | Path] = (), *, max_files: int = 200
         "scan": {
             "scope": [str(Path(path).expanduser()) for path in paths],
             "max_files": max_files,
+            "complete": scan_status["complete"],
+            "examined_files": scan_status["examined_files"],
+            "limit_reached": scan_status["limit_reached"],
+            "depth_limit_reached": scan_status["depth_limit_reached"],
+            "skipped_symlink_roots": scan_status["skipped_symlink_roots"],
+            "traversal_errors": scan_status["traversal_errors"],
             "network_used": False,
             "executed_scanned_files": False,
         },
-        "artifacts": discover_artifacts(paths, max_files=max_files),
+        "artifacts": artifacts,
     }
