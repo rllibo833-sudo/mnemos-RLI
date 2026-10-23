@@ -10,6 +10,7 @@ import os
 import platform
 import shutil
 import stat
+import struct
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -44,6 +45,95 @@ def classify_binary(header: bytes) -> str | None:
     if len(header) >= 4 and header[:4] in (b"\xca\xfe\xba\xbf", b"\xbf\xba\xfe\xca"):
         return "Mach-O/Fat"
     return None
+
+
+
+ELF_MACHINES = {
+    3: "x86", 8: "MIPS", 20: "PowerPC", 40: "ARM",
+    62: "x86_64", 183: "AArch64", 243: "RISC-V",
+}
+PE_MACHINES = {
+    0x014C: "x86", 0x8664: "x86_64", 0x01C0: "ARM",
+    0x01C4: "ARMv7", 0xAA64: "AArch64", 0x0200: "IA64",
+}
+MACHO_CPUS = {
+    7: "x86", 0x01000007: "x86_64", 12: "ARM",
+    0x0100000C: "AArch64", 18: "PowerPC",
+}
+
+
+def inspect_binary(path: str | Path, fmt: str | None = None) -> dict[str, Any]:
+    """Read fixed-format headers only; no disassembly, dynamic loading, or execution."""
+    target = Path(path)
+    try:
+        with target.open("rb") as stream:
+            header = stream.read(64)
+            if fmt == "PE/DOS" and header.startswith(b"MZ"):
+                if len(header) < 64:
+                    return {"status": "truncated_header"}
+                pe_offset = struct.unpack_from("<I", header, 0x3C)[0]
+                stream.seek(pe_offset)
+                pe = stream.read(26)
+                if len(pe) < 26 or pe[:4] != b"PE\0\0":
+                    return {"status": "invalid_pe_header"}
+                machine, sections = struct.unpack_from("<HH", pe, 4)
+                optional_magic = struct.unpack_from("<H", pe, 24)[0]
+                return {
+                    "status": "parsed", "format": "PE",
+                    "architecture": PE_MACHINES.get(machine, f"machine-0x{machine:04x}"),
+                    "machine_code": machine, "section_count": sections,
+                    "optional_header": {0x10B: "PE32", 0x20B: "PE32+"}.get(optional_magic, "unknown"),
+                }
+            if fmt == "ELF" and header.startswith(b"\x7fELF"):
+                if len(header) < 52 or header[4] not in (1, 2) or header[5] not in (1, 2):
+                    return {"status": "invalid_elf_header"}
+                bits = 32 if header[4] == 1 else 64
+                endian = "<" if header[5] == 1 else ">"
+                e_type, machine = struct.unpack_from(endian + "HH", header, 16)
+                if bits == 32:
+                    entry = struct.unpack_from(endian + "I", header, 24)[0]
+                    section_offset = struct.unpack_from(endian + "I", header, 32)[0]
+                    section_entry_size, section_count = struct.unpack_from(endian + "HH", header, 46)
+                else:
+                    if len(header) < 64:
+                        return {"status": "truncated_header"}
+                    entry = struct.unpack_from(endian + "Q", header, 24)[0]
+                    section_offset = struct.unpack_from(endian + "Q", header, 40)[0]
+                    section_entry_size, section_count = struct.unpack_from(endian + "HH", header, 58)
+                return {
+                    "status": "parsed", "format": "ELF", "bits": bits,
+                    "endianness": "little" if endian == "<" else "big",
+                    "architecture": ELF_MACHINES.get(machine, f"machine-{machine}"),
+                    "machine_code": machine,
+                    "object_type": {1: "relocatable", 2: "executable", 3: "shared", 4: "core"}.get(e_type, f"type-{e_type}"),
+                    "entry_point": hex(entry), "section_table_offset": section_offset,
+                    "section_entry_size": section_entry_size, "section_count": section_count,
+                }
+            macho = {
+                b"\xfe\xed\xfa\xce": (">", 32),
+                b"\xce\xfa\xed\xfe": ("<", 32),
+                b"\xfe\xed\xfa\xcf": (">", 64),
+                b"\xcf\xfa\xed\xfe": ("<", 64),
+            }
+            if fmt == "Mach-O" and header[:4] in macho and len(header) >= 28:
+                endian, bits = macho[header[:4]]
+                cpu, subtype, filetype, commands, command_bytes, flags = struct.unpack_from(endian + "IIIIII", header, 4)
+                return {
+                    "status": "parsed", "format": "Mach-O", "bits": bits,
+                    "endianness": "little" if endian == "<" else "big",
+                    "architecture": MACHO_CPUS.get(cpu, f"cpu-{cpu}"),
+                    "cpu_type": cpu, "cpu_subtype": subtype, "file_type": filetype,
+                    "load_command_count": commands, "load_command_bytes": command_bytes,
+                    "flags": flags,
+                }
+            if fmt == "WebAssembly" and header.startswith(b"\x00asm"):
+                version = struct.unpack_from("<I", header, 4)[0] if len(header) >= 8 else None
+                return {"status": "parsed", "format": "WebAssembly", "version": version}
+            if fmt in ("ZIP/APK/JAR", "Mach-O/Fat-or-Java-class", "Mach-O/Fat"):
+                return {"status": "container_signature_only", "format": fmt}
+    except OSError:
+        return {"status": "unreadable"}
+    return {"status": "unsupported_or_unknown"}
 
 
 def _sha256(path: Path) -> str | None:
@@ -82,6 +172,7 @@ def _artifact(path: Path) -> dict[str, Any] | None:
                 "file exceeds 256 MiB limit or could not be read"
                 if digest is None else None
             ),
+            "binary_details": inspect_binary(path, fmt),
         }
     except OSError:
         return None

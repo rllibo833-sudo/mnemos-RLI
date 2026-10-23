@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from mnemos.device_mapper import classify_binary, collect_device_map, discover_artifacts
+from mnemos.device_mapper import classify_binary, collect_device_map, discover_artifacts, inspect_binary
 from mnemos.store import MemoryStore
 
 
@@ -13,6 +13,23 @@ class DeviceMapperTests(unittest.TestCase):
         self.assertEqual(classify_binary(b"\xcf\xfa\xed\xfe"), "Mach-O")
         self.assertIsNone(classify_binary(b"ordinary text"))
 
+    def test_extracts_elf_header_metadata_without_execution(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "minimal.elf"
+            header = bytearray(64)
+            header[:4] = b"\x7fELF"
+            header[4] = 2  # ELF64
+            header[5] = 1  # little endian
+            import struct
+            struct.pack_into("<HHIQQQIHHHHHH", header, 16, 2, 62, 1, 0x400000, 64, 0, 0, 64, 56, 0, 64, 0, 0)
+            path.write_bytes(header)
+            details = inspect_binary(path, "ELF")
+            self.assertEqual(details["status"], "parsed")
+            self.assertEqual(details["architecture"], "x86_64")
+            self.assertEqual(details["object_type"], "executable")
+            self.assertEqual(details["entry_point"], "0x400000")
+            self.assertEqual(details["section_count"], 0)
+
     def test_scans_only_explicit_scope_and_hashes_binary(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -22,6 +39,7 @@ class DeviceMapperTests(unittest.TestCase):
             result = discover_artifacts([root])
             self.assertEqual(len(result), 1)
             self.assertEqual(result[0]["format"], "ELF")
+            self.assertEqual(result[0]["binary_details"]["status"], "invalid_elf_header")
             self.assertEqual(len(result[0]["sha256"]), 64)
 
     def test_device_map_persists_offline_snapshot_and_artifact_links(self):
