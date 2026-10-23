@@ -183,10 +183,17 @@ def evolve_graph(store: MemoryStore) -> dict[str, Any]:
                     if isinstance(item, dict)
                 }
                 dep_metadata["symbols"] = [symbol_map[symbol_key] for symbol_key in sorted(symbol_map)]
-                updated = store.update_metadata(dep_record["id"], dep_metadata)
-                if updated.get("updated_at") != dep_record.get("updated_at"):
+                # Avoid rewriting unchanged metadata: repeated scans should be
+                # idempotent and must not continually enqueue outbox updates.
+                before_metadata = json.dumps(
+                    dep_record.get("metadata") or {}, sort_keys=True, separators=(",", ":")
+                )
+                after_metadata = json.dumps(
+                    dep_metadata, sort_keys=True, separators=(",", ":")
+                )
+                if after_metadata != before_metadata:
+                    dep_record = store.update_metadata(dep_record["id"], dep_metadata)
                     evidence_records_updated += 1
-                dep_record = updated
                 dependency_records[key] = dep_record
 
             link_key = (artifact["id"], dep_record["id"], "depends_on")
@@ -229,22 +236,76 @@ def evolve_graph(store: MemoryStore) -> dict[str, Any]:
     for link in links:
         if link["relation"] == "superseded_by":
             superseded[link["source_id"]].append(link["target_id"])
-    visiting: set[str] = set()
-    visited: set[str] = set()
-
-    def visit(node_id: str) -> bool:
-        if node_id in visiting:
-            return True
-        if node_id in visited:
-            return False
-        visiting.add(node_id)
-        cyclic = any(visit(child) for child in superseded.get(node_id, []))
-        visiting.remove(node_id)
-        visited.add(node_id)
-        return cyclic
-
-    if any(visit(node_id) for node_id in list(superseded) if node_id not in visited):
+    # Iterative three-colour DFS avoids Python recursion limits on long
+    # histories while still detecting cycles deterministically.
+    state: dict[str, int] = {}
+    has_cycle = False
+    for start in superseded:
+        if state.get(start, 0) != 0:
+            continue
+        stack: list[tuple[str, bool]] = [(start, False)]
+        while stack:
+            node_id, exiting = stack.pop()
+            if exiting:
+                state[node_id] = 2
+                continue
+            color = state.get(node_id, 0)
+            if color == 1:
+                has_cycle = True
+                break
+            if color == 2:
+                continue
+            state[node_id] = 1
+            stack.append((node_id, True))
+            for child in superseded.get(node_id, []):
+                child_color = state.get(child, 0)
+                if child_color == 1:
+                    has_cycle = True
+                    break
+                if child_color == 0:
+                    stack.append((child, False))
+            if has_cycle:
+                break
+        if has_cycle:
+            break
+    if has_cycle:
         violations.append({"type": "supersession_cycle"})
+
+    dependency_ids_by_key: dict[tuple[str, str], list[str]] = defaultdict(list)
+    artifact_ids_by_content: dict[tuple[str, str], list[str]] = defaultdict(list)
+    for item in memories:
+        metadata = item.get("metadata") or {}
+        if item.get("kind") == "runtime_dependency" and metadata.get("schema") == "mnemos-dependency-evidence-v1":
+            name, fmt = metadata.get("name"), metadata.get("format")
+            if isinstance(name, str) and name.strip() and isinstance(fmt, str) and fmt:
+                dependency_ids_by_key[(fmt, name.casefold())].append(item["id"])
+        elif item.get("kind") == "binary_artifact":
+            path, digest = metadata.get("path"), metadata.get("sha256")
+            if isinstance(path, str) and path and isinstance(digest, str) and digest:
+                artifact_ids_by_content[(path, digest)].append(item["id"])
+    for (fmt, name), ids in dependency_ids_by_key.items():
+        if len(ids) > 1:
+            violations.append({
+                "type": "duplicate_dependency_nodes", "format": fmt,
+                "name": name, "node_ids": sorted(ids),
+            })
+    for (path, digest), ids in artifact_ids_by_content.items():
+        if len(ids) > 1:
+            violations.append({
+                "type": "duplicate_artifact_versions", "path": path,
+                "sha256": digest, "node_ids": sorted(ids),
+            })
+    for link in links:
+        if link["relation"] == "contains_artifact":
+            source = by_id.get(link["source_id"])
+            target = by_id.get(link["target_id"])
+            if source is not None and target is not None and (
+                source.get("kind") != "device_snapshot" or target.get("kind") != "binary_artifact"
+            ):
+                violations.append({
+                    "type": "invalid_contains_artifact_edge", "link_id": link["id"],
+                    "source_kind": source.get("kind"), "target_kind": target.get("kind"),
+                })
 
     return {
         "schema": "mnemos-graph-evolution-v1",

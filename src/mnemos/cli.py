@@ -123,6 +123,15 @@ def main(argv: list[str] | None = None) -> int:
                     existing_sha = metadata.get("sha256")
                     if existing_path and existing_sha:
                         existing_artifact_ids[(existing_path, existing_sha)] = existing["id"]
+                    elif (
+                        existing_path
+                        and metadata.get("mtime_ns") is not None
+                        and metadata.get("size_bytes") is not None
+                        and (metadata.get("binary_details") or {}).get("status") != "file_changed_during_inspection"
+                    ):
+                        existing_artifact_ids[(
+                            existing_path, None, metadata.get("mtime_ns"), metadata.get("size_bytes")
+                        )] = existing["id"]
                     if existing_path:
                         previous = latest_artifact_by_path.get(existing_path)
                         current_rank = (str(existing.get("created_at", "")), int(metadata.get("mtime_ns") or 0))
@@ -136,7 +145,19 @@ def main(argv: list[str] | None = None) -> int:
             for artifact in report["artifacts"]:
                 artifact_path = str(artifact.get("path", ""))
                 artifact_sha = artifact.get("sha256")
-                identity = (artifact_path, artifact_sha) if artifact_sha else None
+                if artifact_sha:
+                    identity = (artifact_path, artifact_sha)
+                elif (
+                    artifact_path
+                    and artifact.get("mtime_ns") is not None
+                    and artifact.get("size_bytes") is not None
+                    and (artifact.get("binary_details") or {}).get("status") != "file_changed_during_inspection"
+                ):
+                    identity = (
+                        artifact_path, None, artifact.get("mtime_ns"), artifact.get("size_bytes")
+                    )
+                else:
+                    identity = None
                 artifact_id = existing_artifact_ids.get(identity) if identity else None
                 if artifact_id is None:
                     record = store.add(

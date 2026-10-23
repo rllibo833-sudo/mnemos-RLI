@@ -63,6 +63,38 @@ class GraphEvolutionTests(unittest.TestCase):
             self.assertEqual(second["dependency_edges_repaired"], 0)
             self.assertEqual(len([link for link in store.links() if link["relation"] == "depends_on"]), 1)
 
+    def test_evolution_reports_duplicate_dependency_nodes(self):
+        with tempfile.TemporaryDirectory() as temp:
+            store = MemoryStore(Path(temp) / "memory.sqlite3")
+            metadata = {
+                "schema": "mnemos-dependency-evidence-v1",
+                "name": "libsame.so",
+                "format": "ELF",
+                "kind": "needed",
+                "kinds": ["needed"],
+            }
+            store.add("duplicate one", kind="runtime_dependency", metadata=metadata)
+            store.add("duplicate two", kind="runtime_dependency", metadata=metadata)
+            report = evolve_graph(store)
+            self.assertFalse(report["ok"])
+            self.assertTrue(any(item["type"] == "duplicate_dependency_nodes" for item in report["violations"]))
+
+    def test_evolution_cycle_check_handles_long_histories(self):
+        with tempfile.TemporaryDirectory() as temp:
+            store = MemoryStore(Path(temp) / "memory.sqlite3")
+            previous = None
+            for index in range(1100):
+                item = store.add(
+                    f"version {index}", kind="binary_artifact",
+                    metadata={"path": "/opt/long-history", "sha256": f"{index:064x}", "mtime_ns": index},
+                )
+                if previous is not None:
+                    store.link(previous["id"], item["id"], relation="superseded_by")
+                previous = item
+            report = evolve_graph(store)
+            self.assertTrue(report["ok"])
+            self.assertEqual(report["supersession_edges_repaired"], 0)
+
     def test_evolution_does_not_infer_absent_dependencies_from_unparsed_artifact(self):
         with tempfile.TemporaryDirectory() as temp:
             store = MemoryStore(Path(temp) / "memory.sqlite3")
