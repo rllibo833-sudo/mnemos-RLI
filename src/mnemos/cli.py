@@ -81,6 +81,12 @@ def main(argv: list[str] | None = None) -> int:
                         "kind": item.get("kind", "load"),
                         "format": "Mach-O",
                     })
+                for item in details.get("dependencies", []):
+                    dependencies.append({
+                        "name": item.get("name", ""),
+                        "kind": item.get("kind", "needed"),
+                        "format": "ELF",
+                    })
                 for library in details.get("imports", []):
                     dependencies.append({
                         "name": library.get("library", ""),

@@ -98,6 +98,31 @@ class DeviceMapperTests(unittest.TestCase):
             self.assertEqual(symbol["value"], "0x401000")
             self.assertEqual(symbol["size_bytes"], 12)
 
+    def test_extracts_elf_dynamic_dependencies_and_runpath(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "dynamic.elf"
+            data = bytearray(0x300)
+            data[:6] = b"\x7fELF\x02\x01"
+            # ELF64 header with two program headers and no section table.
+            struct.pack_into("<HHIQQQIHHHHHH", data, 16, 3, 62, 1, 0, 64, 0, 0, 64, 56, 2, 0, 0, 0)
+            # PT_LOAD maps virtual address 0x400000 to file offset 0.
+            struct.pack_into("<IIQQQQQQ", data, 64, 1, 4, 0, 0x400000, 0, len(data), len(data), 0x1000)
+            # PT_DYNAMIC at file offset 0x100, virtual address 0x400100.
+            struct.pack_into("<IIQQQQQQ", data, 120, 2, 4, 0x100, 0x400100, 0, 64, 64, 8)
+            entries = [
+                (1, 1), (5, 0x400180), (10, 32), (29, 12), (0, 0),
+            ]
+            for i, (tag, value) in enumerate(entries):
+                struct.pack_into("<qQ", data, 0x100 + i * 16, tag, value)
+            strings = b"\x00libdemo.so\x00$ORIGIN/lib\x00"
+            data[0x180:0x180 + len(strings)] = strings
+            path.write_bytes(data)
+            details = inspect_binary(path, "ELF")
+            self.assertEqual(details["status"], "parsed")
+            self.assertEqual(details["dynamic_status"], "parsed")
+            self.assertEqual(details["dependencies"], [{"name": "libdemo.so", "kind": "needed"}])
+            self.assertEqual(details["runpaths"], ["$ORIGIN/lib"])
+
     def test_scans_only_explicit_scope_and_hashes_binary(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

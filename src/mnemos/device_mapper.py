@@ -63,6 +63,96 @@ MACHO_CPUS = {
 
 
 
+def _inspect_elf_dynamic(stream: Any, header: bytes, bits: int, endian: str, file_size: int) -> dict[str, Any]:
+    """Extract bounded DT_NEEDED/RPATH/RUNPATH entries from ELF program headers."""
+    result: dict[str, Any] = {"dependencies": [], "rpaths": [], "runpaths": [], "dynamic_status": "unavailable"}
+    phoff = struct.unpack_from(endian + ("I" if bits == 32 else "Q"), header, 28 if bits == 32 else 32)[0]
+    phentsize, phnum = struct.unpack_from(endian + "HH", header, 42 if bits == 32 else 54)
+    expected = 32 if bits == 32 else 56
+    if phnum == 0:
+        result["dynamic_status"] = "no_program_headers"
+        return result
+    if phnum > 4096 or phentsize < expected or phoff > file_size or phnum * phentsize > file_size - phoff:
+        result["dynamic_status"] = "invalid_or_excessive_program_headers"
+        return result
+    loads: list[tuple[int, int, int]] = []
+    dynamic: tuple[int, int] | None = None
+    stream.seek(phoff)
+    for _ in range(phnum):
+        raw = stream.read(phentsize)
+        if len(raw) != phentsize:
+            result["dynamic_status"] = "truncated_program_headers"
+            return result
+        if bits == 32:
+            p_type, p_offset, p_vaddr, _paddr, p_filesz, _memsz, _flags, _align = struct.unpack_from(endian + "IIIIIIII", raw)
+        else:
+            p_type, _flags, p_offset, p_vaddr, _paddr, p_filesz, _memsz, _align = struct.unpack_from(endian + "IIQQQQQQ", raw)
+        if p_offset > file_size or p_filesz > file_size - p_offset:
+            continue
+        if p_type == 1:
+            loads.append((p_vaddr, p_offset, p_filesz))
+        elif p_type == 2:
+            dynamic = (p_offset, p_filesz)
+    if dynamic is None:
+        result["dynamic_status"] = "no_dynamic_segment"
+        return result
+
+    def va_to_offset(address: int, size: int = 1) -> int | None:
+        for vaddr, offset, span in loads:
+            delta = address - vaddr
+            if 0 <= delta <= span and size <= span - delta:
+                return offset + delta
+        return None
+
+    dyn_offset, dyn_size = dynamic
+    entry_size = 8 if bits == 32 else 16
+    if dyn_size > 1024 * 1024:
+        dyn_size = 1024 * 1024
+        result["dynamic_status"] = "dynamic_segment_capped"
+    stream.seek(dyn_offset)
+    tags: dict[int, list[int]] = {}
+    for _ in range(min(dyn_size // entry_size, 4096)):
+        raw = stream.read(entry_size)
+        if len(raw) != entry_size:
+            break
+        if bits == 32:
+            tag, value = struct.unpack(endian + "iI", raw)
+        else:
+            tag, value = struct.unpack(endian + "qQ", raw)
+        if tag == 0:
+            break
+        if tag in (1, 5, 10, 15, 29):
+            tags.setdefault(tag, []).append(value)
+    strtab_va = next(iter(tags.get(5, [])), None)
+    strtab_size = min(next(iter(tags.get(10, [])), 0), 8 * 1024 * 1024)
+    strtab_offset = va_to_offset(strtab_va, strtab_size) if strtab_va is not None and strtab_size else None
+    strings = b""
+    if strtab_offset is not None:
+        stream.seek(strtab_offset)
+        strings = stream.read(strtab_size)
+
+    def dyn_string(offset: int) -> str:
+        if offset < 0 or offset >= len(strings):
+            return ""
+        end = strings.find(bytes((0,)), offset, min(len(strings), offset + 4096))
+        if end < 0:
+            end = min(len(strings), offset + 4096)
+        return strings[offset:end].decode("utf-8", errors="replace")
+
+    for offset in tags.get(1, [])[:256]:
+        name = dyn_string(offset)
+        if name:
+            result["dependencies"].append({"name": name, "kind": "needed"})
+    for tag, key in ((15, "rpaths"), (29, "runpaths")):
+        for offset in tags.get(tag, [])[:32]:
+            value = dyn_string(offset)
+            if value:
+                result[key].extend(part for part in value.split(":") if part)
+    if result["dynamic_status"] == "unavailable":
+        result["dynamic_status"] = "parsed"
+    return result
+
+
 def _inspect_elf(stream: Any, header: bytes) -> dict[str, Any]:
     """Parse bounded ELF section and symbol metadata from file bytes only."""
     if len(header) < 52 or header[4] not in (1, 2) or header[5] not in (1, 2):
@@ -97,6 +187,8 @@ def _inspect_elf(stream: Any, header: bytes) -> dict[str, Any]:
         "section_entry_size": section_entry_size, "section_count": section_count,
         "sections": [], "symbols": [], "analysis_limits": [],
     }
+    dynamic = _inspect_elf_dynamic(stream, header, bits, endian, file_size)
+    base.update(dynamic)
     if section_count == 0:
         return base
     if section_entry_size < expected_header_size or section_count > 4096:
