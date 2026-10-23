@@ -243,7 +243,7 @@ class DeviceMapperTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             for name in ("a.elf", "b.elf"):
-                (root / name).write_bytes(b"\\x7fELF" + name.encode("ascii"))
+                (root / name).write_bytes(b"\x7fELF" + name.encode("ascii"))
             report = collect_device_map([root], max_files=1)
             self.assertFalse(report["scan"]["complete"])
             self.assertTrue(report["scan"]["limit_reached"])
@@ -253,7 +253,7 @@ class DeviceMapperTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             target = root / "target.elf"
-            target.write_bytes(b"\\x7fELFfixture")
+            target.write_bytes(b"\x7fELFfixture")
             link = root / "linked.elf"
             try:
                 link.symlink_to(target)
@@ -266,7 +266,7 @@ class DeviceMapperTests(unittest.TestCase):
     def test_single_explicit_file_scan_is_complete(self):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "single.elf"
-            path.write_bytes(b"\\x7fELFfixture")
+            path.write_bytes(b"\x7fELFfixture")
             report = collect_device_map([path])
             self.assertTrue(report["scan"]["complete"])
             self.assertEqual(report["scan"]["examined_files"], 1)
