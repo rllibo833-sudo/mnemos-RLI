@@ -87,6 +87,12 @@ def main(argv: list[str] | None = None) -> int:
             report = collect_device_map(args.path, max_files=args.max_files)
             fingerprint_payload = dict(report)
             fingerprint_payload.pop("captured_at", None)
+            # Observation timestamps order artifact history but must not make an
+            # unchanged device snapshot look different on every scan.
+            fingerprint_payload["artifacts"] = [
+                {key: value for key, value in artifact.items() if key != "observed_at_ns"}
+                for artifact in report.get("artifacts", [])
+            ]
             fingerprint = hashlib.sha256(
                 json.dumps(fingerprint_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
             ).hexdigest()
