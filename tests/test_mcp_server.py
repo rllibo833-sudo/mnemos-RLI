@@ -23,11 +23,28 @@ class McpServerTests(unittest.TestCase):
             self.store,
         )
         self.assertEqual(response["result"]["serverInfo"]["name"], "mnemos")
+        self.assertEqual(response["result"]["protocolVersion"], "2025-03-26")
         self.assertIn("tools", response["result"]["capabilities"])
+
+        unsupported = handle_message(
+            {"jsonrpc": "2.0", "id": 3, "method": "initialize", "params": {"protocolVersion": "future-version"}},
+            self.store,
+        )
+        self.assertEqual(unsupported["result"]["protocolVersion"], "2025-03-26")
 
         tools = handle_message({"jsonrpc": "2.0", "id": 2, "method": "tools/list"}, self.store)
         names = {tool["name"] for tool in tools["result"]["tools"]}
         self.assertEqual(names, {"mnemos_search", "mnemos_add", "mnemos_get", "mnemos_list", "mnemos_link", "mnemos_export"})
+
+    def test_invalid_json_rpc_envelope_and_notifications(self):
+        invalid = handle_message({"id": 1, "method": "ping"}, self.store)
+        self.assertEqual(invalid["error"]["code"], -32600)
+
+        self.assertIsNone(handle_message({
+            "jsonrpc": "2.0", "method": "tools/call",
+            "params": {"name": "mnemos_add", "arguments": {"content": "notification memory"}},
+        }, self.store))
+        self.assertEqual(self.store.search("notification memory")[0]["content"], "notification memory")
 
     def test_tools_round_trip(self):
         added = call_tool(self.store, "mnemos_add", {

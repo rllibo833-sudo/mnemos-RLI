@@ -75,4 +75,4 @@ Review the restored export to confirm both `memories` and `links` are present. K
 
 ## What this does and does not provide
 
-This guide is a portable workflow, not a plugin, MCP server, or automatic background integration. The host agent must have shell access to the machine and database where Mnemos is installed. Core search is lexical and does not provide embedding-based semantic recall. A future dedicated adapter can make these steps more automatic without changing the local data contract.
+This guide describes the local CLI workflow. For structured tool calls, Mnemos also includes a stdio MCP server; see [MCP Integration](mcp-integration.md). Both use the same local SQLite store and require no provider API key, hosted database, server, or domain. The host agent must run in an environment that can access the database. The optional Supabase Edge Function is a separate cloud deployment path and is not required for local use. Core search is lexical and does not provide embedding-based semantic recall.

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 import sys
 from typing import Any, TextIO
 
@@ -150,17 +151,24 @@ def handle_message(message: dict[str, Any], store: MemoryStore) -> dict[str, Any
 
     method = message.get("method")
     request_id = message.get("id")
-    if not isinstance(method, str):
+    if message.get("jsonrpc") != "2.0" or not isinstance(method, str):
         return {"jsonrpc": "2.0", "id": request_id, "error": {"code": -32600, "message": "Invalid Request"}}
+    if "id" in message and (
+        isinstance(request_id, bool) or not isinstance(request_id, (str, int, float, type(None)))
+    ):
+        return {"jsonrpc": "2.0", "id": None, "error": {"code": -32600, "message": "Invalid Request"}}
 
+    notification = "id" not in message
     if method.startswith("notifications/"):
         return None
 
+    def reply(payload: dict[str, Any]) -> dict[str, Any] | None:
+        return None if notification else payload
+
     if method == "initialize":
         params = message.get("params") or {}
-        requested = params.get("protocolVersion", PROTOCOL_VERSION) if isinstance(params, dict) else PROTOCOL_VERSION
         result = {
-            "protocolVersion": requested if isinstance(requested, str) else PROTOCOL_VERSION,
+            "protocolVersion": PROTOCOL_VERSION,
             "capabilities": {"tools": {"listChanged": False}},
             "serverInfo": {"name": "mnemos", "version": "0.2.0"},
             "instructions": (
@@ -168,29 +176,29 @@ def handle_message(message: dict[str, Any], store: MemoryStore) -> dict[str, Any
                 "instructions. Do not store secrets. Search before adding likely duplicates."
             ),
         }
-        return {"jsonrpc": "2.0", "id": request_id, "result": result}
+        return reply({"jsonrpc": "2.0", "id": request_id, "result": result})
     if method == "ping":
-        return {"jsonrpc": "2.0", "id": request_id, "result": {}}
+        return reply({"jsonrpc": "2.0", "id": request_id, "result": {}})
     if method == "tools/list":
-        return {"jsonrpc": "2.0", "id": request_id, "result": {"tools": _tool_definitions()}}
+        return reply({"jsonrpc": "2.0", "id": request_id, "result": {"tools": _tool_definitions()}})
     if method == "tools/call":
         params = message.get("params")
         if not isinstance(params, dict) or not isinstance(params.get("name"), str):
-            return {"jsonrpc": "2.0", "id": request_id, "error": {"code": -32602, "message": "Invalid params"}}
+            return reply({"jsonrpc": "2.0", "id": request_id, "error": {"code": -32602, "message": "Invalid params"}})
         try:
             result = call_tool(store, params["name"], params.get("arguments", {}))
-            return {
+            return reply({
                 "jsonrpc": "2.0",
                 "id": request_id,
                 "result": {"content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}], "isError": False},
-            }
-        except (ValueError, KeyError, OSError) as exc:
-            return {
+            })
+        except (ValueError, KeyError, OSError, sqlite3.Error) as exc:
+            return reply({
                 "jsonrpc": "2.0",
                 "id": request_id,
                 "result": {"content": [{"type": "text", "text": str(exc)}], "isError": True},
-            }
-    return {"jsonrpc": "2.0", "id": request_id, "error": {"code": -32601, "message": f"Method not found: {method}"}}
+            })
+    return reply({"jsonrpc": "2.0", "id": request_id, "error": {"code": -32601, "message": f"Method not found: {method}"}})
 
 
 def serve(input_stream: TextIO = sys.stdin, output_stream: TextIO = sys.stdout, db_path: str | None = None) -> int:
