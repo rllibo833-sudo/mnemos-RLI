@@ -197,6 +197,9 @@ class DeviceMapperTests(unittest.TestCase):
             superseded_links = [link for link in store.links() if link["relation"] == "superseded_by"]
             self.assertEqual(len(superseded_links), 1)
             self.assertEqual(dependencies[0]["metadata"]["name"], "libshared.so")
+            evidence_sources = dependencies[0]["metadata"]["evidence_sources"]
+            self.assertEqual(len(evidence_sources), 3)
+            self.assertEqual(len({(item["artifact_path"], item["artifact_sha256"]) for item in evidence_sources}), 3)
 
     def test_malformed_binary_headers_fail_closed(self):
         with tempfile.TemporaryDirectory() as temp:

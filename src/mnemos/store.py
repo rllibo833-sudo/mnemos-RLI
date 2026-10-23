@@ -146,6 +146,28 @@ class MemoryStore:
             row = db.execute("SELECT * FROM memories WHERE id = ?", (memory_id,)).fetchone()
         return self._memory(row) if row else None
 
+    def update_metadata(self, memory_id: str, metadata: dict[str, Any]) -> dict[str, Any]:
+        """Replace a memory's metadata and enqueue the same local change atomically."""
+        if not isinstance(metadata, dict):
+            raise ValueError("Memory metadata must be an object.")
+        metadata_json = json.dumps(metadata, ensure_ascii=False, sort_keys=True)
+        with self._connect() as db:
+            row = db.execute("SELECT * FROM memories WHERE id = ?", (memory_id,)).fetchone()
+            if row is None:
+                raise KeyError(f"Memory not found: {memory_id}")
+            item = self._memory(row)
+            if item["metadata"] == metadata:
+                return item
+            updated_at = utc_now()
+            db.execute(
+                "UPDATE memories SET metadata_json = ?, updated_at = ? WHERE id = ?",
+                (metadata_json, updated_at, memory_id),
+            )
+            item["metadata"] = metadata
+            item["updated_at"] = updated_at
+            self._enqueue(db, "memory", memory_id, item)
+        return item
+
     def list(self, *, limit: int = 100) -> list[dict[str, Any]]:
         with self._connect() as db:
             rows = db.execute(

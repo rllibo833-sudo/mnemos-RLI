@@ -64,6 +64,8 @@ def main(argv: list[str] | None = None) -> int:
             artifact_ids = []
             dependency_ids = {}
             existing_dependency_ids = {}
+            existing_dependency_records = {}
+            dependency_record_by_key = {}
             existing_artifact_ids = {}
             latest_artifact_by_path = {}
             for existing in store.list(limit=10000):
@@ -71,8 +73,10 @@ def main(argv: list[str] | None = None) -> int:
                 if existing.get("kind") == "runtime_dependency" and metadata.get("schema") == "mnemos-dependency-evidence-v1":
                     existing_name = str(metadata.get("name", "")).strip()
                     existing_format = str(metadata.get("format", "")).strip()
-                    if existing_name and existing_format:
-                        existing_dependency_ids[(existing_format, existing_name.casefold())] = existing["id"]
+                    key = (existing_format, existing_name.casefold())
+                    if existing_name and existing_format and key not in existing_dependency_ids:
+                        existing_dependency_ids[key] = existing["id"]
+                        existing_dependency_records[key] = existing
                 elif existing.get("kind") == "binary_artifact":
                     existing_path = str(metadata.get("path", "")).strip()
                     existing_sha = metadata.get("sha256")
@@ -138,9 +142,19 @@ def main(argv: list[str] | None = None) -> int:
                     if not name:
                         continue
                     key = (dependency["format"], name.casefold())
+                    source_evidence = {
+                        "artifact_sha256": artifact.get("sha256"),
+                        "artifact_path": artifact.get("path"),
+                        "parser_status": details.get("status"),
+                        "analysis_limits": details.get("analysis_limits", []),
+                        "method": "static-file-metadata",
+                        "execution_performed": False,
+                        "network_used": False,
+                    }
                     if key not in dependency_ids:
                         if key in existing_dependency_ids:
                             dependency_ids[key] = existing_dependency_ids[key]
+                            dependency_record_by_key[key] = existing_dependency_records[key]
                         else:
                             dep_record = store.add(
                                 f"Runtime dependency: {name}",
@@ -152,20 +166,49 @@ def main(argv: list[str] | None = None) -> int:
                                     "name": name,
                                     "format": dependency["format"],
                                     "kind": dependency["kind"],
+                                    "kinds": [dependency["kind"]],
                                     "symbols": dependency.get("symbols", []),
-                                    "evidence": {
-                                        "artifact_sha256": artifact.get("sha256"),
-                                        "artifact_path": artifact.get("path"),
-                                        "parser_status": details.get("status"),
-                                        "method": "static-file-metadata",
-                                        "execution_performed": False,
-                                        "network_used": False,
-                                    },
+                                    "evidence": source_evidence,
+                                    "evidence_sources": [source_evidence],
                                 },
                             )
                             dependency_ids[key] = dep_record["id"]
+                            dependency_record_by_key[key] = dep_record
                             existing_dependency_ids[key] = dep_record["id"]
+                            existing_dependency_records[key] = dep_record
                             dependency_records_created += 1
+                    dep_record = dependency_record_by_key[key]
+                    dep_metadata = dict(dep_record.get("metadata") or {})
+                    evidence_sources = dep_metadata.get("evidence_sources")
+                    if not isinstance(evidence_sources, list):
+                        legacy_evidence = dep_metadata.get("evidence")
+                        evidence_sources = [legacy_evidence] if isinstance(legacy_evidence, dict) else []
+                    evidence_key = (source_evidence["artifact_path"], source_evidence["artifact_sha256"])
+                    if not any(
+                        isinstance(item, dict)
+                        and (item.get("artifact_path"), item.get("artifact_sha256")) == evidence_key
+                        for item in evidence_sources
+                    ):
+                        evidence_sources.append(source_evidence)
+                    dep_metadata["evidence_sources"] = evidence_sources
+                    existing_kinds = dep_metadata.get("kinds", [])
+                    kinds = set(existing_kinds) if isinstance(existing_kinds, list) else set()
+                    if dep_metadata.get("kind"):
+                        kinds.add(dep_metadata["kind"])
+                    kinds.add(dependency["kind"])
+                    dep_metadata["kinds"] = sorted(kinds)
+                    existing_symbols = dep_metadata.get("symbols", [])
+                    incoming_symbols = dependency.get("symbols", [])
+                    if not isinstance(existing_symbols, list):
+                        existing_symbols = []
+                    if not isinstance(incoming_symbols, list):
+                        incoming_symbols = []
+                    symbol_map = {}
+                    for symbol in existing_symbols + incoming_symbols:
+                        if isinstance(symbol, dict):
+                            symbol_map[json.dumps(symbol, sort_keys=True)] = symbol
+                    dep_metadata["symbols"] = [symbol_map[key] for key in sorted(symbol_map)]
+                    dependency_record_by_key[key] = store.update_metadata(dependency_ids[key], dep_metadata)
                     store.link(artifact_id, dependency_ids[key], relation="depends_on")
                     dependency_links += 1
             print(json.dumps({
