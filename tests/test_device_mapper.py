@@ -221,6 +221,13 @@ class DeviceMapperTests(unittest.TestCase):
             result = discover_artifacts([root])
             self.assertEqual(len(result), 1)
             self.assertEqual(result[0]["format"], "ELF")
+            link = root / "linked.elf"
+            try:
+                link.symlink_to(binary)
+            except OSError:
+                pass
+            else:
+                self.assertEqual(discover_artifacts([link]), [])
             self.assertEqual(result[0]["binary_details"]["status"], "invalid_elf_header")
             self.assertEqual(len(result[0]["sha256"]), 64)
 

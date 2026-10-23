@@ -72,7 +72,7 @@ def _inspect_elf_dynamic(stream: Any, header: bytes, bits: int, endian: str, fil
     if phnum == 0:
         result["dynamic_status"] = "no_program_headers"
         return result
-    if phnum > 4096 or phentsize < expected or phoff > file_size or phnum * phentsize > file_size - phoff:
+    if phnum > 4096 or phentsize < expected or phentsize > 4096 or phoff > file_size or phnum * phentsize > file_size - phoff:
         result["dynamic_status"] = "invalid_or_excessive_program_headers"
         return result
     loads: list[tuple[int, int, int]] = []
@@ -87,6 +87,9 @@ def _inspect_elf_dynamic(stream: Any, header: bytes, bits: int, endian: str, fil
             p_type, p_offset, p_vaddr, _paddr, p_filesz, _memsz, _flags, _align = struct.unpack_from(endian + "IIIIIIII", raw)
         else:
             p_type, _flags, p_offset, p_vaddr, _paddr, p_filesz, _memsz, _align = struct.unpack_from(endian + "IIQQQQQQ", raw)
+        if p_type in (1, 2) and p_filesz > _memsz:
+            result["dynamic_status"] = "invalid_program_segment_size"
+            return result
         if p_offset > file_size or p_filesz > file_size - p_offset:
             continue
         if p_type == 1:
@@ -129,7 +132,10 @@ def _inspect_elf_dynamic(stream: Any, header: bytes, bits: int, endian: str, fil
         result["dynamic_status"] = "missing_dynamic_terminator"
         return result
     strtab_va = next(iter(tags.get(5, [])), None)
-    strtab_size = min(next(iter(tags.get(10, [])), 0), 8 * 1024 * 1024)
+    strtab_size = next(iter(tags.get(10, [])), 0)
+    if strtab_size > 8 * 1024 * 1024:
+        result["dynamic_status"] = "string_table_size_exceeds_limit"
+        return result
     strtab_offset = va_to_offset(strtab_va, strtab_size) if strtab_va is not None and strtab_size else None
     strings = b""
     if strtab_offset is None:
@@ -201,7 +207,7 @@ def _inspect_elf(stream: Any, header: bytes) -> dict[str, Any]:
     base.update(dynamic)
     if section_count == 0:
         return base
-    if section_entry_size < expected_header_size or section_count > 4096:
+    if section_entry_size < expected_header_size or section_entry_size > 4096 or section_count > 4096:
         base["analysis_limits"].append("invalid_or_excessive_section_table")
         return base
     table_size = section_entry_size * section_count
@@ -401,7 +407,7 @@ def _inspect_pe(stream: Any, dos_header: bytes) -> dict[str, Any]:
             return min(section_table_offset - rva, file_size - rva)
         return 0
 
-    def read_c_string(offset: int, limit: int = 4096) -> str:
+    def read_c_string(offset: int, limit: int = 512) -> str:
         if offset < 0 or offset >= file_size:
             return ""
         stream.seek(offset)
@@ -437,7 +443,7 @@ def _inspect_pe(stream: Any, dos_header: bytes) -> dict[str, Any]:
                 thunk_size = 8 if bits == 64 else 4
                 thunk_offset = rva_offset(thunk_rva, thunk_size)
                 if thunk_offset is not None:
-                    thunk_count = min(4096, rva_available(thunk_rva) // thunk_size)
+                    thunk_count = min(1024, rva_available(thunk_rva) // thunk_size)
                     for index in range(thunk_count):
                         item_offset = thunk_offset + index * thunk_size
                         stream.seek(item_offset)
@@ -456,12 +462,12 @@ def _inspect_pe(stream: Any, dos_header: bytes) -> dict[str, Any]:
                                 name = read_c_string(hint_name_offset + 2)
                                 if name:
                                     imported.append({"name": name})
-                        if len(imported) >= 4096:
+                        if len(imported) >= 1024:
                             result["analysis_limits"].append("import_symbol_limit_reached")
                             break
                 if dll:
                     result["imports"].append({"library": dll, "symbols": imported})
-                if len(result["imports"]) >= 256:
+                if len(result["imports"]) >= 128:
                     result["analysis_limits"].append("import_library_limit_reached")
                     break
 
@@ -545,7 +551,7 @@ def inspect_binary(path: str | Path, fmt: str | None = None) -> dict[str, Any]:
                     "load_command_count": commands, "load_command_bytes": command_bytes,
                     "flags": flags, "dependencies": [], "rpaths": [], "analysis_limits": [],
                 }
-                if header_size > file_size or commands > 4096 or command_bytes > file_size - header_size:
+                if header_size > file_size or commands > 4096 or command_bytes > 16 * 1024 * 1024 or command_bytes > file_size - header_size:
                     result["analysis_limits"].append("invalid_or_excessive_load_commands")
                     return result
                 stream.seek(header_size)
@@ -559,7 +565,7 @@ def inspect_binary(path: str | Path, fmt: str | None = None) -> dict[str, Any]:
                         result["analysis_limits"].append("truncated_load_command_header")
                         break
                     command, command_size = struct.unpack(endian + "II", command_header)
-                    if command_size < 8 or command_size > command_bytes - consumed:
+                    if command_size < 8 or command_size > 1024 * 1024 or command_size > command_bytes - consumed:
                         result["analysis_limits"].append("invalid_load_command_size")
                         break
                     payload = stream.read(command_size - 8)
@@ -630,6 +636,16 @@ def _artifact(path: Path) -> dict[str, Any] | None:
             return None
         digest = _sha256(path)
         details = inspect_binary(path, fmt)
+        after = path.stat(follow_symlinks=False)
+        changed_during_inspection = (
+            info.st_dev != after.st_dev
+            or info.st_ino != after.st_ino
+            or info.st_size != after.st_size
+            or info.st_mtime_ns != after.st_mtime_ns
+        )
+        if changed_during_inspection:
+            digest = None
+            details = {"status": "file_changed_during_inspection", "format": fmt or "unknown"}
         return {
             "evidence": {
                 "schema": "mnemos-binary-evidence-v1",
@@ -650,6 +666,8 @@ def _artifact(path: Path) -> dict[str, Any] | None:
             "mode": stat.S_IMODE(info.st_mode),
             "sha256": digest,
             "hash_skipped_reason": (
+                "file changed during inspection"
+                if changed_during_inspection else
                 "file exceeds 256 MiB limit or could not be read"
                 if digest is None else None
             ),
@@ -668,7 +686,10 @@ def discover_artifacts(paths: Iterable[str | Path] = (), *, max_files: int = 200
     for supplied in paths:
         if examined >= max_files:
             break
-        root = Path(supplied).expanduser().resolve()
+        supplied_path = Path(supplied).expanduser()
+        if supplied_path.is_symlink():
+            continue
+        root = supplied_path.resolve()
         if not root.exists():
             raise ValueError(f"scan path does not exist: {supplied}")
         candidates: Iterable[Path]
