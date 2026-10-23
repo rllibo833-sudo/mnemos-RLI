@@ -21,7 +21,7 @@ class GraphEvolutionTests(unittest.TestCase):
                 ["superseded_by"],
             )
             self.assertEqual(evolve_graph(store)["supersession_edges_repaired"], 0)
-            self.assertEqual(store.links()[0]["target_id"], second["id"])
+            self.assertEqual(next(link for link in store.links() if link["relation"] == "superseded_by")["target_id"], second["id"])
 
     def test_evolution_flags_dependency_edges_with_wrong_node_kinds(self):
         with tempfile.TemporaryDirectory() as temp:
