@@ -144,7 +144,7 @@ def _inspect_elf(stream: Any, header: bytes) -> dict[str, Any]:
     def string_at(table: bytes, offset: int) -> str:
         if offset < 0 or offset >= len(table):
             return ""
-        end = table.find(b"\\0", offset, min(len(table), offset + 4096))
+        end = table.find(bytes((0,)), offset, min(len(table), offset + 4096))
         if end < 0:
             end = min(len(table), offset + 4096)
         return table[offset:end].decode("utf-8", errors="replace")
