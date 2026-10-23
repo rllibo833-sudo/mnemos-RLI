@@ -112,6 +112,7 @@ class AnalysisTests(unittest.TestCase):
         result, _ = analyze_graph(self.store, paths=[scope])
         self.assertFalse(any(item["rule_id"] == "missing_dependency" for item in result["metadata"]["findings"]))
         self.assertEqual(result["metadata"]["unknown_scopes"][0]["reason"], "failed_validation")
+        self.assertTrue(any(item["rule_id"] == "failed_validation" for item in result["metadata"]["findings"]))
 
     def test_analysis_is_idempotent_and_enqueues_only_once(self):
         scope = "/prefix/bin"
