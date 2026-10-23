@@ -124,6 +124,13 @@ def main(argv: list[str] | None = None) -> int:
                     if existing_path and existing_sha:
                         existing_artifact_ids[(existing_path, existing_sha)] = existing["id"]
                     elif (
+                        existing_path and metadata.get("sample_sha256")
+                        and (metadata.get("binary_details") or {}).get("status") != "file_changed_during_inspection"
+                    ):
+                        existing_artifact_ids[(
+                            existing_path, None, "sample", metadata.get("sample_sha256"), metadata.get("size_bytes")
+                        )] = existing["id"]
+                    elif (
                         existing_path
                         and metadata.get("mtime_ns") is not None
                         and metadata.get("size_bytes") is not None
@@ -134,9 +141,9 @@ def main(argv: list[str] | None = None) -> int:
                         )] = existing["id"]
                     if existing_path:
                         previous = latest_artifact_by_path.get(existing_path)
-                        current_rank = (str(existing.get("created_at", "")), int(metadata.get("mtime_ns") or 0))
+                        current_rank = (str(existing.get("created_at", "")), int(metadata.get("observed_at_ns") or 0), int(metadata.get("mtime_ns") or 0))
                         previous_metadata = (previous or {}).get("metadata") or {}
-                        previous_rank = (str((previous or {}).get("created_at", "")), int(previous_metadata.get("mtime_ns") or 0))
+                        previous_rank = (str((previous or {}).get("created_at", "")), int(previous_metadata.get("observed_at_ns") or 0), int(previous_metadata.get("mtime_ns") or 0))
                         if previous is None or current_rank > previous_rank:
                             latest_artifact_by_path[existing_path] = existing
             artifact_records_created = 0
@@ -147,6 +154,12 @@ def main(argv: list[str] | None = None) -> int:
                 artifact_sha = artifact.get("sha256")
                 if artifact_sha:
                     identity = (artifact_path, artifact_sha)
+                elif artifact_path and artifact.get("sample_sha256") and (
+                    artifact.get("binary_details") or {}
+                ).get("status") != "file_changed_during_inspection":
+                    identity = (
+                        artifact_path, None, "sample", artifact.get("sample_sha256"), artifact.get("size_bytes")
+                    )
                 elif (
                     artifact_path
                     and artifact.get("mtime_ns") is not None
@@ -206,7 +219,10 @@ def main(argv: list[str] | None = None) -> int:
                     key = (dependency["format"], name.casefold())
                     source_evidence = {
                         "artifact_sha256": artifact.get("sha256"),
+                        "sample_sha256": artifact.get("sample_sha256"),
                         "artifact_path": artifact.get("path"),
+                        "observed_mtime_ns": artifact.get("mtime_ns") if artifact.get("sha256") is None else None,
+                        "file_size_bytes": artifact.get("size_bytes") if artifact.get("sha256") is None else None,
                         "parser_status": details.get("status"),
                         "analysis_limits": details.get("analysis_limits", []),
                         "method": "static-file-metadata",
@@ -245,10 +261,17 @@ def main(argv: list[str] | None = None) -> int:
                     if not isinstance(evidence_sources, list):
                         legacy_evidence = dep_metadata.get("evidence")
                         evidence_sources = [legacy_evidence] if isinstance(legacy_evidence, dict) else []
-                    evidence_key = (source_evidence["artifact_path"], source_evidence["artifact_sha256"])
+                    evidence_key = (
+                        source_evidence["artifact_path"], source_evidence["artifact_sha256"],
+                        source_evidence.get("sample_sha256"), source_evidence.get("observed_mtime_ns"),
+                        source_evidence.get("file_size_bytes"),
+                    )
                     if not any(
                         isinstance(item, dict)
-                        and (item.get("artifact_path"), item.get("artifact_sha256")) == evidence_key
+                        and (
+                            item.get("artifact_path"), item.get("artifact_sha256"), item.get("sample_sha256"),
+                            item.get("observed_mtime_ns"), item.get("file_size_bytes"),
+                        ) == evidence_key
                         for item in evidence_sources
                     ):
                         evidence_sources.append(source_evidence)

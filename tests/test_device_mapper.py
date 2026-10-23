@@ -1,10 +1,12 @@
 import contextlib
 import io
 import json
+import os
 import struct
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from mnemos.cli import main
 from mnemos.device_mapper import classify_binary, collect_device_map, discover_artifacts, inspect_binary
@@ -270,6 +272,37 @@ class DeviceMapperTests(unittest.TestCase):
             report = collect_device_map([path])
             self.assertTrue(report["scan"]["complete"])
             self.assertEqual(report["scan"]["examined_files"], 1)
+
+
+    def test_sample_fingerprint_distinguishes_oversized_files_with_preserved_metadata(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            path = root / "large.elf"
+            original_bytes = bytearray(b"\\x7fELF" + b"A" * 251)
+            path.write_bytes(original_bytes)
+            original = path.stat()
+            database = root / "memory.sqlite3"
+            with patch("mnemos.device_mapper.MAX_HASH_BYTES", 64), patch(
+                "mnemos.device_mapper.SAMPLE_HASH_WINDOW_BYTES", 64
+            ):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(main(["--db", str(database), "map-device", "--path", str(path)]), 0)
+                first_observation = collect_device_map([path])["artifacts"][0]
+                self.assertIsNone(first_observation["sha256"])
+                self.assertIsNotNone(first_observation["sample_sha256"])
+                self.assertEqual(first_observation["sample_hash_method"], "first-middle-last-bounded-regions")
+
+                changed_bytes = bytearray(original_bytes)
+                changed_bytes[8] = ord("B")
+                path.write_bytes(changed_bytes)
+                os.utime(path, ns=(original.st_atime_ns, original.st_mtime_ns))
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(main(["--db", str(database), "map-device", "--path", str(path)]), 0)
+
+            store = MemoryStore(database)
+            artifacts = [item for item in store.list(limit=10000) if item["kind"] == "binary_artifact"]
+            self.assertEqual(len(artifacts), 2)
+            self.assertEqual(len({item["metadata"]["sample_sha256"] for item in artifacts}), 2)
 
     def test_device_map_persists_offline_snapshot_and_artifact_links(self):
         with tempfile.TemporaryDirectory() as temp:

@@ -42,6 +42,7 @@ def _dependencies(details: dict[str, Any]) -> list[dict[str, Any]]:
 def _evidence(artifact: dict[str, Any], details: dict[str, Any]) -> dict[str, Any]:
     return {
         "artifact_sha256": artifact.get("sha256"),
+        "sample_sha256": artifact.get("sample_sha256"),
         "artifact_path": artifact.get("path"),
         "observed_mtime_ns": artifact.get("mtime_ns") if artifact.get("sha256") is None else None,
         "file_size_bytes": artifact.get("size_bytes") if artifact.get("sha256") is None else None,
@@ -59,6 +60,7 @@ def _evidence_key(item: dict[str, Any]) -> tuple[Any, ...]:
     return (
         item.get("artifact_path"),
         item.get("artifact_sha256"),
+        item.get("sample_sha256") if item.get("artifact_sha256") is None else None,
         item.get("observed_mtime_ns") if item.get("artifact_sha256") is None else None,
         item.get("file_size_bytes") if item.get("artifact_sha256") is None else None,
     )
@@ -103,6 +105,7 @@ def evolve_graph(store: MemoryStore) -> dict[str, Any]:
     for versions in artifacts_by_path.values():
         versions.sort(key=lambda item: (
             item.get("created_at", ""),
+            int((item.get("metadata") or {}).get("observed_at_ns") or 0),
             int((item.get("metadata") or {}).get("mtime_ns") or 0),
             item["id"],
         ))

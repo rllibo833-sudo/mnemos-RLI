@@ -23,7 +23,7 @@ Audit target: `main` at the current repository head; re-audit after each impleme
 
 The mapper extracts ELF sections/symbols/dynamic dependencies, PE sections/imports/exports, and Mach-O load-command dependencies using bounded static parsing. Artifact versions and provenance are retained; reconciliation reconstructs missing depends_on edges from persisted parsed metadata and validates history. Incomplete scans are explicitly marked when budgets, depth caps, skipped symlink roots, or traversal errors prevent a complete inventory. Missing artifacts are not automatically deleted or marked absent, and missing dependencies in a replacement do not erase older evidence.
 
-Content hashes identify versions when available. For unhashable or oversized files, path/size/mtime are a weaker observation identity and cannot prove byte-for-byte identity if content changes while those metadata remain unchanged.
+Full SHA-256 identifies versions when available. Oversized/unhashable files also receive a bounded first/middle/last sample fingerprint, used with path and size to distinguish many content changes even when mtime is preserved. This is not a full-content hash: changes confined to unsampled regions can remain undetected, so it cannot prove byte-for-byte identity. Each observation also records a nanosecond capture timestamp to order versions whose filesystem metadata and store timestamps tie.
 
 ## Confirmed gap
 

@@ -12,6 +12,7 @@ import shutil
 import stat
 import struct
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, Any
@@ -23,6 +24,7 @@ TOOL_NAMES = (
 )
 SKIP_DIRS = {".git", ".hg", ".svn", ".venv", "venv", "__pycache__", "node_modules", ".cache"}
 MAX_HASH_BYTES = 256 * 1024 * 1024
+SAMPLE_HASH_WINDOW_BYTES = 64 * 1024
 MAGIC = (
     (b"\x7fELF", "ELF"),
     (b"MZ", "PE/DOS"),
@@ -634,6 +636,34 @@ def _sha256(path: Path) -> str | None:
         return None
 
 
+def _sample_sha256(path: Path, file_size: int) -> str | None:
+    """Fingerprint bounded file regions; this is not a full-content hash."""
+    if file_size < 0 or SAMPLE_HASH_WINDOW_BYTES < 1:
+        return None
+    window = min(SAMPLE_HASH_WINDOW_BYTES, file_size)
+    offsets = sorted({
+        0,
+        max(0, (file_size - window) // 2),
+        max(0, file_size - window),
+    })
+    digest = hashlib.sha256()
+    digest.update(b"mnemos-sampled-content-v1\\0")
+    digest.update(str(file_size).encode("ascii") + b"\\0")
+    try:
+        with path.open("rb") as stream:
+            for offset in offsets:
+                stream.seek(offset)
+                chunk = stream.read(window)
+                if len(chunk) != window:
+                    return None
+                digest.update(str(offset).encode("ascii") + b"\\0")
+                digest.update(len(chunk).to_bytes(8, "big"))
+                digest.update(chunk)
+    except OSError:
+        return None
+    return digest.hexdigest()
+
+
 def _artifact(path: Path) -> dict[str, Any] | None:
     try:
         info = path.stat(follow_symlinks=False)
@@ -645,6 +675,7 @@ def _artifact(path: Path) -> dict[str, Any] | None:
         if fmt is None and not (info.st_mode & 0o111):
             return None
         digest = _sha256(path)
+        sample_digest = _sample_sha256(path, info.st_size) if digest is None else None
         details = inspect_binary(path, fmt)
         after = path.stat(follow_symlinks=False)
         changed_during_inspection = (
@@ -655,6 +686,7 @@ def _artifact(path: Path) -> dict[str, Any] | None:
         )
         if changed_during_inspection:
             digest = None
+            sample_digest = None
             details = {"status": "file_changed_during_inspection", "format": fmt or "unknown"}
         return {
             "evidence": {
@@ -662,6 +694,8 @@ def _artifact(path: Path) -> dict[str, Any] | None:
                 "method": "static-file-metadata",
                 "source_path": str(path),
                 "sha256": digest,
+                "sample_sha256": sample_digest,
+                "sample_hash_method": "first-middle-last-bounded-regions" if sample_digest else None,
                 "file_size_bytes": info.st_size,
                 "observed_mtime_ns": info.st_mtime_ns,
                 "parser": "mnemos-device-mapper",
@@ -675,6 +709,9 @@ def _artifact(path: Path) -> dict[str, Any] | None:
             "mtime_ns": info.st_mtime_ns,
             "mode": stat.S_IMODE(info.st_mode),
             "sha256": digest,
+            "sample_sha256": sample_digest,
+            "sample_hash_method": "first-middle-last-bounded-regions" if sample_digest else None,
+            "observed_at_ns": time.time_ns(),
             "hash_skipped_reason": (
                 "file changed during inspection"
                 if changed_during_inspection else
