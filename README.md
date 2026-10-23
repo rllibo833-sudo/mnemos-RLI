@@ -4,15 +4,15 @@
 
 Mnemos preserves useful knowledge across sessions and agents: facts, decisions, solutions, project context, sources, and explicit relationships. Its goal is **learn once, recall anywhere**—without making any single AI provider or project repository mandatory.
 
-> Status: early foundation. Local SQLite storage, explicit memory links, a real-data HTML graph, local stdio MCP, and a separate authenticated cloud MCP endpoint exist. **Local/cloud synchronization is not implemented yet.** See [the Living Knowledge Network plan](docs/living-knowledge-network.md) for the audited boundary and implementation contract.
+> Status: early foundation. Local SQLite storage, explicit memory links, a real-data HTML graph, local stdio MCP, and a separate authenticated cloud MCP endpoint exist. **Local/cloud synchronization is not implemented yet.** See [the Living Knowledge Network plan](docs/living-knowledge-network.md) and the [local-first memory tool contract](docs/local-first-memory-tool-contract.md).
 
 ## Why Mnemos?
 
-- **Hybrid direction:** local memory remains available offline; server memory enables access across devices and agents when connected.
-- **Local autonomy:** core capture, search, links, export, and graph generation work offline with Python's standard library.
+- **Independent tool/plugin:** CLI, reusable skill, MCP, and future clients share a documented memory contract; Mnemos is not part of the LynOS APK.
+- **Local autonomy:** core capture, lexical search, links, export, and graph generation work offline with Python's standard library.
 - **Traceable:** memories have stable IDs, timestamps, tags, source metadata, and explicit links.
-- **Portable:** export to documented JSON and validate it before import.
-- **Agent-neutral:** CLI, a reusable skill, and MCP interfaces; PusingCuk integration is optional, not a dependency.
+- **Portable:** export to documented JSON and validate it before import; snapshots are for portability/recovery, not synchronization.
+- **Agent-neutral:** PusingCuk integration is optional, not a dependency.
 - **Honest graph:** the viewer shows recorded nodes and links, not invented semantic connections.
 
 ## Quick start
@@ -40,12 +40,15 @@ Run `mnemos --help` for all commands. Use the IDs printed by `mnemos add` with `
 - [MCP Host Connection](docs/mcp-host-connection.md)
 - [Cloud MCP and verification boundary](docs/cloud.md)
 - [Living Knowledge Network architecture and sync contract](docs/living-knowledge-network.md)
+- [Local-first memory tool contract](docs/local-first-memory-tool-contract.md)
 
 The cloud MCP Edge Function is deployed, and a single-account authenticated round trip has passed. Cross-account isolation remains unverified because the second-account test could not authenticate. Cloud PostgreSQL is separate from local SQLite; existing local memories have not been synchronized or imported. A deployed endpoint is **not** the same thing as a working sync protocol.
 
-## Current data model
+## Current data model and limits
 
 A memory has an ID, content, kind, tags, optional source and metadata, and creation/update timestamps. A link is a directed relationship with a caller-defined type. Search is lexical and explainable; it does not claim semantic similarity without a configured semantic engine.
+
+Automatic whole-disk scanning, robust historical revisions, contradiction reconciliation, semantic retrieval, and evidence-grounded AI synthesis are **not yet implemented**. The local-first contract defines these boundaries without claiming they already work. Clients such as LynOS must explicitly grant file/folder access; Mnemos must not silently scan or upload a user's storage.
 
 ## Development
 
@@ -63,6 +66,8 @@ See [architecture](docs/architecture.md), [data format](docs/data-format.md), an
 4. Open, portable formats; no provider lock-in.
 5. No hidden prompt collection or telemetry.
 6. Never commit secrets or personal memory databases.
+7. Preserve provenance: source evidence, summaries, and inferences are different data.
+8. File scanning is opt-in and permission-scoped; no implicit upload.
 
 ## License
 
