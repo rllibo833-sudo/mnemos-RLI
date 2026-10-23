@@ -230,6 +230,23 @@ def analyze_graph(
                 },
             })
 
+    # Parser failures are explicit findings, never converted into absence claims.
+    for snapshot in sorted(latest_by_scope.values(), key=lambda item: item["id"]):
+        for artifact in snapshot_artifacts.get(snapshot["id"], []):
+            details = _metadata(artifact).get("binary_details")
+            status = details.get("status") if isinstance(details, dict) else "unknown"
+            if status != "parsed":
+                findings.append({
+                    "rule_id": "failed_validation", "severity": "review",
+                    "subject_id": artifact["id"],
+                    "summary": f"{_metadata(artifact).get('path', artifact['id'])} could not be fully validated by the static parser",
+                    "confidence": "high",
+                    "evidence": _artifact_evidence(artifact, [snapshot["id"]]) | {
+                        "validation_status": status or "unknown",
+                        "analysis_limits": details.get("analysis_limits", []) if isinstance(details, dict) else [],
+                    },
+                })
+
     for artifact in sorted((item for item in memories if item.get("kind") == "binary_artifact"), key=lambda item: item["id"]):
         if selected_paths and artifact["id"] not in scoped_artifact_ids:
             continue
