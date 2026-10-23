@@ -252,8 +252,10 @@ def main(argv: list[str] | None = None) -> int:
                     dependency_record_by_key[key] = store.update_metadata(dependency_ids[key], dep_metadata)
                     store.link(artifact_id, dependency_ids[key], relation="depends_on")
                     dependency_links += 1
+            evolution_report = evolve_graph(store)
             print(json.dumps({
                 "snapshot_id": snapshot["id"],
+                "graph_evolution": evolution_report,
                 "artifact_records": len(artifact_ids),
                 "artifact_records_created": artifact_records_created,
                 "dependency_records": len(dependency_ids),
@@ -261,6 +263,8 @@ def main(argv: list[str] | None = None) -> int:
                 "dependency_links": dependency_links,
                 "report": report,
             }, ensure_ascii=False, indent=2))
+            if not evolution_report["ok"]:
+                return 1
         elif args.command == "doctor":
             report = store.diagnostics()
             print(json.dumps(report, ensure_ascii=False, indent=2))

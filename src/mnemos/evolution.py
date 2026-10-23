@@ -6,6 +6,7 @@ Historical nodes and evidence are never deleted.
 from __future__ import annotations
 
 from collections import defaultdict
+import json
 from typing import Any
 
 from .store import MemoryStore
@@ -42,6 +43,8 @@ def _evidence(artifact: dict[str, Any], details: dict[str, Any]) -> dict[str, An
     return {
         "artifact_sha256": artifact.get("sha256"),
         "artifact_path": artifact.get("path"),
+        "observed_mtime_ns": artifact.get("mtime_ns") if artifact.get("sha256") is None else None,
+        "file_size_bytes": artifact.get("size_bytes") if artifact.get("sha256") is None else None,
         "parser_status": details.get("status"),
         "analysis_limits": details.get("analysis_limits", []),
         "method": "static-file-metadata",
@@ -56,8 +59,8 @@ def _evidence_key(item: dict[str, Any]) -> tuple[Any, ...]:
     return (
         item.get("artifact_path"),
         item.get("artifact_sha256"),
-        item.get("artifact_sha256") is None and item.get("observed_mtime_ns"),
-        item.get("artifact_sha256") is None and item.get("file_size_bytes"),
+        item.get("observed_mtime_ns") if item.get("artifact_sha256") is None else None,
+        item.get("file_size_bytes") if item.get("artifact_sha256") is None else None,
     )
 
 
@@ -159,24 +162,12 @@ def evolve_graph(store: MemoryStore) -> dict[str, Any]:
                 normalized = [
                     item for item in evidence_sources if isinstance(item, dict)
                 ]
-                incoming_key = _evidence_key({
-                    **source_evidence,
-                    "observed_mtime_ns": metadata.get("mtime_ns"),
-                    "file_size_bytes": metadata.get("size_bytes"),
-                })
+                incoming_key = _evidence_key(source_evidence)
                 if not any(
-                    _evidence_key({
-                        **item,
-                        "observed_mtime_ns": metadata.get("mtime_ns") if item.get("artifact_sha256") is None else None,
-                        "file_size_bytes": metadata.get("size_bytes") if item.get("artifact_sha256") is None else None,
-                    }) == incoming_key
+                    _evidence_key(item) == incoming_key
                     for item in normalized
                 ):
-                    normalized.append({
-                        **source_evidence,
-                        "observed_mtime_ns": metadata.get("mtime_ns") if metadata.get("sha256") is None else None,
-                        "file_size_bytes": metadata.get("size_bytes") if metadata.get("sha256") is None else None,
-                    })
+                    normalized.append(source_evidence)
                 kinds = set(dep_metadata.get("kinds", [])) if isinstance(dep_metadata.get("kinds"), list) else set()
                 if isinstance(dep_metadata.get("kind"), str):
                     kinds.add(dep_metadata["kind"])
@@ -187,7 +178,7 @@ def evolve_graph(store: MemoryStore) -> dict[str, Any]:
                 if not isinstance(symbols, list):
                     symbols = []
                 symbol_map = {
-                    __import__("json").dumps(item, sort_keys=True): item
+                    json.dumps(item, sort_keys=True): item
                     for item in symbols + (dependency.get("symbols", []) if isinstance(dependency.get("symbols"), list) else [])
                     if isinstance(item, dict)
                 }
