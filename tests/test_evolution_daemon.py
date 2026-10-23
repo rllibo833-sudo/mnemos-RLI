@@ -33,6 +33,49 @@ class GraphEvolutionTests(unittest.TestCase):
             self.assertFalse(report["ok"])
             self.assertTrue(any(item["type"] == "invalid_dependency_edge" for item in report["violations"]))
 
+    def test_evolution_rebuilds_dependency_edges_from_persisted_binary_evidence(self):
+        with tempfile.TemporaryDirectory() as temp:
+            store = MemoryStore(Path(temp) / "memory.sqlite3")
+            artifact = store.add(
+                "binary",
+                kind="binary_artifact",
+                metadata={
+                    "path": "/opt/demo",
+                    "sha256": "a" * 64,
+                    "size_bytes": 128,
+                    "mtime_ns": 1,
+                    "binary_details": {
+                        "status": "parsed",
+                        "format": "ELF",
+                        "analysis_limits": [],
+                        "dependencies": [{"name": "libdemo.so", "kind": "needed"}],
+                    },
+                },
+            )
+            first = evolve_graph(store)
+            self.assertTrue(first["ok"])
+            self.assertEqual(first["dependency_nodes_created"], 1)
+            self.assertEqual(first["dependency_edges_repaired"], 1)
+            self.assertEqual(len([link for link in store.links() if link["relation"] == "depends_on"]), 1)
+            second = evolve_graph(store)
+            self.assertTrue(second["ok"])
+            self.assertEqual(second["dependency_nodes_created"], 0)
+            self.assertEqual(second["dependency_edges_repaired"], 0)
+            self.assertEqual(len([link for link in store.links() if link["relation"] == "depends_on"]), 1)
+
+    def test_evolution_does_not_infer_absent_dependencies_from_unparsed_artifact(self):
+        with tempfile.TemporaryDirectory() as temp:
+            store = MemoryStore(Path(temp) / "memory.sqlite3")
+            store.add(
+                "broken binary",
+                kind="binary_artifact",
+                metadata={"path": "/opt/broken", "binary_details": {"status": "invalid_elf_header", "format": "ELF"}},
+            )
+            report = evolve_graph(store)
+            self.assertTrue(report["ok"])
+            self.assertEqual(report["unparsed_artifacts_skipped"], 1)
+            self.assertEqual(report["runtime_dependencies"], 0)
+
 
 class DaemonTests(unittest.TestCase):
     def test_once_runs_exactly_one_scan(self):
