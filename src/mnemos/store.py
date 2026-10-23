@@ -175,6 +175,17 @@ class MemoryStore:
             ).fetchall()
         return [self._memory(row) for row in rows]
 
+    def list_all(self, *, kind: str | None = None) -> list[dict[str, Any]]:
+        """Return every memory for graph reconciliation; unlike list(), never truncates at 10k."""
+        with self._connect() as db:
+            if kind is None:
+                rows = db.execute("SELECT * FROM memories ORDER BY created_at, id").fetchall()
+            else:
+                rows = db.execute(
+                    "SELECT * FROM memories WHERE kind = ? ORDER BY created_at, id", (kind,)
+                ).fetchall()
+        return [self._memory(row) for row in rows]
+
     def search(self, query: str, *, limit: int = 20) -> list[dict[str, Any]]:
         """Case-insensitive lexical search; no embeddings or remote model required."""
         terms = [term.casefold() for term in query.split() if term.strip()]

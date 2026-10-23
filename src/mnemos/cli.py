@@ -6,6 +6,8 @@ import sys
 from pathlib import Path
 
 from .device_mapper import collect_device_map
+from .daemon import run_daemon
+from .evolution import evolve_graph
 from .graph import render_graph
 from .store import MemoryStore
 
@@ -38,6 +40,12 @@ def _parser() -> argparse.ArgumentParser:
     mapping = commands.add_parser("map-device", help="Inventory this device offline; scan only explicitly supplied paths.")
     mapping.add_argument("--path", action="append", default=[], help="File or directory to inspect for binary artifacts; repeatable.")
     mapping.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected across selected directories.")
+    evolution = commands.add_parser("evolve", help="Reconcile artifact history and validate binary graph invariants.")
+    daemon = commands.add_parser("daemon", help="Continuously refresh an offline device map for explicitly selected paths.")
+    daemon.add_argument("--path", action="append", default=[], help="File or directory to scan; repeatable.")
+    daemon.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected per scan.")
+    daemon.add_argument("--interval", type=float, default=300, help="Seconds between full scans (default: 300).")
+    daemon.add_argument("--once", action="store_true", help="Run one scan and exit.")
     commands.add_parser("doctor", help="Check local SQLite integrity and relationship constraints.")
     commands.add_parser("sync-status", help="Show device identity and locally queued changes.")
     pending = commands.add_parser("outbox", help="List pending local changes awaiting sync.")
@@ -53,6 +61,24 @@ def main(argv: list[str] | None = None) -> int:
         store = MemoryStore(args.db)
         if args.command == "init":
             print(f"Mnemos database ready: {store.path}")
+        elif args.command == "evolve":
+            report = evolve_graph(store)
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0 if report["ok"] else 1
+        elif args.command == "daemon":
+            if not args.path:
+                raise ValueError("daemon requires at least one explicit --path.")
+            scan_args = ["--db", str(store.path), "map-device"]
+            for path in args.path:
+                scan_args.extend(["--path", path])
+            scan_args.extend(["--max-files", str(args.max_files)])
+            def scan() -> int:
+                return main(scan_args)
+            try:
+                return run_daemon(scan, interval_seconds=args.interval, once=args.once,
+                                  emit=lambda message: print(message, file=sys.stderr))
+            except KeyboardInterrupt:
+                return 130
         elif args.command == "map-device":
             report = collect_device_map(args.path, max_files=args.max_files)
             snapshot = store.add(
@@ -68,7 +94,7 @@ def main(argv: list[str] | None = None) -> int:
             dependency_record_by_key = {}
             existing_artifact_ids = {}
             latest_artifact_by_path = {}
-            for existing in store.list(limit=10000):
+            for existing in store.list_all():
                 metadata = existing.get("metadata") or {}
                 if existing.get("kind") == "runtime_dependency" and metadata.get("schema") == "mnemos-dependency-evidence-v1":
                     existing_name = str(metadata.get("name", "")).strip()
@@ -243,7 +269,7 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "link":
             print(json.dumps(store.link(args.source_id, args.target_id, relation=args.relation), indent=2))
         elif args.command == "graph":
-            path = render_graph(store.list(limit=10000), store.links(), args.output)
+            path = render_graph(store.list_all(), store.links(), args.output)
             print(f"Graph written to {path.resolve()}")
         elif args.command == "export":
             path = Path(args.output)
