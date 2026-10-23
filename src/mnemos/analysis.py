@@ -142,6 +142,9 @@ def analyze_graph(
         ]
 
     latest_complete = {scope: snap for scope, snap in latest_by_scope.items() if _scan_complete(snap)}
+    scoped_artifact_ids = {
+        item["id"] for artifacts in snapshot_artifacts.values() for item in artifacts
+    }
     active_artifact_ids: set[str] = set()
     for snapshot in latest_complete.values():
         active_artifact_ids.update(item["id"] for item in snapshot_artifacts.get(snapshot["id"], []))
