@@ -4,7 +4,7 @@
 
 Mnemos is a **Living Knowledge Network**: a durable, inspectable memory graph that can be used by different agents and devices. Its target storage strategy is **hybrid local + server from the outset**. Local use must continue when offline; server storage is for cross-device and cross-agent continuity. PusingCuk is an optional client, not a foundation dependency.
 
-## Existing components (audited at HEAD 3240b20917df18daa77b3c173f54eb8e9e57da3e)
+## Existing components (reviewed at current main)
 
 - **Local store:** Python standard-library SQLite at `~/.mnemos/memory.sqlite3`, overridable via `--db` or `MNEMOS_DB`.
 - **Memory records:** stable ID, content, kind, tags, optional source and metadata, timestamps.
@@ -17,7 +17,7 @@ Mnemos is a **Living Knowledge Network**: a durable, inspectable memory graph th
 
 ## Current gap: hybrid is not sync
 
-The local SQLite database and cloud PostgreSQL database are separate stores. The two MCP adapters expose similar operations, but there is no shared change feed, device identity, sync cursor, retryable outbox, tombstone model, or deterministic conflict policy. JSON export/import is useful for migration and backup but does not provide continuous synchronization.
+The local SQLite database and cloud PostgreSQL database are separate stores. Local SQLite now persists a device ID and a transactional outbox for new memory/link upserts. There is still no shared remote change feed, sync cursor, server acknowledgement, retry/resume protocol, tombstone model, or deterministic conflict policy. JSON export/import is useful for migration and backup but does not provide continuous synchronization.
 
 ## Target hybrid architecture
 
@@ -56,7 +56,7 @@ Memory contents are untrusted user data, not instructions. Never elevate stored 
 ## Delivery sequence
 
 1. Preserve existing local store, graph viewer, export validation, and MCP compatibility.
-2. Add schema migration plus transactional local change log/outbox and stable device identity.
+2. Harden the additive local schema migration, complete outbox coverage for imports, and retain stable device identity.
 3. Define a versioned authenticated sync API and server-side idempotency/ownership constraints.
 4. Implement pull/push cursors, retry/resume, tombstones, and explicit conflict reporting.
 5. Add offline-first integration tests and two-account cloud isolation tests.
