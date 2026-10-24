@@ -1,74 +1,47 @@
-# Architecture
+# Mnemos-RLI architecture
 
 ## Product direction
 
-Mnemos is a **Living Knowledge Network**: a durable, inspectable memory graph that can be used by different agents and devices. Its target storage strategy is **hybrid local + server from the outset**. Local use must continue when offline; server storage is for cross-device and cross-agent continuity. PusingCuk is an optional client, not a foundation dependency.
+Mnemos-RLI on `main` is an **offline integrity-evidence and reconstruction tool**. Its core workflow is scoped collection → immutable observation history → baseline comparison → evidence-backed analysis. It is not the online shared-memory product represented by the separate `Knowledge` branch, and LynOS is not a runtime dependency.
 
-## Existing components (reviewed at current main)
+## Current components
 
-- **Local store:** Python standard-library SQLite at `~/.mnemos/memory.sqlite3`, overridable via `--db` or `MNEMOS_DB`.
-- **Memory records:** stable ID, content, kind, tags, optional source and metadata, timestamps.
-- **Relationships:** explicit directed edges with a relation label.
-- **Search:** explainable lexical matching across content, kind, tags, and source.
-- **Import/export:** versioned JSON envelope; additive import validates data and skips existing IDs/duplicate links.
-- **Graph viewer:** standalone HTML built from actual store records and links.
-- **Local MCP:** stdio adapter exposing search/add/get/list/link/export.
-- **Cloud MCP:** Supabase Edge Function with owner-scoped PostgreSQL reads and writes, using a parallel set of tools.
-- **Offline device mapper:** opt-in scoped inventory, bounded ELF/PE/Mach-O static metadata parsing, full-hash limits, sampled fingerprints for oversized files, and scan-completeness diagnostics.
-- **Binary evidence graph:** versioned artifact nodes, shared dependency nodes, provenance records, depends_on and superseded_by edges, and deterministic graph reconciliation/validation.
-- **Analysis layer:** deterministic aggregation stores fingerprinted `analysis_result` records and transactional outbox entries. Findings retain source snapshot IDs, artifact identities, paths, parser status, and explicit unknown/incomplete-scope states; version-bearing library names are review flags, not vulnerability claims.
+- **Local store:** Python standard-library SQLite, selected by `--db` or `MNEMOS_DB`.
+- **Device mapper:** traverses only explicitly supplied paths and extracts bounded static metadata from recognized binaries and executable files.
+- **Artifact evidence:** stores paths, metadata, full SHA-256 where permitted by the size limit, sampled fingerprints for larger files, and parser status.
+- **Snapshots:** device inventory observations with scan scope, environment metadata, completeness, and a fingerprint used to avoid redundant snapshots.
+- **Release manifests:** compare observed artifact hashes with an expected set from a selected snapshot.
+- **Evolution and analysis:** reconcile artifact/dependency history and aggregate evidence into findings.
+- **Hash cache:** caches full hashes against resolved path and filesystem identity metadata; a cache miss or stale identity triggers recomputation.
+- **Live evidence viewer:** reads the store and compares the latest complete scan with the previous complete scan for the same device and scope. It does not initiate scans.
+- **Database diagnostics:** SQLite integrity and foreign-key checks.
 
-## Binary evidence and change semantics
+## Evidence model
 
-Each observed binary version is retained as an artifact record. Full content hashes identify versions when available. Oversized files use a bounded first/middle/last sample fingerprint plus path and size to distinguish many changes, but changes outside sampled regions may remain undetected. Nanosecond observation timestamps order versions when filesystem metadata ties. A missing dependency in a newly parsed version does not erase evidence from earlier versions. Reconciliation restores relationships only from stored parser results marked parsed, and does not infer absence from malformed or unparsed artifacts.
+A result should distinguish at least:
 
-A scan reports whether its inventory is complete. Reaching a directory file budget, a traversal depth cap, skipping a symlink root, or encountering traversal errors marks it incomplete. An incomplete scan is not evidence that an artifact was deleted. Current behavior preserves history rather than creating automatic deletion/tombstone conclusions.
+- **Match:** full hashes match the chosen baseline.
+- **Hash mismatch:** full hashes differ; the cause is not inferred.
+- **Missing:** a previously observed artifact is absent from a later complete scan of the same scope.
+- **New/unexpected:** an artifact is present outside the baseline set.
+- **Unknown:** scan completeness, hash quality, parsing, or scope is insufficient.
+- **Environment drift:** observations differ by OS, architecture, sandbox, or another environment property and therefore need explicit comparison policy.
 
-## Current gap: hybrid is not sync
-
-The local SQLite database and cloud PostgreSQL database are separate stores. Local SQLite now persists a device ID and a transactional outbox for new memory/link upserts. There is still no shared remote change feed, sync cursor, server acknowledgement, retry/resume protocol, tombstone model, or deterministic conflict policy. JSON export/import is useful for migration and backup but does not provide continuous synchronization.
-
-## Target hybrid architecture
-
-```text
-Agent / CLI / MCP client
-          |
-     Mnemos API
-       /     \
- Local engine  Sync coordinator (when configured)
- SQLite        | authenticated HTTPS
- outbox        v
- + graph    Cloud MCP / sync API
-                |
-           PostgreSQL
-```
-
-The local engine is the durable offline source of truth for local capture. Network failure must never block local reads/writes. Sync is explicit and observable; it must not silently overwrite content.
-
-## Required sync contract
-
-1. **Stable identity:** each device has a persistent random device ID; each memory/link keeps a stable globally unique ID.
-2. **Change tracking:** local mutations produce durable, ordered change records in the same SQLite transaction as the mutation. A sync cursor advances only after server acknowledgement.
-3. **Idempotency:** replaying the same change is safe. Server writes enforce unique change IDs and owner scope.
-4. **Conflict handling:** updates carry a base revision and content hash. Concurrent edits are retained as a conflict or resolved by a documented policy; timestamps alone are not sufficient evidence to discard data.
-5. **Deletion:** deletes become tombstones until all configured peers acknowledge them; no sync deletion is inferred from absence in a partial export.
-6. **Graph integrity:** links sync only when both endpoint memories exist for the same owner. Dangling links are surfaced, not silently fabricated.
-7. **Provenance:** record origin device/agent, source, operation ID, and server revision where available. Distinguish user-authored facts from agent-generated summaries/inferences.
-8. **Security:** cloud endpoints require a signed-in identity; every read/write is owner-scoped. Cross-account isolation tests must pass before declaring the cloud layer production-ready.
-9. **Recovery:** local export/validation remains available without a network; interrupted sync resumes from acknowledged cursors.
-10. **Agent neutrality:** MCP/CLI clients share the same memory and sync contracts; no particular agent framework is required.
+A sampled fingerprint is not interchangeable with a full SHA-256. An incomplete scan cannot prove an artifact is missing. A release manifest proves only the comparison against its contents; it does not authenticate the manifest author.
 
 ## Trust boundaries
 
-Memory contents are untrusted user data, not instructions. Never elevate stored text above system, developer, or current user instructions. Never store credentials or secrets. Treat imports and remote responses as untrusted input. Avoid logging memory content or tokens by default.
+- The scanner treats inspected files as untrusted data and never executes them.
+- File parsing is bounded and may return unsupported/unknown for formats it cannot safely inspect.
+- The live HTTP server binds to loopback by default and accepts only local bind addresses through its API.
+- The live viewer uses DOM text nodes rather than injecting stored paths or reasons as HTML.
+- The SQLite store and local cache are mutable local state; their contents are evidence inputs, not cryptographic attestations of provenance.
+- OS detection, sandbox identification, and native signature verification are incomplete. Reports must not overstate them.
 
-## Delivery sequence
+## Known gaps
 
-1. Preserve existing local store, graph viewer, export validation, and MCP compatibility.
-2. Harden the additive local schema migration, complete outbox coverage for imports, and retain stable device identity.
-3. Define a versioned authenticated sync API and server-side idempotency/ownership constraints.
-4. Implement pull/push cursors, retry/resume, tombstones, and explicit conflict reporting.
-5. Add offline-first integration tests and two-account cloud isolation tests.
-6. Add multi-device/agent UX only after the sync invariants pass.
+The mapper does not constitute a complete filesystem audit. Cross-OS metadata normalization and native signature verification need further work. The current live viewer is a bounded comparison list rather than a complete impact graph with clustering and interactive dependency traversal. A viewer refresh rereads stored evidence; a separate scan is required to collect a new observation.
 
-Do not claim hybrid sync is implemented until steps 2–5 have working code and verification. Semantic/embedding search and graph auto-inference are separate optional capabilities, not prerequisites for reliable sync. Static binary dependency evidence is implemented; disassembly, runtime loading verification, and semantic claims about whether a dependency is actively used are not.
+## Development rule
+
+Implement the evidence path first, then update documentation. Do not describe a planned capability as shipped. Keep the offline integrity product separate from online memory synchronization and avoid adding duplicate documentation when an existing canonical file can be updated.

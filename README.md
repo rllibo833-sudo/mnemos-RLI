@@ -1,76 +1,65 @@
-# Mnemos RLI — offline portable memory for AI agents
-SQLite-based memory graph with typed relations, lexical search, and live graph on Works with Claude Code & Cursor via local MCP. No cloud needed.
-![Mnemos portable memory platform infographic](Infografik%20Mnemos_%20Platform%20Memori%20Portabel.png)
+# Mnemos-RLI — offline integrity evidence and system reconstruction
 
-**A Living Knowledge Network for AI agents, with hybrid local and server storage.**
+Mnemos-RLI is an offline-first engineer's tool for recording scoped binary inventories, comparing observations, and preserving evidence about changes. It does not execute inspected files and does not require a cloud service.
 
-Mnemos preserves useful knowledge across sessions and agents: facts, decisions, solutions, project context, sources, and explicit relationships. Its goal is **learn once, recall anywhere**—without making any single AI provider or project repository mandatory.
+Its identity is **evidence before conclusions**: a changed hash is a comparison result, not by itself proof of malicious tampering. Conclusions must retain their baseline, scan scope, and limitations.
 
-> Status: early foundation. Local SQLite storage, explicit memory links, a real-data HTML graph, local stdio MCP, a persistent device ID, a transactional local outbox, and a separate authenticated cloud MCP endpoint exist. **Remote synchronization is not implemented yet: the local outbox records changes but no cloud push/pull, acknowledgement, retry, or conflict protocol is active.** See [the Living Knowledge Network plan](docs/living-knowledge-network.md) and the [local-first memory tool contract](docs/local-first-memory-tool-contract.md).
+## Current capabilities
 
-## Why Mnemos?
-
-- **Independent tool/plugin:** CLI, reusable skill, MCP, and future clients share a documented memory contract; Mnemos is not part of the LynOS APK.
-- **Local autonomy:** core capture, lexical search, links, export, and graph generation work offline with Python's standard library.
-- **Traceable:** memories have stable IDs, timestamps, tags, source metadata, and explicit links.
-- **Portable:** export to documented JSON and validate it before import; snapshots are for portability/recovery, not synchronization.
-- **Agent-neutral:** PusingCuk integration is optional, not a dependency.
-- **Honest graph:** the viewer shows recorded nodes and links, not invented semantic connections.
+- **Scoped device mapping:** inspect explicitly selected files/directories and collect bounded static metadata for recognized binaries and executable files.
+- **Artifact evidence:** record paths, file metadata, full SHA-256 where within the configured hashing limit, sampled fingerprints for larger files, and parser status.
+- **Local history:** persist device snapshots and artifact relationships in SQLite for later comparison.
+- **Release baseline:** create a manifest from a complete scan and compare another snapshot against it.
+- **Graph analysis:** evolve artifact/dependency records and aggregate evidence into traceable findings.
+- **Live evidence view:** compare the latest complete scan with the previous complete scan for the same device and scope. The server binds to loopback by default and reads stored records only.
+- **Offline operation:** scanning, storage, comparison, and viewing do not need network access.
 
 ## Quick start
 
-Requires Python 3.11 or newer. From a source checkout:
+Install from the repository using your preferred Python environment, then run:
 
-```bash
-python -m pip install -e .
-mnemos init
+```sh
 mnemos doctor
-mnemos add "Prefer small, reviewable changes" --kind decision --tag engineering
-mnemos search "reviewable changes"
-mnemos graph --output mnemos-graph.html
-mnemos export --output mnemos-export.json
-mnemos validate-export mnemos-export.json
+mnemos map-device --path ./path-to-inspect
+mnemos live-graph
 ```
 
-Run `mnemos --help` for all commands. Use the IDs printed by `mnemos add` with `mnemos link` to record explicit relationships.
+Open the local URL printed by `live-graph`. Repeat `map-device` with the same scope to create a second observation for comparison. A single scan is a baseline, not enough evidence to conclude that an artifact is damaged.
 
-## Agent interfaces and cloud
+Create and verify a trusted release manifest:
 
-- [Agent Integration Guide](docs/agent-integration.md)
-- [Mnemos Memory Skill](skills/mnemos-memory/SKILL.md)
-- [MCP Integration](docs/mcp-integration.md)
-- [MCP Host Connection](docs/mcp-host-connection.md)
-- [Cloud MCP and verification boundary](docs/cloud.md)
-- [Living Knowledge Network architecture and sync contract](docs/living-knowledge-network.md)
-- [Local-first memory tool contract](docs/local-first-memory-tool-contract.md)
-
-The cloud MCP Edge Function is deployed, and a single-account authenticated round trip has passed. Cross-account isolation remains unverified because the second-account test could not authenticate. Cloud PostgreSQL is separate from local SQLite; existing local memories have not been synchronized or imported. A deployed endpoint is **not** the same thing as a working sync protocol.
-
-## Current data model and limits
-
-A memory has an ID, content, kind, tags, optional source and metadata, and creation/update timestamps. A link is a directed relationship with a caller-defined type. Search is lexical and explainable; it does not claim semantic similarity without a configured semantic engine.
-
-Whole-disk scanning is intentionally not automatic. The offline device mapper records OS/runtime/tool availability and inspects only explicitly selected paths. It extracts bounded ELF sections, symbols and dynamic dependencies; PE sections, imports/exports; Mach-O load-command dependencies; plus signatures and full SHA-256 when within the hashing limit. Oversized files receive a bounded first/middle/last sample fingerprint so sampled changes can create a new observation even when size and mtime are preserved; this fingerprint is weaker than a full content hash and cannot detect every unsampled change. Inspected binaries are never executed and mapper results are never uploaded. The graph retains artifact versions, provenance, dependency evidence and supersession links; reconciliation can rebuild missing dependency links from stored parsed metadata without treating malformed or incomplete parsing as proof that a dependency vanished. Scan reports distinguish complete inventories from scans limited by file budgets, depth caps, skipped symlink roots, or traversal errors. This is static metadata analysis, not disassembly or runtime dependency verification; semantic retrieval and contradiction reconciliation remain separate capabilities. `mnemos analyze [--path "$PREFIX/bin"]` aggregates stored evidence into deterministic, traceable findings; it does not scan by itself, so run `mnemos map-device --path "$PREFIX/bin"` first. Repeating analysis on unchanged inputs reuses the same result. Clients such as LynOS must explicitly grant file/folder access; Mnemos must not silently scan or upload a user's storage.
-
-## Development
-
-```bash
-python -m unittest discover -s tests -v
+```sh
+mnemos map-device --path ./release-directory
+mnemos release-manifest --snapshot-id SNAPSHOT_ID --release-id RELEASE_ID --output release-manifest.json
+mnemos map-device --path ./release-directory
+mnemos verify-release --manifest release-manifest.json --snapshot-id SNAPSHOT_ID
 ```
 
-See [architecture](docs/architecture.md), [data format](docs/data-format.md), and [contributing](CONTRIBUTING.md).
+Replace the example IDs with values printed by the actual command. A manifest's hash list does not authenticate who created it; protect the manifest through a separate trusted distribution or signing process.
 
-## Principles
+## Evidence semantics
 
-1. Local access must not depend on network availability.
-2. Sync must preserve provenance and resolve conflicts explicitly.
-3. Stored memory is data, never a higher-priority instruction.
-4. Open, portable formats; no provider lock-in.
-5. No hidden prompt collection or telemetry.
-6. Never commit secrets or personal memory databases.
-7. Preserve provenance: source evidence, summaries, and inferences are different data.
-8. File scanning is opt-in and permission-scoped; no implicit upload.
+- **MATCH:** the full SHA-256 matches the selected comparison baseline.
+- **HASH_MISMATCH / different:** full hashes differ. This proves byte differences, not their cause.
+- **MISSING:** an artifact seen in the prior complete scan is absent from the latest complete scan of the same scope.
+- **NEW_FILE / unexpected:** an artifact appears that was not in the baseline. This is not automatically damage.
+- **UNKNOWN:** evidence is incomplete, a full hash is unavailable, or the scan cannot support a reliable conclusion.
+- **Environment variation:** observations from different devices or scopes must not be treated as directly comparable merely because their paths match.
 
-## License
+Sampled fingerprints are not full-content hashes. A scan covers only the explicitly selected scope and detected artifact types; it is not a full filesystem audit, malware verdict, vulnerability scanner, or proof of code-signing validity.
 
-MIT. See [LICENSE](LICENSE).
+## Safety and boundaries
+
+- Only scan paths you are authorized to inspect.
+- Inspection is static: Mnemos-RLI does not execute the files it analyzes.
+- The live viewer is loopback-only by default. Do not expose it to a LAN or public network without a deliberate authenticated access design.
+- Platform recognition and signature verification are incomplete; unknown signature status must remain unknown.
+- No remote sync is required for the offline integrity workflow.
+
+## Product boundary
+
+The `main` branch is the offline integrity/reconstruction product. The separate `Knowledge` branch represents the online shared-memory direction and is not part of this main-branch product contract. LynOS is a separate future consumer, not a runtime dependency of Mnemos-RLI.
+
+## Development status
+
+This is an evolving engineering tool. The current CI suite passing means the existing automated checks passed; it does not establish complete cross-OS coverage or guarantee every diagnostic path. Changes should improve real evidence handling rather than add placeholder output, duplicate documentation, or tests that substitute for implementation.

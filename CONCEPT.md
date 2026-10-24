@@ -1,24 +1,30 @@
-# Mnemos: Product Concept
+# Mnemos-RLI: Product concept
 
-**Tagline:** Persistent memory for AI agents. Learn once, recall anywhere.
+**Tagline:** Evidence before conclusions.
 
 ## Product promise
 
-Mnemos is a portable memory layer that lets an AI agent or developer capture durable knowledge, retrieve it later, and inspect how records are connected. The core runs locally and does not require a hosted database or AI-provider key.
+Mnemos-RLI is an offline integrity and reconstruction tool for engineers. It records scoped observations of binary artifacts and their metadata, compares those observations against historical scans or a trusted release manifest, and helps explain which components may be affected by a change.
 
-## Visual identity
+It does not claim that every difference is damage. A reliable result identifies the baseline, scan scope, hash method, and limitations so an engineer can distinguish byte-level evidence from interpretation.
 
-The signature visual is a dense, branching network of memory nodes and connecting paths. It should resemble a complex data relationship map—not a generic brain illustration. Every node represents a real record; every edge represents a saved relationship. Search should highlight evidence-backed paths, not fabricate connections.
+## Signature experience
 
-## MVP success criteria
+The central visual is an evidence graph: artifact nodes, dependency relationships, scan provenance, and explicit status labels. Every finding should lead back to the observation that supports it. Unknown evidence stays visibly unknown; unsupported signature checks are never presented as valid.
 
-- A new user can install and initialize Mnemos without provisioning a server.
-- Capture, lexical search, explicit linking, import/export, and graph generation work offline.
-- The graph is generated from stored records, with no external scripts or CDN dependencies.
-- A skill document explains safe, useful memory capture and retrieval.
-- Automated tests run on supported Python versions in GitHub Actions.
-- English is the canonical language for code, documentation, command output, and issue templates. Additional translations may be added later.
+## Product principles
 
-## Out of scope for the first version
+- Offline by default; no cloud service is required for core integrity work.
+- Inspect files statically; never execute an artifact to analyze it.
+- Scan only explicitly selected paths.
+- Compare like with like; cross-device and cross-OS differences require explicit context.
+- Treat full hashes, sampled fingerprints, metadata, and signatures as different evidence classes.
+- Preserve a clear distinction between observed facts and diagnostic conclusions.
+- Keep the implementation independent from LynOS and from the online shared-memory product on the `Knowledge` branch.
 
-Cloud sync, mandatory AI-provider integrations, accounts, telemetry, and claims of automatic semantic understanding.
+## Out of scope for the current product
+
+- Online shared memory synchronization and AI-agent memory services.
+- Automatic malware verdicts or vulnerability certification.
+- Claims of complete cross-OS coverage or universal signature verification.
+- Unauthenticated remote exposure of the live viewer.
