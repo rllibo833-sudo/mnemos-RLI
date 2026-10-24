@@ -124,6 +124,40 @@ def evolve_graph(store: MemoryStore) -> dict[str, Any]:
                 existing_successors[previous["id"]].add(current["id"])
                 repaired_history += 1
 
+
+    # Backward compatibility for pre-snapshot artifact records. Only orphan
+    # artifacts use path-based ordering; snapshot-backed records are handled
+    # above with device/scope boundaries and cannot be cross-linked globally.
+    snapshot_artifact_ids = {
+        link.get("target_id") for link in links
+        if link.get("relation") == "contains_artifact"
+        and (by_id_for_history.get(link.get("source_id")) or {}).get("kind") == "device_snapshot"
+    }
+    legacy_by_path: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for artifact in artifacts:
+        if artifact["id"] in snapshot_artifact_ids:
+            continue
+        path = (artifact.get("metadata") or {}).get("path")
+        if isinstance(path, str) and path:
+            legacy_by_path[path].append(artifact)
+    for versions in legacy_by_path.values():
+        versions.sort(key=lambda item: (
+            item.get("created_at", ""),
+            int((item.get("metadata") or {}).get("observed_at_ns") or 0),
+            int((item.get("metadata") or {}).get("mtime_ns") or 0),
+            item["id"],
+        ))
+        for previous, current in zip(versions, versions[1:]):
+            if previous["id"] == current["id"] or existing_successors.get(previous["id"]):
+                continue
+            key = (previous["id"], current["id"], "superseded_by")
+            if key in existing or would_create_cycle(previous["id"], current["id"], existing_successors):
+                continue
+            store.link(previous["id"], current["id"], relation="superseded_by")
+            existing.add(key)
+            existing_successors[previous["id"]].add(current["id"])
+            repaired_history += 1
+
     repaired_dependency_links = 0
     dependency_nodes_created = 0
     evidence_records_updated = 0
