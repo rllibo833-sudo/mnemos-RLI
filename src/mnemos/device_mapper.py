@@ -917,6 +917,12 @@ def discover_artifacts(
         "traversal_errors": [],
     })
     roots = tuple(paths)
+    if not roots:
+        status["scope_missing"] = True
+        status["complete"] = False
+        status["traversal_errors"] = [{"path": None, "error": "NoExplicitScanScope"}]
+        return found
+    status["scope_missing"] = False
     for root_index, supplied in enumerate(roots):
         if examined >= max_files:
             status["limit_reached"] = True
@@ -1015,7 +1021,8 @@ def collect_device_map(paths: Iterable[str | Path] = (), *, max_files: int = 200
             "available_tools": tools,
         },
         "scan": {
-            "scope": [str(Path(path).expanduser()) for path in paths],
+            "scope": [str(Path(path).expanduser().resolve()) for path in paths],
+            "scope_missing": scan_status.get("scope_missing", False),
             "max_files": max_files,
             "complete": scan_status["complete"],
             "examined_files": scan_status["examined_files"],

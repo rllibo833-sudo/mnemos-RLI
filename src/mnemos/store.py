@@ -118,11 +118,15 @@ class MemoryStore(GraphStore):
             db.execute("INSERT OR IGNORE INTO workspaces(id,visibility,created_at) VALUES('default','private',?)",(utc_now(),))
             db.execute("CREATE INDEX IF NOT EXISTS idx_memories_workspace ON memories(workspace_id,deleted)")
             db.execute("CREATE INDEX IF NOT EXISTS idx_links_workspace ON links(workspace_id,deleted)")
+            # Forensic queries repeatedly filter by record kind and relation.
+            db.execute("CREATE INDEX IF NOT EXISTS idx_memories_kind_deleted ON memories(kind,deleted)")
+            db.execute("CREATE INDEX IF NOT EXISTS idx_links_relation_deleted ON links(relation,deleted)")
+            db.execute("CREATE INDEX IF NOT EXISTS idx_memories_workspace_kind ON memories(workspace_id,kind,deleted)")
             version_row = db.execute("SELECT value FROM mnemos_meta WHERE key='schema_version'").fetchone()
             version = int(version_row["value"]) if version_row else 1
-            if version > 3:
-                raise ValueError(f"Database schema version {version} is newer than this Mnemos build (3).")
-            db.execute("UPDATE mnemos_meta SET value='3' WHERE key='schema_version'")
+            if version > 4:
+                raise ValueError(f"Database schema version {version} is newer than this Mnemos build (4).")
+            db.execute("UPDATE mnemos_meta SET value='4' WHERE key='schema_version'")
 
     def add(
         self, content: str, *, kind: str = "note", tags: Iterable[str] = (),
@@ -640,6 +644,42 @@ class MemoryStore(GraphStore):
                 ).fetchall()
         return [self._relation(row) for row in rows]
 
+    def forensic_inventory(self) -> dict[str, Any]:
+        """Return compact local counts and flag snapshots that cannot support reconstruction."""
+        memories = self.list_all()
+        links = self.links()
+        by_id = {item["id"]: item for item in memories if isinstance(item.get("id"), str)}
+        snapshots = [item for item in memories if item.get("kind") == "device_snapshot"]
+        artifacts = [item for item in memories if item.get("kind") == "binary_artifact"]
+        dependencies = [item for item in memories if item.get("kind") == "runtime_dependency"]
+        empty_scope = []
+        incomplete = []
+        for snapshot in snapshots:
+            metadata = snapshot.get("metadata") or {}
+            scan = metadata.get("scan") if isinstance(metadata.get("scan"), dict) else {}
+            scope = metadata.get("scope_path")
+            if not isinstance(scope, list) or not scope:
+                scope = scan.get("scope", [])
+            if not isinstance(scope, list) or not scope:
+                empty_scope.append(snapshot.get("id"))
+            if scan.get("complete") is not True:
+                incomplete.append(snapshot.get("id"))
+        artifact_links = [
+            link for link in links
+            if link.get("relation") == "contains_artifact"
+            and link.get("source_id") in by_id and link.get("target_id") in by_id
+            and by_id[link["source_id"]].get("kind") == "device_snapshot"
+            and by_id[link["target_id"]].get("kind") == "binary_artifact"
+        ]
+        dependency_links = [link for link in links if link.get("relation") == "depends_on"]
+        return {
+            "snapshots": len(snapshots), "binary_artifacts": len(artifacts),
+            "runtime_dependencies": len(dependencies), "snapshot_artifact_links": len(artifact_links),
+            "dependency_links": len(dependency_links), "empty_scope_snapshot_ids": empty_scope,
+            "incomplete_snapshot_ids": incomplete, "empty_scope_count": len(empty_scope),
+            "incomplete_snapshot_count": len(incomplete), "offline": True,
+        }
+
     def diagnostics(self) -> dict[str, Any]:
         """Inspect local SQLite integrity without modifying data or using the network."""
         with self._connect() as db:
@@ -659,6 +699,7 @@ class MemoryStore(GraphStore):
             "foreign_key_violations": violations,
             "memories": memories,
             "links": links,
+            "forensic_inventory": self.forensic_inventory(),
             "ok": integrity == ["ok"] and not violations,
         }
 

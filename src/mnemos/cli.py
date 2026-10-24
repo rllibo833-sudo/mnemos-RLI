@@ -141,6 +141,17 @@ def _build_release_manifest(store: MemoryStore, snapshot_id: str, release_id: st
         "release_id": release_id,
         "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "source_snapshot_id": snapshot_id,
+        "source_device_id": metadata.get("device_id"),
+        "source_host_env": metadata.get("host_env"),
+        "source_scope": roots,
+        "source_fingerprint": metadata.get("fingerprint"),
+        "source_scan": {
+            "complete": scan.get("complete") is True,
+            "max_files": scan.get("max_files"),
+            "examined_files": scan.get("examined_files"),
+            "limit_reached": bool(scan.get("limit_reached")),
+            "depth_limit_reached": bool(scan.get("depth_limit_reached")),
+        },
         "artifact_count": len(entries),
         "artifacts": entries,
     }
@@ -176,6 +187,21 @@ def _load_release_manifest(path: str) -> dict:
         normalized.append({**item, "path": path_value, "sha256": digest})
     if payload.get("artifact_count") not in (None, len(normalized)):
         raise ValueError("manifest artifact_count does not match its artifacts list.")
+    source_scan = payload.get("source_scan")
+    if source_scan is not None:
+        if not isinstance(source_scan, dict) or source_scan.get("complete") is not True:
+            raise ValueError("manifest source_scan must describe a complete source snapshot.")
+        for field in ("max_files", "examined_files"):
+            value = source_scan.get(field)
+            if value is not None and (not isinstance(value, int) or isinstance(value, bool) or value < 0):
+                raise ValueError(f"manifest source_scan {field} must be a non-negative integer.")
+    source_scope = payload.get("source_scope")
+    if source_scope is not None and (
+        not isinstance(source_scope, list)
+        or not source_scope
+        or any(not isinstance(item, str) or not item.strip() for item in source_scope)
+    ):
+        raise ValueError("manifest source_scope must be a non-empty list of paths.")
     return {**payload, "artifacts": sorted(normalized, key=lambda item: item["path"])}
 
 
@@ -235,6 +261,12 @@ def _verify_release_manifest(store: MemoryStore, manifest: dict, snapshot_id: st
         "release_id": manifest["release_id"],
         "manifest_source_snapshot_id": manifest.get("source_snapshot_id"),
         "checked_snapshot_id": snapshot_id,
+        "source_device_id": manifest.get("source_device_id"),
+        "source_host_env": manifest.get("source_host_env"),
+        "source_scope": manifest.get("source_scope"),
+        "source_fingerprint": manifest.get("source_fingerprint"),
+        "source_scan": manifest.get("source_scan"),
+        "checked_scope": roots,
         "scan_complete": complete,
         "status": overall,
         "counts": {
@@ -376,7 +408,16 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "live-graph":
             return serve_live_graph(store, args.output, args.port)
         elif args.command == "map-device":
+            if not args.path:
+                raise ValueError(
+                    "map-device requires at least one explicit --path; refusing to save an empty-scope snapshot. "
+                    "Use --path /data/data/com.termux/files/usr/bin (or another directory you intend to inspect)."
+                )
+            if args.max_files < 1:
+                raise ValueError("--max-files must be a positive integer.")
             report = collect_device_map(args.path, max_files=args.max_files)
+            if report.get("scan", {}).get("scope_missing") or not report.get("scan", {}).get("scope"):
+                raise ValueError("device map has no valid scan scope; no snapshot was saved.")
             # Explicit host and scope identity keeps imported graph history isolated.
             report["device_id"] = store.device_id()
             device_meta = report.get("device") or {}
@@ -392,6 +433,7 @@ def main(argv: list[str] | None = None) -> int:
             report["scope_path"] = sorted({
                 str(Path(path).expanduser().resolve()) for path in args.path
             })
+            report["scan"]["scope"] = report["scope_path"]
             report["observation_ts_ns"] = time.time_ns()
             fingerprint_payload = dict(report)
             fingerprint_payload.pop("captured_at", None)
