@@ -8,6 +8,7 @@ Its identity is **evidence before conclusions**: a changed hash is a comparison 
 
 - **Scoped device mapping:** inspect explicitly selected files/directories and collect bounded static metadata for recognized binaries and executable files.
 - **Artifact evidence:** record paths, file metadata, full SHA-256 where within the configured hashing limit, sampled fingerprints for larger files, and parser status.
+- **Hash-cache safeguards:** reuse a full hash only when device/inode identity, size, modification time, and change time still match; malformed cache entries are ignored and cache writes are atomic with owner-only file permissions where supported. Files that change while being hashed are reported without a trusted digest.
 - **Local history:** persist device snapshots and artifact relationships in SQLite for later comparison.
 - **Release baseline:** create a manifest from a complete scan and compare another snapshot against it.
 - **Graph analysis:** evolve artifact/dependency records and aggregate evidence into traceable findings.
@@ -47,6 +48,8 @@ Replace the example IDs with values printed by the actual command. A manifest's 
 - **Environment variation:** observations from different devices or scopes must not be treated as directly comparable merely because their paths match.
 
 Sampled fingerprints are not full-content hashes. A scan covers only the explicitly selected scope and detected artifact types; it is not a full filesystem audit, malware verdict, vulnerability scanner, or proof of code-signing validity.
+
+Cached SHA-256 values are an optimization, not a cryptographic attestation of the filesystem. Cache reuse checks file identity plus size, modification time, and change time; files observed changing during inspection lose their trusted digest. Privileged changes that preserve all available metadata cannot be ruled out by a metadata-keyed cache, so use a fresh trusted baseline or force a full re-hash when that threat model matters.
 
 ## Safety and boundaries
 

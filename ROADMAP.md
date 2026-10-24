@@ -16,13 +16,14 @@ Implemented in the current codebase:
 - Device snapshots, artifact history, and release manifest generation/verification.
 - Graph evolution and evidence aggregation commands.
 - A loopback live viewer that compares the latest two complete scans for the same device and scope.
-- An active metadata-keyed hash cache for repeat scans.
+- A validated, bounded metadata-keyed hash cache for repeat scans; cache entries are accepted only when device/inode, size, modification time, and change time match, and hashes are withheld when a file changes during reading.
 - Local database diagnostics.
 
 Known limitations that remain real:
 
 - The mapper inventories detected binaries/executables in selected paths, not every filesystem object.
 - OS and sandbox identification is partial; cross-platform metadata parity is not complete.
+- A metadata-keyed hash cache cannot detect a privileged content change that preserves every metadata field available to the host; the cache is an optimization, not a tamper-proof measurement boundary.
 - Signature status may be unknown; complete Authenticode/codesign verification is not implemented.
 - A hash mismatch proves byte difference against a baseline, not malicious modification.
 - Dependency tracing and impact conclusions still depend on the completeness and correctness of extracted metadata.
@@ -45,7 +46,7 @@ Known limitations that remain real:
 - Normalize OS, architecture, sandbox/container identity, ownership, permissions, timestamps, and file type consistently.
 - Add platform-specific signature verification only where the platform tool is available and the result can be represented honestly.
 - Make parser limits and unsupported formats explicit.
-- Ensure cache invalidation follows file identity and metadata changes, with a safe fallback to recomputation.
+- Keep cache invalidation tied to file identity, size, modification time, and change time; reject malformed entries, write cache replacements atomically with restrictive file permissions, and refuse to retain hashes for files that change during reading.
 
 ### 3. Reconstruct dependency impact
 

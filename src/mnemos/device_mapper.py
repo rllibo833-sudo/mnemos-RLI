@@ -26,27 +26,80 @@ SKIP_DIRS = {".git", ".hg", ".svn", ".venv", "venv", "__pycache__", "node_module
 MAX_HASH_BYTES = 256 * 1024 * 1024
 
 import json
+import tempfile
+
 CACHE_PATH = Path.home() / ".cache" / "mnemos" / "hash_cache.json"
-def _load_hash_cache():
+_CACHE_FIELDS = ("dev", "ino", "size", "mtime_ns", "ctime_ns")
+_CACHE_LIMIT = 20000
+
+
+def _cache_entry_valid(value: Any) -> bool:
+    if not isinstance(value, dict):
+        return False
+    if any(not isinstance(value.get(field), int) or isinstance(value.get(field), bool)
+           or value[field] < 0 for field in _CACHE_FIELDS):
+        return False
+    digest = value.get("sha256")
+    return (isinstance(digest, str) and len(digest) == 64
+            and all(char in "0123456789abcdef" for char in digest))
+
+
+def _load_hash_cache() -> dict[str, dict[str, Any]]:
     try:
-        if CACHE_PATH.exists(): return json.loads(CACHE_PATH.read_text())
-    except: pass
-    return {}
-def _save_hash_cache(c):
+        raw = json.loads(CACHE_PATH.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return {}
+    if not isinstance(raw, dict):
+        return {}
+    return {
+        key: value for key, value in raw.items()
+        if isinstance(key, str) and key and _cache_entry_valid(value)
+    }
+
+
+def _save_hash_cache(cache: dict[str, dict[str, Any]]) -> None:
+    temporary_name = None
     try:
-        CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
-        if len(c) > 20000:
-            c = dict(sorted(c.items(), key=lambda kv: kv[1].get("at", 0))[-15000:])
-        temporary = CACHE_PATH.with_suffix(".tmp")
-        temporary.write_text(json.dumps(c, separators=(",", ":")), encoding="utf-8")
-        os.replace(temporary, CACHE_PATH)
-    except OSError:
+        CACHE_PATH.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        valid = {key: value for key, value in cache.items()
+                 if isinstance(key, str) and key and _cache_entry_valid(value)}
+        if len(valid) > _CACHE_LIMIT:
+            valid = dict(sorted(
+                valid.items(), key=lambda item: item[1].get("at", 0)
+                if isinstance(item[1].get("at", 0), (int, float)) else 0
+            )[-15000:])
+        fd, temporary_name = tempfile.mkstemp(prefix="hash_cache.", suffix=".tmp",
+                                               dir=str(CACHE_PATH.parent))
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            os.chmod(temporary_name, 0o600)
+            json.dump(valid, stream, separators=(",", ":"))
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary_name, CACHE_PATH)
+        temporary_name = None
+    except (OSError, TypeError, ValueError):
         pass
-_HASH_CACHE=None
-def _get_cache():
+    finally:
+        if temporary_name is not None:
+            try:
+                os.unlink(temporary_name)
+            except OSError:
+                pass
+
+
+_HASH_CACHE: dict[str, dict[str, Any]] | None = None
+
+
+def _get_cache() -> dict[str, dict[str, Any]]:
     global _HASH_CACHE
-    if _HASH_CACHE is None: _HASH_CACHE=_load_hash_cache()
+    if _HASH_CACHE is None:
+        _HASH_CACHE = _load_hash_cache()
     return _HASH_CACHE
+
+
+def _stat_identity(info: os.stat_result) -> tuple[int, int, int, int, int]:
+    return (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns,
+            getattr(info, "st_ctime_ns", int(info.st_ctime * 1_000_000_000)))
 
 def _normalize_os_type():
     import platform, os
@@ -667,13 +720,21 @@ def inspect_binary(path: str | Path, fmt: str | None = None) -> dict[str, Any]:
 
 
 def _sha256(path: Path) -> str | None:
+    """Hash a stable regular-file observation; refuse files changed mid-read."""
     try:
-        if path.stat().st_size > MAX_HASH_BYTES:
-            return None
-        digest = hashlib.sha256()
         with path.open("rb") as stream:
+            before = os.fstat(stream.fileno())
+            if not stat.S_ISREG(before.st_mode) or before.st_size > MAX_HASH_BYTES:
+                return None
+            digest = hashlib.sha256()
             for chunk in iter(lambda: stream.read(1024 * 1024), b""):
                 digest.update(chunk)
+            after = os.fstat(stream.fileno())
+        current = path.stat(follow_symlinks=False)
+        identity = _stat_identity(before)
+        if (_stat_identity(after) != identity or _stat_identity(current) != identity
+                or not stat.S_ISREG(current.st_mode)):
+            return None
         return digest.hexdigest()
     except OSError:
         return None
@@ -708,24 +769,27 @@ def _sample_sha256(path: Path, file_size: int) -> str | None:
 
 
 def _cached_sha256(path: Path, info: os.stat_result) -> str | None:
-    """Reuse a full hash only while file identity and metadata remain unchanged."""
-    if info.st_size > MAX_HASH_BYTES:
+    """Reuse a hash only when file identity, size, mtime, and ctime all match."""
+    if info.st_size > MAX_HASH_BYTES or not stat.S_ISREG(info.st_mode):
         return None
     try:
         key = str(path.resolve())
         cache = _get_cache()
+        identity = _stat_identity(info)
+        current = path.stat(follow_symlinks=False)
+        if _stat_identity(current) != identity or not stat.S_ISREG(current.st_mode):
+            cache.pop(key, None)
+            return None
         cached = cache.get(key)
-        identity = (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns)
-        if isinstance(cached, dict) and (
-            cached.get("dev"), cached.get("ino"), cached.get("size"), cached.get("mtime_ns")
-        ) == identity:
-            digest = cached.get("sha256")
-            if isinstance(digest, str) and len(digest) == 64:
-                return digest
+        if _cache_entry_valid(cached) and tuple(cached[field] for field in _CACHE_FIELDS) == identity:
+            return cached["sha256"]
         digest = _sha256(path)
         if digest:
-            cache[key] = {"dev": info.st_dev, "ino": info.st_ino, "size": info.st_size,
-                          "mtime_ns": info.st_mtime_ns, "sha256": digest, "at": time.time()}
+            cache[key] = {
+                "dev": identity[0], "ino": identity[1], "size": identity[2],
+                "mtime_ns": identity[3], "ctime_ns": identity[4],
+                "sha256": digest, "at": time.time(),
+            }
             _save_hash_cache(cache)
         else:
             cache.pop(key, None)
@@ -753,6 +817,8 @@ def _artifact(path: Path) -> dict[str, Any] | None:
             or info.st_ino != after.st_ino
             or info.st_size != after.st_size
             or info.st_mtime_ns != after.st_mtime_ns
+            or getattr(info, "st_ctime_ns", int(info.st_ctime * 1_000_000_000))
+               != getattr(after, "st_ctime_ns", int(after.st_ctime * 1_000_000_000))
         )
         if changed_during_inspection:
             digest = None
