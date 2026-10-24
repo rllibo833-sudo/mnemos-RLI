@@ -31,15 +31,18 @@ def _artifact_record_identity(path: str, artifact: dict) -> tuple | None:
     if not path or details.get("status") == "file_changed_during_inspection":
         return None
     size, mtime, mode = artifact.get("size_bytes"), artifact.get("mtime_ns"), artifact.get("mode")
+    ctime = artifact.get("ctime_ns")
+    file_type = artifact.get("file_type")
+    ownership = (artifact.get("uid"), artifact.get("gid"))
     signature, status = artifact.get("signature_status", "unknown"), details.get("status", "unknown")
     digest = artifact.get("sha256")
     if isinstance(digest, str) and len(digest) == 64:
-        return ("full", path, digest, size, mtime, mode, signature, status)
+        return ("full", path, digest, size, mtime, ctime, mode, file_type, ownership, signature, status)
     sample = artifact.get("sample_sha256")
     if isinstance(sample, str) and len(sample) == 64:
-        return ("sample", path, sample, size, mtime, mode, signature, status)
+        return ("sample", path, sample, size, mtime, ctime, mode, file_type, ownership, signature, status)
     if mtime is not None and size is not None:
-        return ("weak", path, mtime, size, mode, signature, status)
+        return ("weak", path, mtime, ctime, size, mode, file_type, ownership, signature, status)
     return None
 
 
