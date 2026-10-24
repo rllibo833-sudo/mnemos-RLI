@@ -401,7 +401,9 @@ class MemoryStore(GraphStore):
         c=self._as_change(change); ws=str(c["workspace_id"]); et=str(c["entity_type"])
         et={"node":"memory","relation":"link"}.get(et,et)
         eid=str(c["entity_id"]); payload=c["payload"]; clock=c["lamport_clock"]
-        if et not in ("memory","link") or not eid or not ws or not isinstance(payload,dict):
+        change_id=str(c["id"]); actor=str(c["actor"])
+        if (et not in ("memory","link") or not eid or not ws or not isinstance(payload,dict)
+                or not change_id or not actor or c["op"] not in ("upsert","delete")):
             raise ValueError("Invalid graph change")
         table="memories" if et=="memory" else "links"
         with self._connect() as db:
@@ -411,15 +413,25 @@ class MemoryStore(GraphStore):
                 timestamp = datetime.fromtimestamp(float(timestamp), timezone.utc).isoformat()
             else:
                 timestamp = str(timestamp or utc_now())
+            payload_json=json.dumps(payload, ensure_ascii=False, sort_keys=True)
+            existing=db.execute("SELECT * FROM sync_changes WHERE id=?",(change_id,)).fetchone()
+            if existing is not None:
+                same=(existing["workspace_id"]==ws
+                    and existing["entity_type"]==str(c["entity_type"])
+                    and existing["entity_id"]==eid and existing["op"]==str(c["op"])
+                    and existing["payload_json"]==payload_json
+                    and int(existing["lamport_clock"])==clock
+                    and existing["actor"]==actor
+                    and existing["created_at"]==timestamp)
+                if not same:
+                    raise ValueError("Change ID already exists with different content.")
+                return {"status":"skipped"}
             db.execute(
-                """INSERT OR IGNORE INTO sync_changes
+                """INSERT INTO sync_changes
                    (id,workspace_id,entity_type,entity_id,op,payload_json,lamport_clock,actor,created_at)
                    VALUES(?,?,?,?,?,?,?,?,?)""",
-                (
-                    str(c["id"]), ws, str(c["entity_type"]), eid, str(c["op"]),
-                    json.dumps(payload, ensure_ascii=False, sort_keys=True), clock,
-                    str(c["actor"]), timestamp,
-                ),
+                (change_id, ws, str(c["entity_type"]), eid, str(c["op"]),
+                 payload_json, clock, actor, timestamp),
             )
             local=db.execute(f"SELECT * FROM {table} WHERE id=? AND workspace_id=?",(eid,ws)).fetchone()
             if local and clock < int(local["lamport"]): return {"status":"skipped"}
