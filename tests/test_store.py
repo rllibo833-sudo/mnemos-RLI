@@ -77,7 +77,7 @@ class MemoryStoreTests(unittest.TestCase):
             db.execute("UPDATE mnemos_meta SET value = '1' WHERE key = 'schema_version'")
         upgraded = MemoryStore(legacy_path)
         self.assertEqual(upgraded.get(memory['id'])['content'], 'Preserve existing data')
-        self.assertEqual(upgraded.sync_status()['schema_version'], 2)
+        self.assertEqual(upgraded.sync_status()['schema_version'], 3)
         self.assertGreaterEqual(upgraded.sync_status()['outbox_total'], 1)
 
     def test_diagnostics_reports_healthy_local_database(self):

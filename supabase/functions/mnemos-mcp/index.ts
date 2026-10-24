@@ -36,6 +36,110 @@ function parseArgs(value: unknown): Record<string, unknown> {
 function uuid() { return crypto.randomUUID(); }
 function now() { return new Date().toISOString(); }
 
+// Additive graph-sync storage; the existing memories/links tables are untouched.
+const graphSchemaReady = (async () => {
+  await sql`create schema if not exists mnemos`;
+  await sql`create table if not exists mnemos.workspaces (
+    id text primary key, visibility text not null default 'private'
+      check (visibility in ('private','shared','public')),
+    created_at timestamptz not null default now()
+  )`;
+  await sql`create table if not exists mnemos.memberships (
+    workspace_id text not null references mnemos.workspaces(id),
+    user_id text not null, role text not null check (role in ('reader','writer','admin')),
+    primary key(workspace_id,user_id)
+  )`;
+  await sql`create table if not exists mnemos.sync_changes (
+    id text primary key, workspace_id text not null references mnemos.workspaces(id),
+    entity_type text not null check(entity_type in ('memory','link','node','relation')),
+    entity_id text not null, op text not null check(op in ('upsert','delete')),
+    payload_json jsonb not null, lamport_clock bigint not null check(lamport_clock >= 0),
+    actor text not null, timestamp timestamptz not null, owner_id text not null
+  )`;
+  await sql`create index if not exists sync_changes_workspace_clock
+    on mnemos.sync_changes(workspace_id,lamport_clock,timestamp)`;
+})();
+
+type GraphChange = {
+  id: string; workspace_id: string; entity_type: "memory"|"link"|"node"|"relation";
+  entity_id: string; op: "upsert"|"delete"; payload: Record<string, unknown>;
+  lamport_clock: number; actor: string; timestamp: string|number;
+};
+async function requireWorkspaceRole(workspaceId: string, userId: string, write: boolean) {
+  await graphSchemaReady;
+  let workspaces = await sql`select id,visibility from mnemos.workspaces where id=${workspaceId}`;
+  if (!workspaces.length && workspaceId === "default") {
+    await sql`insert into mnemos.workspaces(id,visibility) values ('default','private') on conflict do nothing`;
+    await sql`insert into mnemos.memberships(workspace_id,user_id,role) values ('default',${userId},'admin') on conflict do nothing`;
+    workspaces = await sql`select id,visibility from mnemos.workspaces where id=${workspaceId}`;
+  }
+  if (!workspaces.length) throw new Error("workspace not found");
+  const memberships = await sql`select role from mnemos.memberships where workspace_id=${workspaceId} and user_id=${userId}`;
+  const role = memberships[0]?.role as string|undefined;
+  if (write && role !== "writer" && role !== "admin") throw new Error("workspace writer/admin membership required");
+  if (!write && workspaces[0].visibility !== "public" && !role) throw new Error("workspace membership required");
+  if (!write && workspaces[0].visibility === "private" && !role) throw new Error("private workspace is not accessible");
+  return {visibility: workspaces[0].visibility as string, role};
+}
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return "[" + value.map(stableJson).join(",") + "]";
+  if (value && typeof value === "object") {
+    const object=value as Record<string,unknown>;
+    return "{" + Object.keys(object).sort().map(k => JSON.stringify(k)+":"+stableJson(object[k])).join(",") + "}";
+  }
+  return JSON.stringify(value) ?? "null";
+}
+function parseGraphChange(value: unknown): GraphChange {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("change must be an object");
+  const c=value as Record<string,unknown>;
+  if (typeof c.id!=="string" || !c.id || typeof c.workspace_id!=="string" || !c.workspace_id ||
+      !["memory","link","node","relation"].includes(String(c.entity_type)) ||
+      typeof c.entity_id!=="string" || !c.entity_id || !["upsert","delete"].includes(String(c.op)) ||
+      !Number.isSafeInteger(c.lamport_clock) || (c.lamport_clock as number)<0 ||
+      typeof c.actor!=="string" || !c.actor ||
+      !(typeof c.timestamp==="string" || typeof c.timestamp==="number") ||
+      !c.payload || typeof c.payload!=="object" || Array.isArray(c.payload)) {
+    throw new Error("invalid Change contract");
+  }
+  return c as unknown as GraphChange;
+}
+async function pushChanges(raw: unknown, userId: string) {
+  if (!Array.isArray(raw) || raw.length>1000) throw new Error("changes must be an array of at most 1000 changes");
+  const result={accepted:0,duplicates:0};
+  for (const rawChange of raw) {
+    const c=parseGraphChange(rawChange);
+    const {role}=await requireWorkspaceRole(c.workspace_id,userId,true);
+    if (role!=="writer" && role!=="admin") throw new Error("workspace writer/admin membership required");
+    const timestamp=typeof c.timestamp==="number" ? new Date(c.timestamp*1000).toISOString() : c.timestamp;
+    const old=await sql`select workspace_id,entity_type,entity_id,op,payload_json,lamport_clock,actor
+      from mnemos.sync_changes where id=${c.id}`;
+    if (old.length) {
+      const same=old[0].workspace_id===c.workspace_id && old[0].entity_type===c.entity_type &&
+        old[0].entity_id===c.entity_id && old[0].op===c.op &&
+        Number(old[0].lamport_clock)===c.lamport_clock &&
+        stableJson(old[0].payload_json)===stableJson(c.payload);
+      if (!same) throw new Error("change id already exists with different content");
+      result.duplicates++; continue;
+    }
+    await sql`insert into mnemos.sync_changes
+      (id,workspace_id,entity_type,entity_id,op,payload_json,lamport_clock,actor,timestamp,owner_id)
+      values (${c.id},${c.workspace_id},${c.entity_type},${c.entity_id},${c.op},
+        ${sql.json(c.payload)},${c.lamport_clock},${c.actor},${timestamp}::timestamptz,${userId})`;
+    result.accepted++;
+  }
+  return result;
+}
+async function pullChanges(workspaceId: string, sinceLamport: number, sinceId: string, userId: string) {
+  await requireWorkspaceRole(workspaceId,userId,false);
+  const rows=await sql`select id,workspace_id,entity_type,entity_id,op,payload_json as payload,
+      lamport_clock,actor,timestamp from mnemos.sync_changes
+      where workspace_id=${workspaceId}
+        and (lamport_clock,id) > (${sinceLamport},${sinceId})
+      order by lamport_clock,id limit 5000`;
+  return rows.map((r: Record<string,unknown>)=>({...r,lamport_clock:Number(r.lamport_clock),
+    timestamp:r.timestamp instanceof Date ? r.timestamp.toISOString() : new Date(String(r.timestamp)).toISOString()}));
+}
+
 const tools = [
   { name: "mnemos_search", description: "Search cloud Mnemos memories using lexical matching.", inputSchema: { type: "object", properties: { query: { type: "string" }, limit: { type: "integer", minimum: 1, maximum: 1000, default: 20 } }, required: ["query"], additionalProperties: false } },
   { name: "mnemos_add", description: "Store a concise durable memory in cloud Mnemos. Never store secrets.", inputSchema: { type: "object", properties: { content: { type: "string" }, kind: { type: "string", default: "note" }, tags: { type: "array", items: { type: "string" }, default: [] }, source: { type: ["string", "null"], default: null }, metadata: { type: "object", default: {} } }, required: ["content"], additionalProperties: false } },
@@ -43,10 +147,20 @@ const tools = [
   { name: "mnemos_list", description: "List recent cloud Mnemos memories.", inputSchema: { type: "object", properties: { limit: { type: "integer", minimum: 1, maximum: 10000, default: 50 } }, additionalProperties: false } },
   { name: "mnemos_link", description: "Create an explicit directed relationship between two existing memory IDs.", inputSchema: { type: "object", properties: { source_id: { type: "string" }, target_id: { type: "string" }, relation: { type: "string", default: "relates_to" } }, required: ["source_id", "target_id"], additionalProperties: false } },
   { name: "mnemos_export", description: "Return a portable JSON snapshot of all cloud memories and links.", inputSchema: { type: "object", properties: {}, additionalProperties: false } },
+  { name: "mnemos_push", description: "Push idempotent graph Change records into an authorized workspace.", inputSchema: { type: "object", properties: { changes: { type: "array", items: { type: "object" } } }, required: ["changes"], additionalProperties: false } },
+  { name: "mnemos_pull", description: "Pull workspace changes after a Lamport clock and change ID cursor.", inputSchema: { type: "object", properties: { workspace_id: { type: "string" }, since_lamport: { type: "integer", minimum: 0, default: 0 }, since_id: { type: "string", default: "" } }, required: ["workspace_id"], additionalProperties: false } },
 ];
 
 async function callTool(name: string, rawArgs: unknown, ownerId: string) {
   const a = parseArgs(rawArgs);
+  if (name === "mnemos_push") return await pushChanges(a.changes, ownerId);
+  if (name === "mnemos_pull") {
+    if (typeof a.workspace_id !== "string" || !a.workspace_id) throw new Error("workspace_id is required");
+    const since=boundedInt(a.since_lamport,0,0,Number.MAX_SAFE_INTEGER);
+    const sinceId = a.since_id === undefined ? "" : a.since_id;
+    if (typeof sinceId !== "string") throw new Error("since_id must be a string");
+    return await pullChanges(a.workspace_id,since,sinceId,ownerId);
+  }
   if (name === "mnemos_add") {
     if (typeof a.content !== "string" || !a.content.trim()) throw new Error("content must be a non-empty string");
     const kind = a.kind === undefined ? "note" : a.kind;

@@ -29,7 +29,7 @@ class Change:
     payload: Dict[str, Any] = field(default_factory=dict)
     lamport_clock: int = 0
     actor: str = ""
-    timestamp: float = field(default_factory=time.time)
+    timestamp: str | float = field(default_factory=time.time)
 
 @dataclass
 class Workspace:
