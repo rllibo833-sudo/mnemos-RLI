@@ -78,6 +78,8 @@ def reconstruct_case(store: MemoryStore, paths: list[str] | None = None) -> dict
         entries.sort(key=lambda item: (_observed_time(item)[0], item.get("created_at", ""), item["id"]))
         observations = []
         previous_fingerprint = None
+        previous_complete = None
+        has_previous = False
         for snapshot in entries:
             meta = _meta(snapshot)
             scan = meta.get("scan") if isinstance(meta.get("scan"), dict) else {}
@@ -86,15 +88,17 @@ def reconstruct_case(store: MemoryStore, paths: list[str] | None = None) -> dict
                 incomplete_count += 1
             timestamp_ns, timestamp = _observed_time(snapshot)
             fingerprint = meta.get("fingerprint")
-            if previous_fingerprint is None:
+            if not has_previous:
                 change = "baseline"
-            elif fingerprint and fingerprint == previous_fingerprint:
-                change = "unchanged_fingerprint"
-            elif not complete or not _meta(entries[entries.index(snapshot) - 1]).get("fingerprint"):
+            elif not complete or not previous_complete or not fingerprint or not previous_fingerprint:
                 change = "change_indeterminate"
+            elif fingerprint == previous_fingerprint:
+                change = "unchanged_fingerprint"
             else:
                 change = "fingerprint_changed"
             previous_fingerprint = fingerprint
+            previous_complete = complete
+            has_previous = True
             ids = artifact_ids_by_snapshot.get(snapshot["id"], set())
             artifact_count = sum(1 for item_id in ids if item_id in by_id and by_id[item_id].get("kind") == "binary_artifact")
             observations.append({
