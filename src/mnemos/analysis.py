@@ -343,6 +343,10 @@ def analyze_graph(
                     "observed_size_bytes": node.get("size_bytes"),
                     "expected_mode": node.get("expected_mode"),
                     "observed_mode": node.get("observed_mode"),
+                    "expected_uid": node.get("expected_uid"), "observed_uid": node.get("observed_uid"),
+                    "expected_gid": node.get("expected_gid"), "observed_gid": node.get("observed_gid"),
+                    "expected_file_type": node.get("expected_file_type"), "observed_file_type": node.get("observed_file_type"),
+                    "expected_ctime_ns": node.get("expected_ctime_ns"), "observed_ctime_ns": node.get("observed_ctime_ns"),
                     "change_flags": node.get("change_flags", []),
                     "scope": comparison["scope"], "device_id": comparison["device_id"],
                     "host_env": comparison["host_env"], "reason": node.get("reason"),
@@ -387,6 +391,76 @@ def analyze_graph(
                 },
             })
     findings.extend(missing_results)
+
+    # Conservative impact tracing: exact basename matches only. A changed file
+    # may correspond to a runtime dependency node; report downstream consumers
+    # as potential impact, never as proof of breakage or exploitability.
+    changed_statuses = {"HASH_MISMATCH", "MISSING", "PERM_CHANGE", "SIZE_CHANGE", "SAMPLED_MISMATCH", "OWNER_CHANGE", "FILE_TYPE_CHANGE"}
+    dependency_users: dict[str, list[dict[str, Any]]] = {}
+    for link in links:
+        if link.get("relation") != "depends_on":
+            continue
+        source, target = by_id.get(link.get("source_id")), by_id.get(link.get("target_id"))
+        if source and target and source.get("kind") == "binary_artifact" and target.get("kind") == "runtime_dependency":
+            dependency_users.setdefault(target["id"], []).append(source)
+    dependencies_by_basename: dict[str, list[dict[str, Any]]] = {}
+    for dependency in dep_nodes:
+        name = _metadata(dependency).get("name")
+        if isinstance(name, str) and name.strip():
+            dependencies_by_basename.setdefault(Path(name).name.casefold(), []).append(dependency)
+    impact_findings: list[dict[str, Any]] = []
+    for finding in findings:
+        if not finding.get("rule_id", "").startswith("artifact_"):
+            continue
+        evidence = finding.get("evidence") or {}
+        if evidence.get("status") not in changed_statuses:
+            continue
+        path = evidence.get("path")
+        if not isinstance(path, str) or not path:
+            continue
+        matches = dependencies_by_basename.get(Path(path).name.casefold(), [])
+        for dependency in matches:
+            users = sorted(
+                (item for item in dependency_users.get(dependency["id"], [])
+                 if item["id"] != evidence.get("artifact_id")
+                 and (not selected_paths or item["id"] in scoped_artifact_ids)),
+                key=lambda item: item["id"],
+            )
+            if not users:
+                continue
+            impact_findings.append({
+                "rule_id": "potential_dependency_impact",
+                "severity": "review",
+                "subject_id": dependency["id"],
+                "summary": f"{path} changed or disappeared; {len(users)} artifact(s) reference a dependency with the same basename",
+                "confidence": "review",
+                "evidence": {
+                    "changed_path": path,
+                    "change_status": evidence.get("status"),
+                    "change_baseline_snapshot_id": evidence.get("baseline_snapshot_id"),
+                    "change_current_snapshot_id": evidence.get("current_snapshot_id"),
+                    "dependency_id": dependency["id"],
+                    "dependency_name": _metadata(dependency).get("name"),
+                    "match_method": "exact_casefolded_basename",
+                    "impact_status": "potential_impact",
+                    "dependent_artifacts": [
+                        {"artifact_id": item["id"], "path": _metadata(item).get("path"),
+                         "identity": _artifact_identity(item)}
+                        for item in users
+                    ],
+                    "evidence_sources": [
+                        source for source in (_metadata(dependency).get("evidence_sources") or [])
+                        if isinstance(source, dict)
+                    ],
+                    "limitations": [
+                        "basename matching does not prove loader resolution or runtime use",
+                        "no inspected binary was executed",
+                        "potential impact is not proof of failure or malicious change",
+                    ],
+                },
+            })
+    findings.extend(impact_findings)
+
     if not latest_by_scope:
         unknown_scopes.append({"scope": list(selected_paths), "reason": "no_snapshot_for_scope"})
 
@@ -435,6 +509,9 @@ def analyze_graph(
             "missing_artifacts": sum(item["rule_id"] == "artifact_missing" for item in findings),
             "permission_changes": sum(item["rule_id"] == "artifact_perm_change" for item in findings),
             "size_changes": sum(item["rule_id"] == "artifact_size_change" for item in findings),
+            "ownership_changes": sum(item["rule_id"] == "artifact_owner_change" for item in findings),
+            "file_type_changes": sum(item["rule_id"] == "artifact_file_type_change" for item in findings),
+            "potential_dependency_impacts": sum(item["rule_id"] == "potential_dependency_impact" for item in findings),
         },
     }
     return store.add_once(

@@ -7,7 +7,8 @@ Its identity is **evidence before conclusions**: a changed hash is a comparison 
 ## Current capabilities
 
 - **Scoped device mapping:** inspect explicitly selected files/directories and collect bounded static metadata for recognized binaries and executable files.
-- **Artifact evidence:** record paths, file metadata, full SHA-256 where within the configured hashing limit, sampled fingerprints for larger files, and parser status.
+- **Artifact evidence:** record paths, portable file metadata (file type, permissions, timestamps, ownership and filesystem identifiers where the host exposes them), full SHA-256 within the configured hashing limit, sampled fingerprints for larger files, and parser status. Platform-specific timestamp and ownership semantics remain explicit rather than being treated as universally equivalent.
+- **Dependency impact:** connect changed/missing artifacts to potential downstream consumers using exact case-insensitive dependency basenames; reports preserve snapshot provenance and clearly mark the result as potential impact, not proof of runtime resolution or breakage.
 - **Hash-cache safeguards:** reuse a full hash only when device/inode identity, size, modification time, and change time still match; malformed cache entries are ignored and cache writes are atomic with owner-only file permissions where supported. Files that change while being hashed are reported without a trusted digest.
 - **Local history:** persist device snapshots and artifact relationships in SQLite for later comparison.
 - **Release baseline:** create a manifest from a complete scan and compare another snapshot against it.

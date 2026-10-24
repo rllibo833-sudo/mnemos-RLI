@@ -370,14 +370,15 @@ def main(argv: list[str] | None = None) -> int:
             report = collect_device_map(args.path, max_files=args.max_files)
             # Explicit host and scope identity keeps imported graph history isolated.
             report["device_id"] = store.device_id()
-            system = str((report.get("device") or {}).get("os") or sys.platform).casefold()
-            environment = str((report.get("device") or {}).get("environment_class") or "")
+            device_meta = report.get("device") or {}
+            system = str(device_meta.get("os") or sys.platform).casefold()
+            environment = str(device_meta.get("environment_class") or device_meta.get("os_type") or "")
             report["host_env"] = (
                 "linux-termux" if "termux" in environment or "android" in system
                 else "macos" if system == "darwin"
-                else "windows" if system == "windows"
-                else "linux" if system == "linux"
-                else system
+                else "windows" if system.startswith("win")
+                else "linux" if system.startswith("linux")
+                else str(device_meta.get("os_type") or system)
             )
             report["scope_path"] = sorted({
                 str(Path(path).expanduser().resolve()) for path in args.path

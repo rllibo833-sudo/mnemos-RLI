@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-FINDING_STATUSES = {"MISSING", "HASH_MISMATCH", "NEW_FILE", "PERM_CHANGE", "SIZE_CHANGE", "SAMPLED_MISMATCH"}
+FINDING_STATUSES = {"MISSING", "HASH_MISMATCH", "NEW_FILE", "PERM_CHANGE", "SIZE_CHANGE", "SAMPLED_MISMATCH", "OWNER_CHANGE", "FILE_TYPE_CHANGE"}
 
 def _metadata(item: dict[str, Any]) -> dict[str, Any]:
     value = item.get("metadata")
@@ -81,6 +81,10 @@ def _artifact_node(path: str, status: str, current: dict[str, Any] | None,
         "expected_sample_sha256": before.get("sample_sha256"), "observed_sample_sha256": now.get("sample_sha256"),
         "size_bytes": now.get("size_bytes", before.get("size_bytes")), "expected_size_bytes": before.get("size_bytes"),
         "expected_mode": before.get("mode"), "observed_mode": now.get("mode"),
+        "expected_uid": before.get("uid"), "observed_uid": now.get("uid"),
+        "expected_gid": before.get("gid"), "observed_gid": now.get("gid"),
+        "expected_file_type": before.get("file_type"), "observed_file_type": now.get("file_type"),
+        "expected_ctime_ns": before.get("ctime_ns"), "observed_ctime_ns": now.get("ctime_ns"),
         "os": current_meta.get("host_env") or device.get("os_type") or device.get("os") or "unknown",
         "architecture": device.get("architecture") or "unknown", "sandbox_id": device.get("sandbox_id") or "unknown",
         "current_snapshot_id": current_snapshot.get("id"),
@@ -134,6 +138,17 @@ def compare_snapshot_histories(snapshots: list[dict[str, Any]], links: list[dict
                     flags.append("size_change")
                 if now_meta.get("mode") != before_meta.get("mode"):
                     flags.append("permission_change")
+                if (isinstance(now_meta.get("file_type"), str)
+                        and isinstance(before_meta.get("file_type"), str)
+                        and now_meta["file_type"] != before_meta["file_type"]):
+                    flags.append("file_type_change")
+                ownership_changed = any(
+                    isinstance(now_meta.get(field), int) and isinstance(before_meta.get(field), int)
+                    and now_meta[field] != before_meta[field]
+                    for field in ("uid", "gid")
+                )
+                if ownership_changed:
+                    flags.append("ownership_change")
                 now_hash, before_hash = now_meta.get("sha256"), before_meta.get("sha256")
                 now_sample, before_sample = now_meta.get("sample_sha256"), before_meta.get("sample_sha256")
                 if isinstance(now_hash, str) and isinstance(before_hash, str):
@@ -143,14 +158,22 @@ def compare_snapshot_histories(snapshots: list[dict[str, Any]], links: list[dict
                         node_status, reason = "SIZE_CHANGE", "Full hashes match but recorded size differs; stored metadata is inconsistent."
                     elif "permission_change" in flags:
                         node_status, reason = "PERM_CHANGE", "Full SHA-256 matches but permission bits differ."
+                    elif "ownership_change" in flags:
+                        node_status, reason = "OWNER_CHANGE", "Full SHA-256 matches but comparable numeric ownership metadata differs."
+                    elif "file_type_change" in flags:
+                        node_status, reason = "FILE_TYPE_CHANGE", "Full SHA-256 matches but recorded file type differs."
                     else:
-                        node_status, reason = "MATCH", "Full SHA-256 and recorded size/permission metadata match the baseline."
+                        node_status, reason = "MATCH", "Full SHA-256 and comparable metadata match the baseline."
                 elif isinstance(now_sample, str) and isinstance(before_sample, str) and now_sample != before_sample:
                     node_status, reason = "SAMPLED_MISMATCH", "Sampled fingerprint differs; this is not a full-content hash proof."
                 elif "size_change" in flags:
                     node_status, reason = "SIZE_CHANGE", "Recorded file size differs; full-content hash evidence is unavailable."
                 elif "permission_change" in flags:
                     node_status, reason = "PERM_CHANGE", "Permission bits differ; full-content hash evidence is unavailable."
+                elif "ownership_change" in flags:
+                    node_status, reason = "OWNER_CHANGE", "Comparable numeric ownership metadata differs; full-content hash evidence is unavailable."
+                elif "file_type_change" in flags:
+                    node_status, reason = "FILE_TYPE_CHANGE", "Recorded file type differs; full-content hash evidence is unavailable."
                 else:
                     node_status, reason = "UNKNOWN", "Full SHA-256 evidence is unavailable; sampled fingerprints cannot prove byte equality."
                 nodes.append(_artifact_node(path, node_status, now, before, current_snapshot, previous_snapshot, reason, flags))

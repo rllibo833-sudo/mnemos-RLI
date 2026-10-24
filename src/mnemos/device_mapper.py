@@ -102,15 +102,21 @@ def _stat_identity(info: os.stat_result) -> tuple[int, int, int, int, int]:
             getattr(info, "st_ctime_ns", int(info.st_ctime * 1_000_000_000)))
 
 def _normalize_os_type():
-    import platform, os
-    s=platform.system() or __import__("sys").platform
-    low=s.lower()
-    if "TERMUX_VERSION" in os.environ or "com.termux" in os.environ.get("PREFIX","").lower(): t="android-termux"
-    elif low.startswith("darwin"): t="macos"
-    elif low.startswith("win"): t="windows"
-    elif low.startswith("linux"): t="linux"
-    else: t=low
-    return {"raw":s,"normalized":t}
+    system = platform.system() or sys.platform
+    low = system.lower()
+    if "TERMUX_VERSION" in os.environ or "com.termux" in os.environ.get("PREFIX", "").lower():
+        normalized, family = "android-termux", "android"
+    elif low.startswith("darwin"):
+        normalized, family = "macos", "unix"
+    elif low.startswith("win"):
+        normalized, family = "windows", "windows"
+    elif low.startswith("linux"):
+        normalized, family = "linux", "unix"
+    elif "freebsd" in low:
+        normalized, family = "freebsd", "unix"
+    else:
+        normalized, family = low, "unknown"
+    return {"raw": system, "normalized": normalized, "family": family}
 
 def _detect_sandbox_id():
     import os
@@ -824,6 +830,30 @@ def _artifact(path: Path) -> dict[str, Any] | None:
             digest = None
             sample_digest = None
             details = {"status": "file_changed_during_inspection", "format": fmt or "unknown"}
+        ctime_ns = getattr(info, "st_ctime_ns", int(info.st_ctime * 1_000_000_000))
+        file_type = (
+            "regular_file" if stat.S_ISREG(info.st_mode) else
+            "directory" if stat.S_ISDIR(info.st_mode) else
+            "symlink" if stat.S_ISLNK(info.st_mode) else
+            "socket" if stat.S_ISSOCK(info.st_mode) else
+            "fifo" if stat.S_ISFIFO(info.st_mode) else
+            "character_device" if stat.S_ISCHR(info.st_mode) else
+            "block_device" if stat.S_ISBLK(info.st_mode) else "unknown"
+        )
+        portable_stat = {
+            "schema": "mnemos-file-metadata-v1",
+            "file_type": file_type,
+            "size_bytes": info.st_size,
+            "mode": stat.S_IMODE(info.st_mode),
+            "mtime_ns": info.st_mtime_ns,
+            "ctime_ns": ctime_ns,
+            "ctime_semantics": "platform_defined" if os.name == "nt" else "metadata_change_time",
+            "uid": getattr(info, "st_uid", None),
+            "gid": getattr(info, "st_gid", None),
+            "device_number": getattr(info, "st_dev", None),
+            "inode_number": getattr(info, "st_ino", None),
+            "link_count": getattr(info, "st_nlink", None),
+        }
         return {
             "evidence": {
                 "schema": "mnemos-binary-evidence-v1",
@@ -835,6 +865,7 @@ def _artifact(path: Path) -> dict[str, Any] | None:
                 "sample_hash_method": "first-middle-last-bounded-regions" if sample_digest else None,
                 "file_size_bytes": info.st_size,
                 "observed_mtime_ns": info.st_mtime_ns,
+                "file_metadata": portable_stat,
                 "parser": "mnemos-device-mapper",
                 "execution_performed": False,
                 "network_used": False,
@@ -844,7 +875,15 @@ def _artifact(path: Path) -> dict[str, Any] | None:
             "format": fmt or "executable-unknown",
             "size_bytes": info.st_size,
             "mtime_ns": info.st_mtime_ns,
+            "ctime_ns": ctime_ns,
             "mode": stat.S_IMODE(info.st_mode),
+            "file_type": file_type,
+            "uid": portable_stat["uid"],
+            "gid": portable_stat["gid"],
+            "device_number": portable_stat["device_number"],
+            "inode_number": portable_stat["inode_number"],
+            "link_count": portable_stat["link_count"],
+            "file_metadata": portable_stat,
             "sha256": digest,
                 "signature_status": details.get("signature_status","unknown"),
             "sample_sha256": sample_digest,
@@ -973,10 +1012,9 @@ def collect_device_map(paths: Iterable[str | Path] = (), *, max_files: int = 200
                 "prefix": sys.prefix,
                 "exec_prefix": sys.exec_prefix,
             },
-            "environment_class": (
-                "android-termux" if "com.termux" in prefix.lower() or "TERMUX_VERSION" in os.environ
-                else "unknown"
-            ),
+            "environment_class": _normalize_os_type()["normalized"],
+            "os_family": _normalize_os_type()["family"],
+            "os_raw": _normalize_os_type()["raw"],
             "available_tools": tools,
         },
         "scan": {
