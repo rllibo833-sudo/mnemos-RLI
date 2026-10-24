@@ -1,5 +1,5 @@
-# Mnemos
-
+# Mnemos RLI — offline portable memory for AI agents
+SQLite-based memory graph with typed relations, lexical search, and live graph on Works with Claude Code & Cursor via local MCP. No cloud needed.
 ![Mnemos portable memory platform infographic](Infografik%20Mnemos_%20Platform%20Memori%20Portabel.png)
 
 **A Living Knowledge Network for AI agents, with hybrid local and server storage.**
