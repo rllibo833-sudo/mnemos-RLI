@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mnemos-rli.local/schemas/link.schema.json",
+  "title": "Mnemos Typed Knowledge Link",
+  "type": "object",
+  "required": ["schema_version", "source_id", "target_id", "relation"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "workspace_id": {"type": "string", "format": "uuid"},
+    "source_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "target_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "relation": {"type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$"},
+    "provenance": {"type": "object"},
+    "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "metadata": {"type": "object"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "deleted_at": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}

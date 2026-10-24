@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "name": "lyneye",
+  "version": "0.1.0",
+  "description": "Local-first image and selected-video-frame understanding for Mnemos.",
+  "triggers": ["lihat", "foto", "gambar", "image", "vision", "frame", "video"],
+  "input": {"media_categories": ["image", "video"], "requires_explicit_file_permission": true},
+  "output": {"format": "mnemos-memory-node", "max_text_chars": 12000, "include_source_hash": true, "include_timestamps_for_video": true},
+  "execution": {"preferred_provider": "local-ollama", "network_required": false, "upload_original_media": false, "allow_face_identification": false},
+  "entrypoint": "prompt.md"
+}

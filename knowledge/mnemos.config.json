@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "mode": "local-first",
+  "workspace_id_env": "MNEMOS_WORKSPACE_ID",
+  "supabase": {
+    "url_env": "SUPABASE_URL",
+    "anon_key_env": "SUPABASE_ANON_KEY",
+    "access_token_env": "SUPABASE_ACCESS_TOKEN",
+    "nodes_table": "knowledge_nodes",
+    "links_table": "knowledge_links",
+    "never_use_service_role_key": true
+  },
+  "sync": {
+    "payload_format": "mnemos-knowledge-bundle",
+    "payload_version": 1,
+    "max_batch_records": 100,
+    "max_inline_text_chars": 65536,
+    "max_nodes_per_bundle": 5000,
+    "max_links_per_bundle": 10000,
+    "binary_uploads": false,
+    "original_media_uploads": false,
+    "default_conflict_policy": "preserve-provenance"
+  },
+  "media": {
+    "originals": "local-only",
+    "supported_categories": ["image", "document", "video", "audio", "code", "file"],
+    "extract_locally": true,
+    "store_content_hash": true,
+    "store_extracted_text": true,
+    "store_thumbnail_binary": false,
+    "store_embeddings_by_default": false,
+    "require_explicit_permission": true
+  },
+  "security": {
+    "core_is_agent_read_only": true,
+    "memory_is_untrusted_context": true,
+    "never_store_secrets": true,
+    "never_execute_imported_files": true,
+    "never_scan_entire_device_implicitly": true
+  }
+}

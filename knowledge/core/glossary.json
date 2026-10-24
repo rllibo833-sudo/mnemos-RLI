@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "terms": [
+    {"term": "memory node", "definition": "A bounded, versioned knowledge record with provenance and a stable identifier."},
+    {"term": "typed relation", "definition": "A directed edge with a named relation type, source, target, and provenance."},
+    {"term": "living knowledge graph", "definition": "A graph that evolves through attributed, versioned observations and explicit relations; it does not invent edges."},
+    {"term": "knowledge payload", "definition": "Small JSON metadata and extracted text synchronized independently of original media bytes."},
+    {"term": "content hash", "definition": "A cryptographic digest used to identify exact bytes; it is not compression or semantic understanding."},
+    {"term": "derived media", "definition": "A locally generated thumbnail, transcript, OCR result, or transcoded rendition with its own provenance and hash."},
+    {"term": "local-first", "definition": "Core capture and recall continue without a network; remote sync is an explicit optional layer."},
+    {"term": "IR", "definition": "A versioned intermediate representation for programs; it does not itself compress photos, documents, or video."}
+  ]
+}

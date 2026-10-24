@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "name": "lynlamp",
+  "version": "0.1.0",
+  "description": "Allowlisted light control intent mapping.",
+  "triggers": ["lampu", "nyalakan", "matikan", "redupkan", "brightness", "light"],
+  "permissions": ["device.light.control"],
+  "execution": {"requires_user_authorization": true, "requires_host_adapter": true, "arbitrary_commands": false},
+  "actions_file": "actions.json"
+}

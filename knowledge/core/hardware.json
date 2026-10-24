@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "profile_status": "uninitialized",
+  "device_id": null,
+  "platform": null,
+  "architecture": null,
+  "capabilities": {
+    "local_sqlite": true,
+    "local_file_processing": "permission-required",
+    "local_vision_model": "optional",
+    "local_ocr": "optional",
+    "local_video_tools": "optional",
+    "network_sync": "opt-in"
+  },
+  "limits": {
+    "original_media_upload": false,
+    "implicit_device_scan": false,
+    "max_inline_text_chars": 65536
+  },
+  "note": "Populate only from explicit device inspection; do not infer hardware identity or upload a device fingerprint."
+}
