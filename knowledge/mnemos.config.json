@@ -6,24 +6,35 @@
     "url_env": "SUPABASE_URL",
     "anon_key_env": "SUPABASE_ANON_KEY",
     "access_token_env": "SUPABASE_ACCESS_TOKEN",
-    "nodes_table": "knowledge_nodes",
-    "links_table": "knowledge_links",
-    "never_use_service_role_key": true
+    "nodes_table": "memories",
+    "links_table": "links",
+    "never_use_service_role_key": true,
+    "bundles_table": "bundles"
   },
   "sync": {
     "payload_format": "mnemos-knowledge-bundle",
     "payload_version": 1,
     "max_batch_records": 100,
     "max_inline_text_chars": 65536,
-    "max_nodes_per_bundle": 5000,
-    "max_links_per_bundle": 10000,
+    "max_nodes_per_bundle": 50000,
+    "max_links_per_bundle": 100000,
     "binary_uploads": false,
     "original_media_uploads": false,
-    "default_conflict_policy": "preserve-provenance"
+    "default_conflict_policy": "preserve-provenance",
+    "local_snapshot_chunk_size": 500,
+    "outbox_ack_policy": "only-unchanged-upserts-after-successful-push",
+    "delete_policy": "defer-until-tombstone-protocol"
   },
   "media": {
     "originals": "local-only",
-    "supported_categories": ["image", "document", "video", "audio", "code", "file"],
+    "supported_categories": [
+      "image",
+      "document",
+      "video",
+      "audio",
+      "code",
+      "file"
+    ],
     "extract_locally": true,
     "store_content_hash": true,
     "store_extracted_text": true,

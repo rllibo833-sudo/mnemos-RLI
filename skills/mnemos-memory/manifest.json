@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "name": "mnemos-memory",
+  "version": "0.1.0",
+  "description": "Use Mnemos local memory to capture durable project knowledge and recall prior decisions.",
+  "triggers": [
+    "memory",
+    "remember",
+    "recall",
+    "project context",
+    "prior decision"
+  ],
+  "requires": [
+    "host.mnemos.local"
+  ],
+  "knowledge_source": "mnemos-local-graph",
+  "author": "Mnemos RLI",
+  "entrypoint": "SKILL.md",
+  "capabilities": [
+    "knowledge.memory.read",
+    "knowledge.memory.write",
+    "knowledge.graph.link"
+  ],
+  "permissions": [],
+  "dependencies": []
+}

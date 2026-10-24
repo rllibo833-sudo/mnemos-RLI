@@ -3,16 +3,93 @@
   "$id": "https://mnemos-rli.local/schemas/skill.schema.json",
   "title": "Mnemos Agent Skill Manifest",
   "type": "object",
-  "required": ["schema_version", "name", "version", "triggers"],
+  "required": [
+    "schema_version",
+    "name",
+    "version",
+    "description",
+    "triggers",
+    "requires",
+    "knowledge_source",
+    "author",
+    "entrypoint",
+    "capabilities"
+  ],
   "properties": {
-    "schema_version": {"const": 1},
-    "name": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,63}$"},
-    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
-    "description": {"type": "string", "maxLength": 1024},
-    "triggers": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
-    "permissions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
-    "input": {"type": "object"}, "output": {"type": "object"}, "execution": {"type": "object"},
-    "entrypoint": {"type": "string"}, "actions_file": {"type": "string"}
+    "schema_version": {
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,63}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1024
+    },
+    "triggers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "input": {
+      "type": "object"
+    },
+    "output": {
+      "type": "object"
+    },
+    "execution": {
+      "type": "object"
+    },
+    "entrypoint": {
+      "type": "string"
+    },
+    "actions_file": {
+      "type": "string"
+    },
+    "requires": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "knowledge_source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    }
   },
   "additionalProperties": false
 }

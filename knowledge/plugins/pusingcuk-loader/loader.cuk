@@ -1,18 +1,5 @@
-# PusingCuk-side contract example for a Mnemos knowledge node.
-# PusingCuk IR/bytecode is for programs; it does not compress media.
-# The current runtime has no stable host file/network adapter here.
-# Supabase transport is delegated to plugins/supabase-sync/sync.js.
-
+# Manifest, entrypoint, dependency, and capability checks are performed by loader.js in the host.
+# This PusingCuk program intentionally does not assume filesystem or HTTP primitives exist.
 jancuk
-lah node = {
-  "schema_version": 1,
-  "id": "example:knowledge-node",
-  "kind": "fact",
-  "title": "Example node",
-  "content": "Replace this sample with a user-approved, source-grounded fact",
-  "source": {"type": "manual"},
-  "metadata": {"origin": "pusingcuk-loader-example"}
-}
-lah payload = json_teks(node)
-hedeh payload
+hedeh "Mnemos skill execution requires a host-validated manifest and explicitly granted capabilities."
 selesai jancuk

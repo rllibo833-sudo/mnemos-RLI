@@ -4,6 +4,8 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
+const { spawnSync } = require("node:child_process");
+const os = require("node:os");
 
 const CONFIG_PATH = path.resolve(__dirname, "../../mnemos.config.json");
 const CONFIG = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
@@ -341,6 +343,29 @@ async function pull(since, outputPath) {
     console.error("Wrote " + nodes.length + " nodes and " + links.length + " links to " + path.resolve(outputPath));
   } else process.stdout.write(json);
 }
+function runBridge(args) {
+  const r = spawnSync(process.env.PYTHON || "python3", [path.resolve(__dirname, "sqlite_bridge.py"), ...args], { encoding: "utf8", timeout: 120000, maxBuffer: 128 * 1024 * 1024, env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" } });
+  if (r.error) throw r.error;
+  if (r.status !== 0) throw new Error((r.stderr || r.stdout || "SQLite bridge failed").trim());
+  return r.stdout;
+}
+async function syncLocal(args) {
+  const index = args.indexOf("--db"); const db = index >= 0 ? args[index + 1] : null; const dry = args.includes("--dry-run");
+  if (index >= 0 && (!db || db.startsWith("--"))) throw new Error("--db requires PATH");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemos-sync-"));
+  const exp = path.join(dir, "export.json"); const bundlePath = path.join(dir, "bundle.json"); const remotePath = path.join(dir, "remote.json"); const importPath = path.join(dir, "import.json");
+  const dbArgs = db ? ["--db", path.resolve(db)] : [];
+  try {
+    const counts = JSON.parse(runBridge(["export", "--output", exp, ...dbArgs]));
+    const payload = JSON.parse(fs.readFileSync(exp, "utf8")); const workspace = uuid(env(CONFIG.workspace_id_env), CONFIG.workspace_id_env);
+    const bundle = exportToBundle(payload, workspace); fs.writeFileSync(bundlePath, JSON.stringify(bundle) + "\n", "utf8");
+    if (dry) { console.log(JSON.stringify({ mode: "dry-run", memories: bundle.nodes.length, links: bundle.links.length, network_initialized: false, outbox_acknowledged: 0, remote_verified: false }, null, 2)); return; }
+    await push(bundlePath); await pull(null, remotePath);
+    const remote = JSON.parse(fs.readFileSync(remotePath, "utf8")); const back = bundleToExport(remote); fs.writeFileSync(importPath, JSON.stringify(back) + "\n", "utf8");
+    const imported = JSON.parse(runBridge(["import", "--input", importPath, ...dbArgs]));
+    console.log(JSON.stringify({ mode: "live-sync", local_memories: bundle.nodes.length, local_links: bundle.links.length, remote_memories: back.memories.length, remote_links: back.links.length, imported, outbox_acknowledged: 0, outbox_ack_deferred: true, reason: "outbox schema cannot be safely identified by this bridge; no ACK issued" }, null, 2));
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+}
 async function main(argv) {
   const [command, ...args] = argv;
   if (command === "bundle") {
@@ -364,6 +389,15 @@ async function main(argv) {
     console.error("Wrote portable Mnemos import with " + payload.memories.length + " memories and " + payload.links.length + " links");
     return;
   }
+  if (command === "simulate") {
+    const input = args[0], output = args[1]; if (!input || !output) throw new Error("usage: sync.js simulate export.json roundtrip.json");
+    const source = JSON.parse(fs.readFileSync(path.resolve(input), "utf8")); const workspace = uuid(env(CONFIG.workspace_id_env), CONFIG.workspace_id_env);
+    const back = bundleToExport(exportToBundle(source, workspace)); fs.writeFileSync(path.resolve(output), JSON.stringify(back, null, 2) + "\n", "utf8");
+    const original = new Map(source.memories.map(m => [m.id, m])); const tags = back.memories.filter(m => JSON.stringify(Array.isArray(original.get(m.id)?.tags) ? original.get(m.id).tags : []) === JSON.stringify(m.tags)).length;
+    if (back.memories.length !== source.memories.length || back.links.length !== source.links.length || tags !== source.memories.length || new Set(back.memories.map(m => m.id)).size !== source.memories.length) throw new Error("offline round-trip invariant failed");
+    console.log(JSON.stringify({ mode: "offline-simulation", memories: back.memories.length, links: back.links.length, tags_arrays_preserved: tags, identity_preserved: true, relations_preserved: true, network_initialized: false }, null, 2)); return;
+  }
+  if (command === "sync") return syncLocal(args);
   if (command === "push") return push(args[0]);
   if (command === "pull") {
     let since = null, output = null;
@@ -374,6 +408,6 @@ async function main(argv) {
     }
     return pull(since, output);
   }
-  throw new Error("usage: sync.js bundle mnemos-export.json [--output bundle.json] | push bundle.json | pull [ISO_TIMESTAMP] [--output file.json] | unbundle remote-bundle.json --output mnemos-export.json");
+  throw new Error("usage: sync.js bundle mnemos-export.json [--output bundle.json] | simulate export.json roundtrip.json | sync [--db PATH] [--dry-run] | push bundle.json | pull [ISO_TIMESTAMP] [--output file.json] | unbundle remote-bundle.json --output mnemos-export.json");
 }
 main(process.argv.slice(2)).catch(error => { console.error("mnemos sync: " + error.message); process.exitCode = 1; });

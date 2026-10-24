@@ -2,9 +2,32 @@
   "schema_version": 1,
   "name": "lynlamp",
   "version": "0.1.0",
-  "description": "Allowlisted light control intent mapping.",
-  "triggers": ["lampu", "nyalakan", "matikan", "redupkan", "brightness", "light"],
-  "permissions": ["device.light.control"],
-  "execution": {"requires_user_authorization": true, "requires_host_adapter": true, "arbitrary_commands": false},
-  "actions_file": "actions.json"
+  "description": "Allowlisted light-control intent mapping.",
+  "triggers": [
+    "lampu",
+    "nyalakan",
+    "matikan",
+    "redupkan",
+    "brightness",
+    "light"
+  ],
+  "requires": [
+    "host.device.light"
+  ],
+  "knowledge_source": "mnemos-local-graph",
+  "author": "Mnemos RLI",
+  "entrypoint": "SKILL.md",
+  "capabilities": [
+    "device.light.intent"
+  ],
+  "permissions": [
+    "device.light.control"
+  ],
+  "dependencies": [],
+  "actions_file": "actions.json",
+  "execution": {
+    "requires_user_authorization": true,
+    "requires_host_adapter": true,
+    "arbitrary_commands": false
+  }
 }
