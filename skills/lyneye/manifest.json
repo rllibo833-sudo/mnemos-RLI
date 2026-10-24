@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "name": "lyneye",
+  "version": "0.1.0",
+  "description": "Locally interpret explicitly selected images or video frames and store grounded observations.",
+  "triggers": [
+    "lihat",
+    "foto",
+    "gambar",
+    "image",
+    "vision",
+    "frame",
+    "video"
+  ],
+  "requires": [
+    "host.mnemos.local"
+  ],
+  "knowledge_source": "mnemos-local-graph",
+  "author": "Mnemos RLI",
+  "entrypoint": "SKILL.md",
+  "capabilities": [
+    "knowledge.memory.read",
+    "knowledge.memory.write",
+    "knowledge.graph.link",
+    "media.selected.read"
+  ],
+  "dependencies": [],
+  "permissions": [],
+  "input": {
+    "media_categories": [
+      "image",
+      "video"
+    ],
+    "requires_explicit_file_permission": true
+  },
+  "execution": {
+    "network_required": false,
+    "upload_original_media": false,
+    "allow_face_identification": false
+  }
+}

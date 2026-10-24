@@ -12,13 +12,16 @@
     "light"
   ],
   "requires": [
-    "host.device.light"
+    "host.mnemos.local"
   ],
   "knowledge_source": "mnemos-local-graph",
   "author": "Mnemos RLI",
   "entrypoint": "SKILL.md",
   "capabilities": [
-    "device.light.intent"
+    "device.light.intent",
+    "knowledge.memory.read",
+    "knowledge.memory.write",
+    "knowledge.graph.link"
   ],
   "permissions": [
     "device.light.control"

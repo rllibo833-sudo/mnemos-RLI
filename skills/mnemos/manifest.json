@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "name": "mnemos",
+  "version": "0.1.0",
+  "description": "Capture, search, and connect provenance-aware knowledge in the local Mnemos graph.",
+  "triggers": [
+    "mnemos",
+    "memory",
+    "knowledge",
+    "graph",
+    "remember",
+    "recall"
+  ],
+  "requires": [
+    "host.mnemos.local"
+  ],
+  "knowledge_source": "mnemos-local-graph",
+  "author": "Mnemos RLI",
+  "entrypoint": "SKILL.md",
+  "capabilities": [
+    "knowledge.memory.read",
+    "knowledge.memory.write",
+    "knowledge.graph.link"
+  ],
+  "dependencies": [],
+  "permissions": []
+}

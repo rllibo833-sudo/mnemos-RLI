@@ -13,15 +13,16 @@
     "video"
   ],
   "requires": [
-    "host.media.selected",
-    "host.vision.local"
+    "host.mnemos.local"
   ],
   "knowledge_source": "mnemos-local-graph",
   "author": "Mnemos RLI",
   "entrypoint": "prompt.md",
   "capabilities": [
     "media.selected.read",
-    "knowledge.memory.write"
+    "knowledge.memory.write",
+    "knowledge.memory.read",
+    "knowledge.graph.link"
   ],
   "permissions": [],
   "dependencies": [],

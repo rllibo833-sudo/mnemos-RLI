@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .graph import render_graph
 from .store import MemoryStore
+from .contract import bundle_from_snapshot, snapshot_graph, unbundle_to_store, roundtrip_snapshot, sync_snapshot
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -34,6 +35,16 @@ def _parser() -> argparse.ArgumentParser:
     export.add_argument("--output", default="mnemos-export.json")
     imp = commands.add_parser("import", help="Import a Mnemos JSON export without overwriting existing IDs.")
     imp.add_argument("input")
+    bundle = commands.add_parser("bundle", help="Write a portable full graph snapshot.")
+    bundle.add_argument("--output", required=True)
+    unbundle = commands.add_parser("unbundle", help="Import a graph snapshot with updated_at conflict protection.")
+    unbundle.add_argument("input")
+    sync = commands.add_parser("sync", help="Snapshot locally and optionally sync with Supabase.")
+    sync.add_argument("--supabase-url")
+    sync.add_argument("--out", default="mnemos-bundle.json")
+    simulate = commands.add_parser("simulate-bundle", help="Run an offline bundle/unbundle round trip.")
+    simulate.add_argument("--input", help="Existing export JSON; defaults to local SQLite.")
+    simulate.add_argument("--output", help="Optional round-trip output JSON.")
     return parser
 
 
@@ -64,8 +75,25 @@ def main(argv: list[str] | None = None) -> int:
             payload = json.loads(Path(args.input).read_text(encoding="utf-8"))
             memories, links = store.import_data(payload)
             print(f"Imported {memories} memories and {links} links.")
+        elif args.command == "bundle":
+            path = bundle_from_snapshot(snapshot_graph(store), args.output)
+            print(f"Bundle written to {path}")
+        elif args.command == "unbundle":
+            print(json.dumps(unbundle_to_store(args.input, store, protect_updated_at=True), ensure_ascii=False, indent=2))
+        elif args.command == "simulate-bundle":
+            snapshot = json.loads(Path(args.input).read_text(encoding="utf-8")) if args.input else snapshot_graph(store)
+            result, _ = roundtrip_snapshot(snapshot)
+            if args.output:
+                target = Path(args.output).expanduser().resolve(); target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            memories = result.get("memories", [])
+            preserved = sum(isinstance(item.get("tags"), list) for item in memories if isinstance(item, dict))
+            links_count = len(result.get("links", []))
+            print(f"SIM: {len(memories)} memories, {links_count} links, tags_arrays_preserved: {preserved}")
+        elif args.command == "sync":
+            print(json.dumps(sync_snapshot(store, args.out, args.supabase_url), ensure_ascii=False, indent=2))
         return 0
-    except (ValueError, KeyError, OSError, json.JSONDecodeError) as exc:
+    except (ValueError, KeyError, OSError, RuntimeError, json.JSONDecodeError) as exc:
         print(f"mnemos: error: {exc}", file=sys.stderr)
         return 2
 

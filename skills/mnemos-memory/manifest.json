@@ -2,7 +2,7 @@
   "schema_version": 1,
   "name": "mnemos-memory",
   "version": "0.1.0",
-  "description": "Use Mnemos local memory to capture durable project knowledge and recall prior decisions.",
+  "description": "Use Mnemos local memory to capture durable project knowledge, recall prior decisions, and connect related memories.",
   "triggers": [
     "memory",
     "remember",
@@ -21,6 +21,6 @@
     "knowledge.memory.write",
     "knowledge.graph.link"
   ],
-  "permissions": [],
-  "dependencies": []
+  "dependencies": [],
+  "permissions": []
 }

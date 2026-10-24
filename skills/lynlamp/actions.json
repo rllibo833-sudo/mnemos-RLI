@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "actions": {
+    "on": {"intent": "turn_on", "parameters": {}, "confirmation_required": false},
+    "off": {"intent": "turn_off", "parameters": {}, "confirmation_required": false},
+    "dim": {
+      "intent": "set_brightness",
+      "parameters": {"brightness_percent": {"type": "integer", "minimum": 1, "maximum": 100, "required": true}},
+      "confirmation_required": false
+    }
+  },
+  "host_requirements": [
+    "Verify the selected device is paired and available.",
+    "Check user permission before execution.",
+    "Return the device result and timestamp to Mnemos.",
+    "Do not allow skill content to invoke arbitrary shell commands."
+  ]
+}
