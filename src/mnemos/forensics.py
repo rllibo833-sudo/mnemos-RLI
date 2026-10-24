@@ -83,7 +83,8 @@ def reconstruct_case(store: MemoryStore, paths: list[str] | None = None) -> dict
         for snapshot in entries:
             meta = _meta(snapshot)
             scan = meta.get("scan") if isinstance(meta.get("scan"), dict) else {}
-            complete = scan.get("complete") is True
+            scope_known = bool(_scope(snapshot))
+            complete = scan.get("complete") is True and scope_known
             if not complete:
                 incomplete_count += 1
             timestamp_ns, timestamp = _observed_time(snapshot)
@@ -111,10 +112,11 @@ def reconstruct_case(store: MemoryStore, paths: list[str] | None = None) -> dict
                 "scan_limit_reached": bool(scan.get("limit_reached")),
                 "depth_limit_reached": bool(scan.get("depth_limit_reached")),
                 "artifact_count": artifact_count,
-                "limitations": [
-                    key for key in ("limit_reached", "depth_limit_reached", "skipped_symlink_roots")
-                    if scan.get(key)
-                ],
+                "limitations": (
+                    [key for key in ("limit_reached", "depth_limit_reached", "skipped_symlink_roots")
+                     if scan.get(key)]
+                    + (["missing_explicit_scope"] if not scope_known else [])
+                ),
             })
         timelines.append({
             "device_id": device_id,
@@ -143,6 +145,7 @@ def reconstruct_case(store: MemoryStore, paths: list[str] | None = None) -> dict
         "This reconstruction uses only evidence already stored in the local Mnemos database; it performs no new acquisition.",
         "A sampled fingerprint is not equivalent to a full-file SHA-256 and cannot prove byte-for-byte identity.",
         "Incomplete scans and parser limitations prevent absence claims; UNKNOWN is not evidence of safety or compromise.",
+        "Snapshots without an explicit scan scope are retained for auditability but are never treated as complete evidence.",
         "Observed timestamps order recorded observations and do not independently prove when an underlying change occurred.",
         "A fingerprint change establishes that the recorded inventory differs, not that the change is malicious.",
     ]

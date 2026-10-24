@@ -124,9 +124,10 @@ class MemoryStore(GraphStore):
             db.execute("CREATE INDEX IF NOT EXISTS idx_memories_workspace_kind ON memories(workspace_id,kind,deleted)")
             version_row = db.execute("SELECT value FROM mnemos_meta WHERE key='schema_version'").fetchone()
             version = int(version_row["value"]) if version_row else 1
-            if version > 4:
-                raise ValueError(f"Database schema version {version} is newer than this Mnemos build (4).")
-            db.execute("UPDATE mnemos_meta SET value='4' WHERE key='schema_version'")
+            if version > 3:
+                raise ValueError(f"Database schema version {version} is newer than this Mnemos build (3).")
+            # These forensic indexes are additive performance improvements; no schema bump is needed.
+            db.execute("UPDATE mnemos_meta SET value='3' WHERE key='schema_version'")
 
     def add(
         self, content: str, *, kind: str = "note", tags: Iterable[str] = (),
