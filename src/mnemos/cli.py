@@ -490,7 +490,6 @@ def main(argv: list[str] | None = None) -> int:
             if args.live:
                 if args.format != "html":
                     raise ValueError("--live requires --format html.")
-                from .live_graph import serve_live_graph
                 return serve_live_graph(store, args.output, args.port)
             memories, links = store.list_all(), store.links()
             if args.format == "json":
