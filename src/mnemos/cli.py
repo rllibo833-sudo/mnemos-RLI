@@ -41,6 +41,8 @@ def _parser() -> argparse.ArgumentParser:
     graph.add_argument("--output", default="mnemos-graph.html")
     graph.add_argument("--format", choices=("html", "json"), default="html",
                        help="Output an interactive HTML graph or graph JSON.")
+    graph.add_argument("--live", action="store_true", help="Serve a local graph viewer that refreshes as the graph grows.")
+    graph.add_argument("--port", type=int, default=8765, help="Loopback port for --live (default: 8765).")
     export = commands.add_parser("export", help="Export all memories and links to JSON.")
     export.add_argument("--output", default="mnemos-export.json")
     imp = commands.add_parser("import", help="Import a Mnemos JSON export without overwriting existing IDs.")
@@ -285,6 +287,11 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "link":
             print(json.dumps(store.link(args.source_id, args.target_id, relation=args.relation), indent=2))
         elif args.command == "graph":
+            if args.live:
+                if args.format != "html":
+                    raise ValueError("--live requires --format html.")
+                from .live_graph import serve_live_graph
+                return serve_live_graph(store, args.output, args.port)
             memories, links = store.list_all(), store.links()
             if args.format == "json":
                 path = Path(args.output)

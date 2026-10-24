@@ -41,7 +41,16 @@ def graph_payload(memories: list[dict[str, Any]], links: list[dict[str, Any]]) -
     }
 
 
-def render_graph(memories: list[dict[str, Any]], links: list[dict[str, Any]], output: str | Path) -> Path:
+def render_graph(
+    memories: list[dict[str, Any]],
+    links: list[dict[str, Any]],
+    output: str | Path,
+    *,
+    refresh_seconds: int | None = None,
+) -> Path:
+    """Render a graph snapshot; optional refresh is used by the loopback live viewer."""
+    if refresh_seconds is not None and not 1 <= refresh_seconds <= 3600:
+        raise ValueError("refresh_seconds must be between 1 and 3600.")
     target = Path(output)
     target.parent.mkdir(parents=True, exist_ok=True)
     payload = json.dumps(graph_payload(memories, links), ensure_ascii=False).replace("</", "<\\/")
@@ -81,5 +90,11 @@ for(const e of edges){const dx=e.b.x-e.a.x,dy=e.b.y-e.a.y,d=Math.hypot(dx,dy)||1
 for(const n of nodes){if(n===dragging)continue;n.vx*=.88;n.vy*=.88;n.x=Math.max(20,Math.min(w-20,n.x+n.vx));n.y=Math.max(40,Math.min(h-20,n.y+n.vy))}draw();requestAnimationFrame(tick)}
 addEventListener('resize',draw);draw();requestAnimationFrame(tick);
 </script></body></html>"""
+    if refresh_seconds is not None:
+        document = document.replace(
+            "<meta charset=",
+            '<meta http-equiv="refresh" content="' + str(refresh_seconds) + '"><meta charset=',
+            1,
+        )
     target.write_text(document.replace("__DATA__", payload), encoding="utf-8")
     return target

@@ -231,7 +231,8 @@ class MemoryStore:
         terms = [term.casefold() for term in query.split() if term.strip()]
         if not terms:
             return []
-        candidates = self.list(limit=10000)
+        # Search the complete local graph; the recent-list limit must not hide older knowledge.
+        candidates = self.list_all()
         scored: list[tuple[int, str, dict[str, Any]]] = []
         for item in candidates:
             haystack = " ".join([item["content"], item["kind"], *item["tags"], item["source"] or ""]).casefold()
