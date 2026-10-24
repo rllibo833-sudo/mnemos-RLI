@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from .store import MemoryStore
+from .integrity import FINDING_STATUSES, compare_snapshot_histories
 
 RULE_SET = "mnemos-analysis-rules-v1"
 
@@ -154,6 +155,7 @@ def analyze_graph(
             if item_id in by_id and by_id[item_id].get("kind") == "binary_artifact"
         ]
 
+    integrity_comparisons = compare_snapshot_histories(snapshots, links, by_id)
     latest_complete = {scope: snap for scope, snap in latest_by_scope.items() if _scan_complete(snap)}
     scoped_artifact_ids = {
         item["id"] for artifacts in snapshot_artifacts.values() for item in artifacts
@@ -312,6 +314,40 @@ def analyze_graph(
 
     missing_results: list[dict[str, Any]] = []
     unknown_scopes: list[dict[str, Any]] = []
+
+    for comparison in integrity_comparisons:
+        if comparison["status"] == "INCOMPLETE_SCAN":
+            unknown_scopes.append({
+                "device_id": comparison["device_id"], "host_env": comparison["host_env"],
+                "scope": comparison["scope"], "snapshot_id": comparison["current_snapshot_id"],
+                "reason": "scope_incomplete",
+            })
+        for node in comparison["nodes"]:
+            if node["status"] not in FINDING_STATUSES:
+                continue
+            findings.append({
+                "rule_id": "artifact_" + node["status"].lower(),
+                "severity": "review",
+                "subject_id": node.get("artifact_id") or node["path"],
+                "summary": f"{node['path']}: {node['status']} against the prior complete scan",
+                "confidence": "high" if node["status"] in {"MISSING", "HASH_MISMATCH", "PERM_CHANGE", "SIZE_CHANGE"} else "review",
+                "evidence": {
+                    "path": node["path"], "status": node["status"],
+                    "baseline_snapshot_id": node.get("baseline_snapshot_id"),
+                    "current_snapshot_id": node.get("current_snapshot_id"),
+                    "expected_sha256": node.get("expected_sha256"),
+                    "observed_sha256": node.get("observed_sha256"),
+                    "expected_sample_sha256": node.get("expected_sample_sha256"),
+                    "observed_sample_sha256": node.get("observed_sample_sha256"),
+                    "expected_size_bytes": node.get("expected_size_bytes"),
+                    "observed_size_bytes": node.get("size_bytes"),
+                    "expected_mode": node.get("expected_mode"),
+                    "observed_mode": node.get("observed_mode"),
+                    "change_flags": node.get("change_flags", []),
+                    "scope": comparison["scope"], "device_id": comparison["device_id"],
+                    "host_env": comparison["host_env"], "reason": node.get("reason"),
+                },
+            })
     for identity, items in sorted(by_scope.items()):
         device_id, host_env, scope = identity
         current = items[-1]
@@ -394,6 +430,11 @@ def analyze_graph(
             "sampled_only_risks": sum(item["rule_id"] == "sampled_only_risk" for item in findings),
             "libraries_needing_review": sum(item["rule_id"] == "outdated_lib_needs_review" for item in findings),
             "unknown_scopes": len(unknown_scopes),
+            "integrity_findings": sum(item["rule_id"].startswith("artifact_") for item in findings),
+            "hash_mismatches": sum(item["rule_id"] == "artifact_hash_mismatch" for item in findings),
+            "missing_artifacts": sum(item["rule_id"] == "artifact_missing" for item in findings),
+            "permission_changes": sum(item["rule_id"] == "artifact_perm_change" for item in findings),
+            "size_changes": sum(item["rule_id"] == "artifact_size_change" for item in findings),
         },
     }
     return store.add_once(

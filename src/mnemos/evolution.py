@@ -10,6 +10,7 @@ import json
 from typing import Any
 
 from .store import MemoryStore
+from .integrity import snapshot_artifact_map, snapshot_is_complete, snapshot_order_key, snapshot_scope_identity, would_create_cycle
 
 
 def _dependencies(details: dict[str, Any]) -> list[dict[str, Any]]:
@@ -96,26 +97,28 @@ def evolve_graph(store: MemoryStore) -> dict[str, Any]:
             existing_successors[link["source_id"]].add(link["target_id"])
 
     repaired_history = 0
-    artifacts_by_path: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for item in artifacts:
-        path = (item.get("metadata") or {}).get("path")
-        if isinstance(path, str) and path:
-            artifacts_by_path[path].append(item)
-
-    for versions in artifacts_by_path.values():
-        versions.sort(key=lambda item: (
-            item.get("created_at", ""),
-            int((item.get("metadata") or {}).get("observed_at_ns") or 0),
-            int((item.get("metadata") or {}).get("mtime_ns") or 0),
-            item["id"],
-        ))
-        for previous, current in zip(versions, versions[1:]):
-            # Never manufacture a competing successor if history already
-            # records one. Integrity validation below will flag conflicts.
-            if existing_successors.get(previous["id"]):
-                continue
-            key = (previous["id"], current["id"], "superseded_by")
-            if key not in existing:
+    by_id_for_history = {item["id"]: item for item in memories}
+    snapshots_by_scope: dict[tuple[str, str, tuple[str, ...]], list[dict[str, Any]]] = defaultdict(list)
+    for snapshot in memories:
+        if snapshot.get("kind") != "device_snapshot":
+            continue
+        identity = snapshot_scope_identity(snapshot)
+        if identity[2]:
+            snapshots_by_scope[identity].append(snapshot)
+    for history in snapshots_by_scope.values():
+        history.sort(key=snapshot_order_key)
+        complete_history = [item for item in history if snapshot_is_complete(item)]
+        for previous_snapshot, current_snapshot in zip(complete_history, complete_history[1:]):
+            previous_by_path = snapshot_artifact_map(previous_snapshot, by_id_for_history, links)
+            current_by_path = snapshot_artifact_map(current_snapshot, by_id_for_history, links)
+            for path in sorted(set(previous_by_path) & set(current_by_path)):
+                previous = previous_by_path[path]
+                current = current_by_path[path]
+                if previous["id"] == current["id"] or existing_successors.get(previous["id"]):
+                    continue
+                key = (previous["id"], current["id"], "superseded_by")
+                if key in existing or would_create_cycle(previous["id"], current["id"], existing_successors):
+                    continue
                 store.link(previous["id"], current["id"], relation="superseded_by")
                 existing.add(key)
                 existing_successors[previous["id"]].add(current["id"])

@@ -24,6 +24,25 @@ _RELEASE_MANIFEST_SCHEMA = "mnemos-release-manifest-v1"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
+def _artifact_record_identity(path: str, artifact: dict) -> tuple | None:
+    """Deduplicate identical observed states, not merely identical file contents."""
+    details = artifact.get("binary_details")
+    details = details if isinstance(details, dict) else {}
+    if not path or details.get("status") == "file_changed_during_inspection":
+        return None
+    size, mtime, mode = artifact.get("size_bytes"), artifact.get("mtime_ns"), artifact.get("mode")
+    signature, status = artifact.get("signature_status", "unknown"), details.get("status", "unknown")
+    digest = artifact.get("sha256")
+    if isinstance(digest, str) and len(digest) == 64:
+        return ("full", path, digest, size, mtime, mode, signature, status)
+    sample = artifact.get("sample_sha256")
+    if isinstance(sample, str) and len(sample) == 64:
+        return ("sample", path, sample, size, mtime, mode, signature, status)
+    if mtime is not None and size is not None:
+        return ("weak", path, mtime, size, mode, signature, status)
+    return None
+
+
 def _release_snapshot_artifacts(store: MemoryStore, snapshot: dict) -> list[dict]:
     """Return binary artifacts explicitly linked to one device snapshot."""
     by_id = {item["id"]: item for item in store.list_all()}
@@ -408,59 +427,15 @@ def main(argv: list[str] | None = None) -> int:
                 )
             artifact_ids = []
             existing_artifact_ids = {}
-            latest_artifact_by_path = {}
             for existing in store.list_all(kind="binary_artifact"):
                 metadata = existing.get("metadata") or {}
-                existing_path = str(metadata.get("path", "")).strip()
-                existing_sha = metadata.get("sha256")
-                if existing_path and existing_sha:
-                    existing_artifact_ids[(existing_path, existing_sha)] = existing["id"]
-                elif (
-                    existing_path and metadata.get("sample_sha256")
-                    and (metadata.get("binary_details") or {}).get("status") != "file_changed_during_inspection"
-                ):
-                    existing_artifact_ids[(
-                        existing_path, None, "sample", metadata.get("sample_sha256"), metadata.get("size_bytes")
-                    )] = existing["id"]
-                elif (
-                    existing_path
-                    and metadata.get("mtime_ns") is not None
-                    and metadata.get("size_bytes") is not None
-                    and (metadata.get("binary_details") or {}).get("status") != "file_changed_during_inspection"
-                ):
-                    existing_artifact_ids[(
-                        existing_path, None, metadata.get("mtime_ns"), metadata.get("size_bytes")
-                    )] = existing["id"]
-                if existing_path:
-                    previous = latest_artifact_by_path.get(existing_path)
-                    current_rank = (str(existing.get("created_at", "")), int(metadata.get("observed_at_ns") or 0), int(metadata.get("mtime_ns") or 0))
-                    previous_metadata = (previous or {}).get("metadata") or {}
-                    previous_rank = (str((previous or {}).get("created_at", "")), int(previous_metadata.get("observed_at_ns") or 0), int(previous_metadata.get("mtime_ns") or 0))
-                    if previous is None or current_rank > previous_rank:
-                        latest_artifact_by_path[existing_path] = existing
+                identity = _artifact_record_identity(str(metadata.get("path", "")).strip(), metadata)
+                if identity:
+                    existing_artifact_ids[identity] = existing["id"]
             artifact_records_created = 0
             for artifact in report["artifacts"]:
                 artifact_path = str(artifact.get("path", ""))
-                artifact_sha = artifact.get("sha256")
-                if artifact_sha:
-                    identity = (artifact_path, artifact_sha)
-                elif artifact_path and artifact.get("sample_sha256") and (
-                    artifact.get("binary_details") or {}
-                ).get("status") != "file_changed_during_inspection":
-                    identity = (
-                        artifact_path, None, "sample", artifact.get("sample_sha256"), artifact.get("size_bytes")
-                    )
-                elif (
-                    artifact_path
-                    and artifact.get("mtime_ns") is not None
-                    and artifact.get("size_bytes") is not None
-                    and (artifact.get("binary_details") or {}).get("status") != "file_changed_during_inspection"
-                ):
-                    identity = (
-                        artifact_path, None, artifact.get("mtime_ns"), artifact.get("size_bytes")
-                    )
-                else:
-                    identity = None
+                identity = _artifact_record_identity(artifact_path, artifact)
                 artifact_id = existing_artifact_ids.get(identity) if identity else None
                 if artifact_id is None:
                     record = store.add(
@@ -471,12 +446,8 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     artifact_id = record["id"]
                     artifact_records_created += 1
-                    previous = latest_artifact_by_path.get(artifact_path)
-                    if previous and previous.get("id") != artifact_id:
-                        store.link(previous["id"], artifact_id, relation="superseded_by")
                     if identity:
                         existing_artifact_ids[identity] = artifact_id
-                    latest_artifact_by_path[artifact_path] = record
                 store.link(snapshot["id"], artifact_id, relation="contains_artifact")
                 artifact_ids.append(artifact_id)
             evolution_report = evolve_graph(store)
