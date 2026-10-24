@@ -16,8 +16,20 @@ function el(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!==u
 const NS='http://www.w3.org/2000/svg';function se(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,String(a[k]));return e}
 function name(n){return n.label||n.path||n.content||n.changed_path||n.id||'Evidence'}
 function color(n){if(n.node_type==='impact')return '#ff7784';if(n.node_type==='integrity')return '#f5bd58';return ({device_snapshot:'#65b7ff',binary_artifact:'#56d6a0',runtime_dependency:'#c4a1ff'})[n.kind]||'#91a5ba'}
-function draw(d){svg.replaceChildren();const ns=d.graph_nodes||[],es=d.graph_edges||[];if(!ns.length){const t=se('text',{x:500,y:310,'text-anchor':'middle',fill:'#9eafc2'});t.textContent='No evidence nodes. Run map-device with --path.';svg.append(t);return}const groups={device_snapshot:[],binary_artifact:[],runtime_dependency:[],integrity:[],impact:[],other:[]};for(const n of ns){let k=n.node_type==='integrity'?'integrity':n.node_type==='impact'?'impact':groups[n.kind]?n.kind:'other';groups[k].push(n)}const lanes=Object.keys(groups).filter(k=>groups[k].length),pos=new Map();lanes.forEach((k,j)=>groups[k].forEach((n,i)=>pos.set(n.id,{x:70+(j+.5)*860/lanes.length,y:40+(i+1)*540/(groups[k].length+1)})));const by=new Map(ns.map(n=>[n.id,n])),eg=se('g',{}),ng=se('g',{});for(const e of es){const a=pos.get(e.source_id),b=pos.get(e.target_id);if(!a||!b)continue;eg.append(se('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,class:'edge',stroke:e.inferred?'#ff7784':'#52667d','stroke-dasharray':e.inferred?'6 5':'none'}));if(e.relation){const t=se('text',{x:(a.x+b.x)/2+3,y:(a.y+b.y)/2-3,class:'edge-label'});t.textContent=e.relation;eg.append(t)}}svg.append(eg);for(const n of ns){const p=pos.get(n.id);if(!p)continue;const g=se('g',{role:'button',tabindex:0,'aria-label':name(n)});g.append(se('circle',{cx:p.x,cy:p.y,r:9,fill:color(n),class:'node'}));const t=se('text',{x:p.x+12,y:p.y+4,class:'node-label'});let label=name(n);t.textContent=label.length>24?label.slice(0,21)+'…':label;g.append(t);const show=()=>inspect(n,es,by);g.addEventListener('click',show);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show()}});ng.append(g)}svg.append(ng)}
-function inspect(n,es,by){details.replaceChildren(el('strong','',name(n)));for(const [k,v] of Object.entries(n)){if(v===null||v===undefined||v===''||k==='label'||k==='content')continue;details.append(el('div','detail-line',k+': '+(typeof v==='object'?JSON.stringify(v):v)))}const related=es.filter(e=>e.source_id===n.id||e.target_id===n.id);details.append(el('div','detail-line','Connected relationships: '+related.length));for(const e of related.slice(0,30)){const other=by.get(e.source_id===n.id?e.target_id:e.source_id);details.append(el('div','detail-line',(e.source_id===n.id?'→ ':'← ')+(e.relation||'relates_to')+' · '+(other?name(other):'unknown')+(e.inferred?' (inferred)':'')))}}
+function draw(d){svg.replaceChildren();const ns=d.graph_nodes||[],es=d.graph_edges||[];if(!ns.length){const t=se('text',{x:500,y:310,'text-anchor':'middle',fill:'#9eafc2'});t.textContent='No evidence nodes. Run map-device with --path.';svg.append(t);return}
+const by=new Map(ns.map(n=>[n.id,n])),pos=new Map(),W=1000,H=620,left=60,right=940;
+const snapshots=ns.filter(n=>n.kind==='device_snapshot').sort((a,b)=>{const ta=Number(a.observation_ts_ns||0),tb=Number(b.observation_ts_ns||0);return ta&&tb?ta-tb:(a.observed_at||'').localeCompare(b.observed_at||'')});
+const artifacts=ns.filter(n=>n.kind==='binary_artifact'),deps=ns.filter(n=>n.kind==='runtime_dependency');
+const findings=ns.filter(n=>n.node_type==='integrity'||n.node_type==='impact');
+function spread(items,y,rows=1){const columns=Math.max(1,Math.ceil(items.length/rows));items.forEach((n,i)=>{const row=Math.floor(i/columns),col=i%columns,count=Math.min(columns,items.length-row*columns);pos.set(n.id,{x:count<2?W/2:left+col*(right-left)/(count-1),y:y+row*52})})}
+spread(snapshots,78,1);spread(artifacts,220,3);spread(deps,395,2);spread(findings,520,2);
+const eg=se('g',{}),ng=se('g',{});
+for(const e of es){const a=pos.get(e.source_id),b=pos.get(e.target_id);if(!a||!b)continue;const line=se('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,class:'edge',stroke:e.inferred?'#ff7784':e.evidence_type==='temporal_order'?'#65b7ff':'#52667d','stroke-dasharray':e.inferred?'6 5':'none','stroke-width':e.evidence_type==='temporal_order'?2:1.4});eg.append(line);if(e.relation){const t=se('text',{x:(a.x+b.x)/2+3,y:(a.y+b.y)/2-3,class:'edge-label'});t.textContent=e.relation;eg.append(t)}}
+svg.append(eg);
+for(const n of ns){const p=pos.get(n.id);if(!p)continue;const g=se('g',{role:'button',tabindex:0,'aria-label':name(n)});g.append(se('circle',{cx:p.x,cy:p.y,r:n.kind==='device_snapshot'?12:9,fill:color(n),class:'node'}));const t=se('text',{x:p.x+12,y:p.y+4,class:'node-label'});let label=name(n);t.textContent=label.length>22?label.slice(0,19)+'…':label;g.append(t);const show=()=>inspect(n,es,by);g.addEventListener('click',show);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show()}});ng.append(g)}
+svg.append(ng);
+for(const [label,y] of [['SNAPSHOT TIMELINE',28],['ARTIFACTS',195],['RUNTIME DEPENDENCIES',355],['CHANGES / IMPACT',485]]){const t=se('text',{x:16,y,fill:'#7f95ad','font-size':10});t.textContent=label;svg.append(t)}
+}function inspect(n,es,by){details.replaceChildren(el('strong','',name(n)));for(const [k,v] of Object.entries(n)){if(v===null||v===undefined||v===''||k==='label'||k==='content')continue;details.append(el('div','detail-line',k+': '+(typeof v==='object'?JSON.stringify(v):v)))}const related=es.filter(e=>e.source_id===n.id||e.target_id===n.id);details.append(el('div','detail-line','Connected relationships: '+related.length));for(const e of related.slice(0,30)){const other=by.get(e.source_id===n.id?e.target_id:e.source_id);details.append(el('div','detail-line',(e.source_id===n.id?'→ ':'← ')+(e.relation||'relates_to')+' · '+(other?name(other):'unknown')+(e.inferred?' (inferred)':'')))}}
 async function load(){try{const r=await fetch('/api/graph?mode='+encodeURIComponent(filter.value),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();summary.replaceChildren(el('div','','Status: '+d.status+' · graph nodes: '+(d.graph_nodes||[]).length+' · relationships: '+(d.graph_edges||[]).length+' · compared artifacts: '+d.compared_count+' · integrity findings: '+d.integrity_finding_count+' · potential impacts: '+d.dependency_impact_count+' · unknown: '+d.unknown_count),el('div','detail-line','SQLite: '+d.inventory.snapshots+' snapshots · '+d.inventory.binary_artifacts+' artifacts · '+d.inventory.runtime_dependencies+' dependencies · '+d.inventory.snapshot_artifact_links+' snapshot-artifact links'),el('div','detail-line','Empty-scope snapshots: '+d.inventory.empty_scope_count+' · incomplete snapshots: '+d.inventory.incomplete_snapshot_count+' · '+(d.message||'')));draw(d)}catch(e){summary.textContent='Could not load evidence: '+String(e);svg.replaceChildren()}}
 document.getElementById('refresh').addEventListener('click',load);load();
 </script></body></html>"""
@@ -54,20 +66,168 @@ def _impact_trace(finding: dict) -> dict:
 
 def _evidence(store, mode):
     memories = store.list_all()
+    links = store.links()
     by_id = {item["id"]: item for item in memories if isinstance(item.get("id"), str)}
     snapshots = [item for item in memories if item.get("kind") == "device_snapshot"]
     inventory = store.forensic_inventory()
-    reports = compare_snapshot_histories(snapshots, store.links(), by_id)
+    reports = compare_snapshot_histories(snapshots, links, by_id)
     analysis_result, _ = analyze_graph(store, persist=False)
     analysis_meta = analysis_result.get("metadata") or {}
     findings = analysis_meta.get("findings") or []
     traces = [_impact_trace(item) for item in findings if item.get("rule_id") == "potential_dependency_impact"]
+
+    # Prioritize recent snapshots and evidence directly connected to them so a
+    # large knowledge store cannot push the actual forensic timeline off-screen.
+    ordered_snapshots = sorted(snapshots, key=lambda item: (
+        int((_meta := item.get("metadata") or {}).get("observation_ts_ns") or 0),
+        str(item.get("created_at") or ""), str(item.get("id") or "")))
+    recent_snapshots = ordered_snapshots[-8:]
+    snapshot_ids = {item["id"] for item in recent_snapshots}
+    artifact_ids = {link.get("target_id") for link in links
+                    if link.get("relation") == "contains_artifact" and link.get("source_id") in snapshot_ids}
+    dependency_ids = {link.get("target_id") for link in links
+                      if link.get("relation") == "depends_on" and link.get("source_id") in artifact_ids}
+    artifact_items = [by_id[item_id] for item_id in artifact_ids if item_id in by_id
+                      and by_id[item_id].get("kind") == "binary_artifact"]
+    dependency_items = [by_id[item_id] for item_id in dependency_ids if item_id in by_id
+                        and by_id[item_id].get("kind") == "runtime_dependency"]
+    artifact_items.sort(key=lambda item: (str(item.get("created_at") or ""), str(item.get("id") or "")), reverse=True)
+    dependency_items.sort(key=lambda item: (str(item.get("created_at") or ""), str(item.get("id") or "")), reverse=True)
+
+    graph_nodes = []
+    for item in recent_snapshots:
+        meta = item.get("metadata") if isinstance(item.get("metadata"), dict) else {}
+        scan = meta.get("scan") if isinstance(meta.get("scan"), dict) else {}
+        graph_nodes.append({
+            "id": item["id"], "kind": "device_snapshot", "node_type": "record",
+            "label": str(meta.get("captured_at") or item.get("created_at") or item["id"])[:16],
+            "content": item.get("content"), "created_at": item.get("created_at"),
+            "observed_at": str(meta.get("captured_at") or item.get("created_at") or ""),
+            "observation_ts_ns": int(meta.get("observation_ts_ns") or 0),
+            "fingerprint": meta.get("fingerprint"), "device_id": meta.get("device_id"),
+            "host_env": meta.get("host_env"), "scope": meta.get("scope_path") or scan.get("scope") or [],
+            "scan_complete": scan.get("complete") is True and bool(meta.get("scope_path") or scan.get("scope")),
+            "unscoped": not bool(meta.get("scope_path") or scan.get("scope")),
+            "limit_reached": bool(scan.get("limit_reached")),
+            "depth_limit_reached": bool(scan.get("depth_limit_reached")),
+        })
+    for item in artifact_items[:24]:
+        meta = item.get("metadata") if isinstance(item.get("metadata"), dict) else {}
+        graph_nodes.append({
+            "id": item["id"], "kind": "binary_artifact", "node_type": "record",
+            "label": str(meta.get("path") or item.get("content") or item["id"]),
+            "content": item.get("content"), "path": meta.get("path"), "sha256": meta.get("sha256"),
+            "sample_sha256": meta.get("sample_sha256"), "size_bytes": meta.get("size_bytes"),
+            "file_type": meta.get("file_type"), "created_at": item.get("created_at"),
+            "observed_at": str(meta.get("observed_at_ns") or item.get("created_at") or ""),
+        })
+    for item in dependency_items[:16]:
+        meta = item.get("metadata") if isinstance(item.get("metadata"), dict) else {}
+        graph_nodes.append({
+            "id": item["id"], "kind": "runtime_dependency", "node_type": "record",
+            "label": str(meta.get("name") or item.get("content") or item["id"]),
+            "content": item.get("content"), "name": meta.get("name"), "format": meta.get("format"),
+            "dependency_kind": meta.get("kind"), "created_at": item.get("created_at"),
+            "evidence": meta.get("evidence"),
+        })
+
+    graph_ids = {node["id"] for node in graph_nodes}
+    graph_edges = []
+    # Preserve the exact stored relationships and identify them as recorded.
+    for link in links:
+        source, target = link.get("source_id"), link.get("target_id")
+        if source in graph_ids and target in graph_ids:
+            graph_edges.append({
+                "source_id": source, "target_id": target,
+                "relation": link.get("relation") or "relates_to",
+                "inferred": False, "evidence_type": "stored_relationship",
+            })
+
+    # Reconstruct temporal order only within the same device/host/exact scope.
+    histories = {}
+    for snapshot in recent_snapshots:
+        meta = snapshot.get("metadata") if isinstance(snapshot.get("metadata"), dict) else {}
+        scan = meta.get("scan") if isinstance(meta.get("scan"), dict) else {}
+        scope = meta.get("scope_path") or scan.get("scope") or []
+        if not scope:
+            continue
+        identity = (str(meta.get("device_id") or "legacy-device"),
+                    str(meta.get("host_env") or "legacy-host"),
+                    tuple(sorted(str(Path(path).expanduser().resolve()) for path in scope if isinstance(path, str) and path)))
+        histories.setdefault(identity, []).append(snapshot)
+    for history in histories.values():
+        history.sort(key=lambda item: (
+            int((item.get("metadata") or {}).get("observation_ts_ns") or 0),
+            str(item.get("created_at") or ""), str(item.get("id") or "")))
+        for previous, current in zip(history, history[1:]):
+            if previous["id"] in graph_ids and current["id"] in graph_ids:
+                graph_edges.append({
+                    "source_id": previous["id"], "target_id": current["id"],
+                    "relation": "observed_after", "inferred": False,
+                    "evidence_type": "temporal_order",
+                })
+
     nodes = []
     for report in reports:
         for node in report.get("nodes", []):
-            item = {**node, "node_type": "integrity", "scope_label": report.get("scope_label")}
-            if mode == "all" or item.get("status") in FINDING_STATUSES or item.get("status") in {"UNKNOWN", "BASELINE_ONLY"}:
-                nodes.append(item)
+            enriched = {**node, "scope_label": report.get("scope_label"),
+                        "report_status": report.get("status")}
+            if mode == "all" or enriched.get("status") in FINDING_STATUSES or enriched.get("status") in {"UNKNOWN", "BASELINE_ONLY"}:
+                nodes.append(enriched)
+
+    # Attach each comparison result to the two observations it compares and,
+    # when available, to the persisted artifact record for that exact path.
+    snapshot_by_id = {item["id"]: item for item in snapshots}
+    for item in nodes:
+        current_id, baseline_id = item.get("current_snapshot_id"), item.get("baseline_snapshot_id")
+        artifact_id = item.get("artifact_id")
+        nid = "integrity:" + str(current_id or "unknown") + ":" + str(item.get("path") or item.get("id") or len(graph_nodes))
+        graph_nodes.append({
+            "id": nid, "node_type": "integrity", "kind": "integrity",
+            "label": str(item.get("status") or "UNKNOWN") + ": " + str(item.get("path") or "unknown path"),
+            "path": item.get("path"), "status": item.get("status"), "reason": item.get("reason"),
+            "expected_sha256": item.get("expected_sha256"), "observed_sha256": item.get("observed_sha256"),
+            "expected_size_bytes": item.get("expected_size_bytes"), "size_bytes": item.get("size_bytes"),
+            "change_flags": item.get("change_flags") or [], "scope_label": item.get("scope_label"),
+            "baseline_snapshot_id": baseline_id, "current_snapshot_id": current_id,
+        })
+        if current_id in graph_ids:
+            graph_edges.append({"source_id": current_id, "target_id": nid,
+                "relation": "current_observation", "inferred": False, "evidence_type": "comparison"})
+        if baseline_id in graph_ids:
+            graph_edges.append({"source_id": baseline_id, "target_id": nid,
+                "relation": "baseline_observation", "inferred": False, "evidence_type": "comparison"})
+        if artifact_id in graph_ids:
+            graph_edges.append({"source_id": artifact_id, "target_id": nid,
+                "relation": "integrity_status", "inferred": False, "evidence_type": "comparison"})
+
+    for trace in traces[:MAX_NODES]:
+        ids = []
+        for step in trace.get("trace_steps", []):
+            nid = "impact:" + str(step.get("kind")) + ":" + str(step.get("id"))
+            ids.append(nid)
+            if not any(node.get("id") == nid for node in graph_nodes):
+                graph_nodes.append({
+                    "id": nid, "node_type": "impact", "kind": "impact",
+                    "label": step.get("label"), "status": "POTENTIAL_IMPACT",
+                    "summary": trace.get("summary"), "limitations": trace.get("limitations", []),
+                })
+        for index in range(len(ids) - 1):
+            graph_edges.append({"source_id": ids[index], "target_id": ids[index + 1],
+                "relation": "potential_impact", "inferred": True, "evidence_type": "derived_impact"})
+
+    # Cap the payload after prioritizing timeline nodes, then prune every edge
+    # to the exact node set that is actually rendered.
+    graph_nodes = graph_nodes[:MAX_NODES]
+    rendered_ids = {node["id"] for node in graph_nodes}
+    deduped_edges, seen_edges = [], set()
+    for edge in graph_edges:
+        key = (edge["source_id"], edge["target_id"], edge.get("relation"))
+        if edge["source_id"] in rendered_ids and edge["target_id"] in rendered_ids and key not in seen_edges:
+            seen_edges.add(key)
+            deduped_edges.append(edge)
+    graph_edges = deduped_edges[:MAX_NODES * 4]
+
     latest = reports[0] if reports else {}
     integrity_count = sum(int(item.get("finding_count") or 0) for item in reports)
     unknown_count = sum(int(item.get("unknown_count") or 0) for item in reports)
@@ -75,43 +235,6 @@ def _evidence(store, mode):
     status = ("NO_EVIDENCE" if not reports else
               "INCOMPLETE_SCAN" if any(item.get("status") == "INCOMPLETE_SCAN" for item in reports) else
               "COMPARED" if any(item.get("status") == "COMPARED" for item in reports) else "BASELINE_ONLY")
-    graph_nodes = []
-    for item in memories:
-        kind = item.get("kind") or "note"
-        if kind not in {"device_snapshot", "binary_artifact", "runtime_dependency"}:
-            continue
-        metadata = item.get("metadata") if isinstance(item.get("metadata"), dict) else {}
-        graph_nodes.append({"id": item["id"], "kind": kind, "node_type": "record",
-            "label": item.get("content") or item["id"], "content": item.get("content"),
-            "source": item.get("source"), "created_at": item.get("created_at"),
-            "metadata": metadata, "path": metadata.get("path"), "sha256": metadata.get("sha256")})
-    graph_nodes = graph_nodes[:MAX_NODES]
-    graph_ids = {n["id"] for n in graph_nodes}
-    graph_edges = [{"source_id": l["source_id"], "target_id": l["target_id"],
-        "relation": l.get("relation") or "relates_to", "inferred": False}
-        for l in store.links() if l.get("source_id") in graph_ids and l.get("target_id") in graph_ids][:MAX_NODES * 3]
-    known = {n["id"] for n in graph_nodes}
-    for item in nodes[:MAX_NODES]:
-        nid = "integrity:" + str(item.get("id") or item.get("path") or len(graph_nodes))
-        graph_nodes.append({"id": nid, "node_type": "integrity", "kind": "integrity",
-            "label": item.get("path") or nid, "status": item.get("status"),
-            "expected_sha256": item.get("expected_sha256"), "observed_sha256": item.get("observed_sha256"),
-            "reason": item.get("reason"), "scope_label": item.get("scope_label")})
-        known.add(nid)
-    for trace in traces[:MAX_NODES]:
-        ids = []
-        for step in trace.get("trace_steps", []):
-            nid = "impact:" + str(step.get("kind")) + ":" + str(step.get("id"))
-            ids.append(nid)
-            if nid not in known:
-                graph_nodes.append({"id": nid, "node_type": "impact", "kind": step.get("kind"),
-                    "label": step.get("label"), "status": "POTENTIAL_IMPACT",
-                    "summary": trace.get("summary"), "limitations": trace.get("limitations", [])})
-                known.add(nid)
-        for i in range(len(ids)-1):
-            graph_edges.append({"source_id": ids[i], "target_id": ids[i+1],
-                "relation": "potential_impact", "inferred": True})
-    graph_edges = [e for e in graph_edges if e["source_id"] in known and e["target_id"] in known][:MAX_NODES * 4]
     return {
         "status": status, "inventory": inventory,
         "unscoped_snapshot_ids": inventory["empty_scope_snapshot_ids"],
@@ -126,8 +249,8 @@ def _evidence(store, mode):
         "analysis_counts": analysis_meta.get("counts", {}),
         "dependency_states": analysis_meta.get("dependency_states", []),
         "message": ("No device snapshot exists yet. Run map-device with an explicit --path; two complete scans of the same scope are needed for comparisons."
-                    if not reports else "Analysis is derived from stored evidence on each refresh; no new scan or analysis-result write is performed."),
-        "graph_nodes": graph_nodes[:MAX_NODES], "graph_edges": graph_edges,
+                    if not reports else "Graph is rebuilt from persisted snapshots, artifact links, dependency evidence, and deterministic comparisons. No new scan or database write occurs."),
+        "graph_nodes": graph_nodes, "graph_edges": graph_edges,
         "traces": traces[:MAX_NODES], "nodes": nodes[:MAX_NODES],
         "edges": [edge for trace in traces for edge in trace.get("edges", [])][:MAX_NODES * 3],
     }
