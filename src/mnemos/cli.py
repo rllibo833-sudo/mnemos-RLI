@@ -7,7 +7,8 @@ from pathlib import Path
 
 from .graph import render_graph
 from .store import MemoryStore
-from .contract import bundle_from_snapshot, snapshot_graph, unbundle_to_store, roundtrip_snapshot, sync_snapshot
+from .contract import bundle_from_snapshot, snapshot_graph, unbundle_to_store, roundtrip_snapshot
+from .supabase_sync import sync_minimal
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -40,8 +41,8 @@ def _parser() -> argparse.ArgumentParser:
     unbundle = commands.add_parser("unbundle", help="Import a graph snapshot with updated_at conflict protection.")
     unbundle.add_argument("input")
     sync = commands.add_parser("sync", help="Snapshot locally and optionally sync with Supabase.")
-    sync.add_argument("--supabase-url")
-    sync.add_argument("--out", default="mnemos-bundle.json")
+    sync.add_argument("--dry-run", action="store_true", help="Plan minimal Supabase payload offline; never contacts Supabase.")
+    commands.add_parser("simulate-supabase-sync", help="Simulate minimal Supabase sync offline.")
     simulate = commands.add_parser("simulate-bundle", help="Run an offline bundle/unbundle round trip.")
     simulate.add_argument("--input", help="Existing export JSON; defaults to local SQLite.")
     simulate.add_argument("--output", help="Optional round-trip output JSON.")
@@ -91,7 +92,18 @@ def main(argv: list[str] | None = None) -> int:
             links_count = len(result.get("links", []))
             print(f"SIM: {len(memories)} memories, {links_count} links, tags_arrays_preserved: {preserved}")
         elif args.command == "sync":
-            print(json.dumps(sync_snapshot(store, args.out, args.supabase_url), ensure_ascii=False, indent=2))
+            if not args.dry_run:
+                raise ValueError("Supabase network sync is disabled; run sync --dry-run")
+            result = sync_minimal(store, dry_run=True)
+            print("payload KB: {:.2f}".format(result["payload_kb"]))
+            print("memories baru: {}".format(result["new_memories"]))
+            print("memories pending: {}".format(result["pending_memories"]))
+            print("links filtered: {}".format(result["links_filtered"]))
+            print("outbox changes: {}".format(result["changed_items"]))
+        elif args.command == "simulate-supabase-sync":
+            result = sync_minimal(store, dry_run=True)
+            print("{} local -> {} to push ({:.2f} KB) -> {} links filtered".format(result["local_memories"], result["pending_memories"], result["payload_kb"], result["links_filtered"]))
+            print("memories baru: {}; outbox changes: {}".format(result["new_memories"], result["changed_items"]))
         return 0
     except (ValueError, KeyError, OSError, RuntimeError, json.JSONDecodeError) as exc:
         print(f"mnemos: error: {exc}", file=sys.stderr)
