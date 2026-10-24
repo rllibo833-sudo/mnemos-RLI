@@ -364,13 +364,15 @@ def analyze_graph(
         if not _scan_complete(current):
             unknown_scopes.append({**identity_fields, "scope": list(scope), "snapshot_id": current["id"], "reason": "scope_incomplete"})
             continue
-        if len(items) < 2:
-            unknown_scopes.append({**identity_fields, "scope": list(scope), "snapshot_id": current["id"], "reason": "no_previous_snapshot"})
-            continue
-        previous = items[-2]
-        if not _scan_complete(previous):
-            unknown_scopes.append({**identity_fields, "scope": list(scope), "snapshot_id": current["id"],
-                                   "previous_snapshot_id": previous["id"], "reason": "previous_scope_incomplete"})
+        previous = next(
+            (item for item in reversed(items[:-1]) if _scan_complete(item)),
+            None,
+        )
+        if previous is None:
+            unknown_scopes.append({
+                **identity_fields, "scope": list(scope), "snapshot_id": current["id"],
+                "reason": "no_previous_complete_snapshot",
+            })
             continue
         current_artifacts = snapshot_artifacts.get(current["id"], [])
         failed = [item for item in current_artifacts
