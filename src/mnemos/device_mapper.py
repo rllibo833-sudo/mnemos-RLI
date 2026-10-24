@@ -956,18 +956,15 @@ def discover_artifacts(
         else:
             continue
         for candidate in candidates:
-            if examined >= max_files and root.is_dir():
-                # Conservative: reaching a directory budget is not accepted as
-                # a complete inventory, even if this happened to be the last file.
-                status["limit_reached"] = True
-                break
             if root.is_file():
                 examined += 1
             item = _artifact(candidate)
             if item is not None:
                 found.append(item)
             if examined >= max_files:
-                if root.is_file() and root_index < len(roots) - 1:
+                # Keep the max-th candidate in the inventory, but never claim
+                # a directory scan is complete when its traversal budget is hit.
+                if root.is_dir() or root_index < len(roots) - 1:
                     status["limit_reached"] = True
                 break
     status["examined_files"] = examined
