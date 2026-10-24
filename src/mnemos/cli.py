@@ -301,7 +301,7 @@ def main(argv: list[str] | None = None) -> int:
             manifest = _build_release_manifest(store, args.snapshot_id, args.release_id)
             output = Path(args.output)
             output.parent.mkdir(parents=True, exist_ok=True)
-            output.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+            output.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
             print(json.dumps({
                 "manifest": str(output.resolve()),
                 "release_id": manifest["release_id"],
