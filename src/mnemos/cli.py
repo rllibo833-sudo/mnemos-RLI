@@ -296,6 +296,8 @@ def _parser() -> argparse.ArgumentParser:
     analyze.add_argument("--critical-threshold", type=int, default=20, help="Flag dependencies used by more than this many active artifact versions.")
     analyze.add_argument("--churn-threshold", type=int, default=3, help="Flag paths with more than this many supersessions in the observation window.")
     analyze.add_argument("--window-days", type=int, default=30, help="Observation window for churn analysis (default: 30 days).")
+    forensic = commands.add_parser("forensics", help="Reconstruct a forensic case from stored offline evidence.")
+    forensic.add_argument("--path", action="append", default=[], help="Restrict to snapshots with this exact scan scope; repeatable.")
     daemon = commands.add_parser("daemon", help="Continuously refresh an offline device map for explicitly selected paths.")
     daemon.add_argument("--path", action="append", default=[], help="File or directory to scan; repeatable.")
     daemon.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected per scan.")
@@ -334,6 +336,10 @@ def main(argv: list[str] | None = None) -> int:
             report = evolve_graph(store)
             print(json.dumps(report, ensure_ascii=False, indent=2))
             return 0 if report["ok"] else 1
+        elif args.command == "forensics":
+            from .forensics import reconstruct_case
+            report = reconstruct_case(store, paths=args.path or None)
+            print(json.dumps(report, ensure_ascii=False, indent=2))
         elif args.command == "analyze":
             result, created = analyze_graph(
                 store, paths=args.path or None,
