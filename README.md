@@ -13,7 +13,7 @@ Its identity is **evidence before conclusions**: a changed hash is a comparison 
 - **Local history:** persist device snapshots and artifact relationships in SQLite for later comparison.
 - **Release baseline:** create a manifest from a complete scan and compare another snapshot against it.
 - **Graph analysis:** evolve artifact/dependency records and aggregate evidence into traceable findings.
-- **Live evidence view:** compare the latest complete scan with the previous complete scan for the same device and scope. The server binds to loopback by default and reads stored records only.
+- **Live evidence graph:** on refresh, compare stored snapshots and derive dependency-impact traces from changed evidence → candidate runtime dependency → active consumer artifacts. Each trace carries snapshot provenance, dependency source evidence, and explicit limitations; cross-device/scope and historical consumers are excluded. The loopback-only viewer computes analysis without writing results or running a new scan.
 - **Offline operation:** scanning, storage, comparison, and viewing do not need network access.
 
 ## Quick start

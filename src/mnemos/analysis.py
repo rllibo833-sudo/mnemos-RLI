@@ -110,8 +110,13 @@ def analyze_graph(
     critical_threshold: int = 20,
     churn_threshold: int = 3,
     window_days: int = 30,
+    persist: bool = True,
 ) -> tuple[dict[str, Any], bool]:
-    """Analyze stored graph evidence and atomically persist one result per input fingerprint."""
+    """Analyze stored graph evidence; optionally persist the deterministic result.
+
+    Live readers use persist=False so refreshes derive current findings without
+    mutating the evidence store. CLI analysis persists by default.
+    """
     if critical_threshold < 1 or churn_threshold < 1 or window_days < 1:
         raise ValueError("Analysis thresholds and window must be positive integers.")
 
@@ -408,6 +413,10 @@ def analyze_graph(
         name = _metadata(dependency).get("name")
         if isinstance(name, str) and name.strip():
             dependencies_by_basename.setdefault(Path(name).name.casefold(), []).append(dependency)
+    active_scope_artifacts: dict[str, set[tuple[str, str, tuple[str, ...]]]] = {}
+    for identity, latest_snapshot in latest_complete.items():
+        for active_artifact in snapshot_artifacts.get(latest_snapshot["id"], []):
+            active_scope_artifacts.setdefault(active_artifact["id"], set()).add(identity)
     impact_findings: list[dict[str, Any]] = []
     for finding in findings:
         if not finding.get("rule_id", "").startswith("artifact_"):
@@ -420,9 +429,15 @@ def analyze_graph(
             continue
         matches = dependencies_by_basename.get(Path(path).name.casefold(), [])
         for dependency in matches:
+            finding_scope = (
+                evidence.get("device_id"), evidence.get("host_env"),
+                tuple(evidence.get("scope") or ()),
+            )
             users = sorted(
                 (item for item in dependency_users.get(dependency["id"], [])
-                 if item["id"] != evidence.get("artifact_id")
+                 if item["id"] != finding.get("subject_id")
+                 and item["id"] in active_artifact_ids
+                 and finding_scope in active_scope_artifacts.get(item["id"], set())
                  and (not selected_paths or item["id"] in scoped_artifact_ids)),
                 key=lambda item: item["id"],
             )
@@ -436,9 +451,13 @@ def analyze_graph(
                 "confidence": "review",
                 "evidence": {
                     "changed_path": path,
+                    "changed_artifact_id": finding.get("subject_id"),
                     "change_status": evidence.get("status"),
                     "change_baseline_snapshot_id": evidence.get("baseline_snapshot_id"),
                     "change_current_snapshot_id": evidence.get("current_snapshot_id"),
+                    "scope": evidence.get("scope", []),
+                    "device_id": evidence.get("device_id"),
+                    "host_env": evidence.get("host_env"),
                     "dependency_id": dependency["id"],
                     "dependency_name": _metadata(dependency).get("name"),
                     "match_method": "exact_casefolded_basename",
@@ -514,6 +533,8 @@ def analyze_graph(
             "potential_dependency_impacts": sum(item["rule_id"] == "potential_dependency_impact" for item in findings),
         },
     }
+    if not persist:
+        return {"id": None, "metadata": result_metadata}, False
     return store.add_once(
         f"Analysis result {input_fingerprint[:12]}", kind="analysis_result",
         fingerprint=input_fingerprint, tags=["analysis", RULE_SET],
