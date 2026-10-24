@@ -35,13 +35,13 @@ function rejectBinary(value, where = "$") {
   }
 }
 function safeObject(value) {
+  if (value === null || typeof value !== "object") return value;
   if (Array.isArray(value)) return value.map(safeObject);
-  if (!value || typeof value !== "object") return {};
   const clean = {};
   for (const [key, item] of Object.entries(value)) {
     if (/path|uri|token|secret|password|credential|base64|binary|bytes|blob/i.test(key)) continue;
-    if (item && typeof item === "object") clean[key] = safeObject(item);
-    else if (typeof item !== "string" || item.length <= MAX_TEXT_CHARS) clean[key] = item;
+    if (typeof item === "string" && item.length > MAX_TEXT_CHARS) continue;
+    clean[key] = safeObject(item);
   }
   return clean;
 }
@@ -95,19 +95,51 @@ function validateBundle(bundle, expectedWorkspace) {
   return { schema_version: 1, workspace_id: workspaceId, nodes, links };
 }
 function client() {
-  const base = env(CONFIG.supabase.url_env).replace(/\/+$/, "");
+  let base = env(CONFIG.supabase.url_env);
+  while (base.endsWith("/")) base = base.slice(0, -1);
   const anonKey = env(CONFIG.supabase.anon_key_env);
   const accessToken = env(CONFIG.supabase.access_token_env);
-  return async function request(table, query, method = "GET", body) {
+  return async function request(table, query, method = "GET", body, extraHeaders = {}) {
     const url = base + "/rest/v1/" + table + (query ? "?" + query : "");
-    const headers = { apikey: anonKey, Authorization: "Bearer " + accessToken, Accept: "application/json" };
+    const headers = Object.assign({
+      apikey: anonKey,
+      Authorization: "Bearer " + accessToken,
+      Accept: "application/json"
+    }, extraHeaders);
     if (body !== undefined) headers["Content-Type"] = "application/json";
     if (method === "POST" || method === "PATCH") headers.Prefer = "resolution=merge-duplicates,return=minimal";
-    const response = await fetch(url, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
-    const text = await response.text();
-    if (!response.ok) throw new Error("Supabase " + method + " " + table + " failed (" + response.status + "): " + text.slice(0, 1200));
-    if (!text) return null;
-    try { return JSON.parse(text); } catch { throw new Error("Supabase returned non-JSON response for " + table); }
+    let lastError;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      let response;
+      try {
+        response = await fetch(url, {
+          method,
+          headers,
+          body: body === undefined ? undefined : JSON.stringify(body),
+          signal: AbortSignal.timeout(20000)
+        });
+      } catch (error) {
+        lastError = error;
+        if (attempt === 3) break;
+        await new Promise(resolve => setTimeout(resolve, 250 * Math.pow(2, attempt)));
+        continue;
+      }
+      const text = await response.text();
+      if (response.ok) {
+        if (!text) return null;
+        try { return JSON.parse(text); }
+        catch { throw new Error("Supabase returned non-JSON response for " + table); }
+      }
+      const retryable = [408, 425, 429, 500, 502, 503, 504].includes(response.status);
+      lastError = new Error("Supabase " + method + " " + table + " failed (" + response.status + "): " + text.slice(0, 1200));
+      if (!retryable || attempt === 3) throw lastError;
+      const retryAfter = Number(response.headers.get("retry-after"));
+      const delay = Number.isFinite(retryAfter) && retryAfter > 0
+        ? Math.min(retryAfter * 1000, 10000)
+        : 250 * Math.pow(2, attempt);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+    throw new Error("Supabase request failed after retries: " + (lastError ? lastError.message : "unknown network error"));
   };
 }
 function batches(items, size) {
@@ -115,33 +147,195 @@ function batches(items, size) {
   for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
   return out;
 }
+function safeSourceReference(value) {
+  if (typeof value !== "string" || !value.trim()) return { type: "mnemos-local" };
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+      return { type: "web", host: parsed.host };
+    }
+  } catch {}
+  return { type: "mnemos-local", reference_present: true };
+}
+function deterministicUuid(value) {
+  const hex = sha256(value).slice(0, 32).split("");
+  hex[12] = "5";
+  hex[16] = (parseInt(hex[16], 16) & 3 | 8).toString(16);
+  const s = hex.join("");
+  return s.slice(0, 8) + "-" + s.slice(8, 12) + "-" + s.slice(12, 16) + "-" + s.slice(16, 20) + "-" + s.slice(20);
+}
+function exportToBundle(payload, workspaceId) {
+  if (!payload || payload.format !== "mnemos-export-v1" ||
+      !Array.isArray(payload.memories) || !Array.isArray(payload.links)) {
+    throw new Error("input must be a Mnemos mnemos-export-v1 export");
+  }
+  const nodes = payload.memories.map((memory, index) => {
+    if (!memory || typeof memory.id !== "string" || !memory.id.trim() ||
+        typeof memory.content !== "string" || !memory.content.trim()) {
+      throw new Error("memories[" + index + "] is missing id or content");
+    }
+    const metadata = safeObject(Object.assign({}, memory.metadata || {}, {
+      tags: Array.isArray(memory.tags) ? memory.tags.filter(tag => typeof tag === "string") : []
+    }));
+    return {
+      id: memory.id,
+      kind: typeof memory.kind === "string" && memory.kind.trim() ? memory.kind.trim() : "note",
+      title: typeof metadata.title === "string" ? metadata.title.slice(0, 512) : memory.content.split(String.fromCharCode(10), 1)[0].slice(0, 160),
+      content: memory.content,
+      source: safeSourceReference(memory.source),
+      metadata,
+      media: safeObject(metadata.media || {}),
+      content_sha256: sha256(memory.content),
+      created_at: memory.created_at,
+      updated_at: memory.updated_at,
+      deleted_at: null
+    };
+  });
+  const links = payload.links.map((link, index) => {
+    if (!link || typeof link.source_id !== "string" || typeof link.target_id !== "string") {
+      throw new Error("links[" + index + "] is missing source_id or target_id");
+    }
+    const relation = typeof link.relation === "string" ? link.relation.trim() : "relates_to";
+    return {
+      source_id: link.source_id,
+      target_id: link.target_id,
+      relation: /^[a-z][a-z0-9_-]{0,63}$/.test(relation) ? relation : "relates_to",
+      provenance: { type: "mnemos-export-v1" },
+      confidence: null,
+      metadata: {},
+      created_at: link.created_at,
+      updated_at: link.created_at,
+      deleted_at: null
+    };
+  });
+  return validateBundle({ schema_version: 1, workspace_id: workspaceId, nodes, links }, workspaceId);
+}
+function bundleToExport(bundle) {
+  const normalized = validateBundle(bundle, env(CONFIG.workspace_id_env));
+  if (normalized.nodes.some(node => node.deleted_at) || normalized.links.some(link => link.deleted_at)) {
+    throw new Error("bundle contains tombstones; the current Mnemos import contract cannot safely apply deletions");
+  }
+  const nodeIds = new Set(normalized.nodes.map(node => node.id));
+  const memories = normalized.nodes.map(node => {
+    const metadata = safeObject(node.metadata || {});
+    const tags = Array.isArray(metadata.tags) ? metadata.tags.filter(tag => typeof tag === "string") : [];
+    delete metadata.tags;
+    return {
+      id: node.id,
+      content: node.content,
+      kind: node.kind,
+      tags,
+      source: null,
+      metadata,
+      created_at: node.created_at || new Date().toISOString(),
+      updated_at: node.updated_at || node.created_at || new Date().toISOString()
+    };
+  });
+  const links = normalized.links.map(link => {
+    if (!nodeIds.has(link.source_id) || !nodeIds.has(link.target_id)) {
+      throw new Error("cannot import bundle with links whose endpoints are absent from this bundle");
+    }
+    return {
+      id: deterministicUuid(link.source_id + ":" + link.target_id + ":" + link.relation),
+      source_id: link.source_id,
+      target_id: link.target_id,
+      relation: link.relation,
+      created_at: link.created_at || new Date().toISOString()
+    };
+  });
+  return { format: "mnemos-export-v1", exported_at: new Date().toISOString(), memories, links };
+}
+async function readAllTable(request, table, workspaceId, order, since) {
+  const rows = [];
+  const pageSize = 500;
+  const maximum = table === CONFIG.supabase.nodes_table ? MAX_NODES : MAX_LINKS;
+  for (let offset = 0; ; offset += pageSize) {
+    const params = new URLSearchParams({
+      select: "*",
+      workspace_id: "eq." + workspaceId,
+      order,
+      limit: String(pageSize)
+    });
+    if (since) params.set("updated_at", "gte." + new Date(Date.parse(since) - 2000).toISOString());
+    const page = await request(table, params.toString(), "GET", undefined, {
+      "Range-Unit": "items",
+      Range: offset + "-" + (offset + pageSize - 1)
+    });
+    if (!Array.isArray(page)) throw new Error("expected array response from " + table);
+    rows.push(...page);
+    if (rows.length > maximum) throw new Error(table + " exceeds configured bundle limit; refusing a truncated pull");
+    if (page.length < pageSize) break;
+  }
+  return rows;
+}
+function rowKeyNode(node) { return node.id; }
+function rowKeyLink(link) { return link.source_id + "|" + link.target_id + "|" + link.relation; }
 async function push(bundlePath) {
   if (!bundlePath) throw new Error("usage: sync.js push bundle.json");
   const workspaceId = uuid(env(CONFIG.workspace_id_env), CONFIG.workspace_id_env);
   const bundle = validateBundle(JSON.parse(fs.readFileSync(path.resolve(bundlePath), "utf8")), workspaceId);
   const request = client();
-  for (const batch of batches(bundle.nodes, BATCH_SIZE)) if (batch.length) {
+  const remoteNodes = await readAllTable(request, CONFIG.supabase.nodes_table, workspaceId, "updated_at.asc,id.asc", null);
+  const remoteLinks = await readAllTable(request, CONFIG.supabase.links_table, workspaceId, "updated_at.asc,source_id.asc,target_id.asc,relation.asc", null);
+  const remoteNodeById = new Map(remoteNodes.map(node => [rowKeyNode(node), node]));
+  const remoteLinkByKey = new Map(remoteLinks.map(link => [rowKeyLink(link), link]));
+  let nodesSkippedOlder = 0, nodesConflicted = 0, linksSkippedOlder = 0;
+  const nodesToPush = bundle.nodes.filter(node => {
+    const remote = remoteNodeById.get(node.id);
+    if (!remote) return true;
+    const localTime = Date.parse(node.updated_at || node.created_at || 0) || 0;
+    const remoteTime = Date.parse(remote.updated_at || remote.created_at || 0) || 0;
+    if (localTime < remoteTime) { nodesSkippedOlder++; return false; }
+    const differs = node.content_sha256 !== remote.content_sha256 ||
+      JSON.stringify(node.metadata) !== JSON.stringify(remote.metadata) ||
+      JSON.stringify(node.source) !== JSON.stringify(remote.source) ||
+      JSON.stringify(node.media) !== JSON.stringify(remote.media) ||
+      node.content !== remote.content || node.kind !== remote.kind || node.title !== remote.title;
+    if (localTime === remoteTime) {
+      if (differs) nodesConflicted++;
+      return false;
+    }
+    return differs;
+  });
+  const linksToPush = bundle.links.filter(link => {
+    const remote = remoteLinkByKey.get(rowKeyLink(link));
+    if (!remote) return true;
+    const localTime = Date.parse(link.updated_at || link.created_at || 0) || 0;
+    const remoteTime = Date.parse(remote.updated_at || remote.created_at || 0) || 0;
+    if (localTime <= remoteTime) { linksSkippedOlder++; return false; }
+    return true;
+  });
+  const availableIds = new Set(remoteNodes.map(node => node.id));
+  for (const node of nodesToPush) availableIds.add(node.id);
+  for (const link of linksToPush) {
+    if (!availableIds.has(link.source_id) || !availableIds.has(link.target_id)) {
+      throw new Error("link endpoint missing in remote workspace and push bundle: " + link.source_id + " -> " + link.target_id);
+    }
+  }
+  for (const batch of batches(nodesToPush, BATCH_SIZE)) if (batch.length) {
     await request(CONFIG.supabase.nodes_table, "on_conflict=owner_id,workspace_id,id", "POST", batch);
   }
-  for (const batch of batches(bundle.links, BATCH_SIZE)) if (batch.length) {
+  for (const batch of batches(linksToPush, BATCH_SIZE)) if (batch.length) {
     await request(CONFIG.supabase.links_table, "on_conflict=owner_id,workspace_id,source_id,target_id,relation", "POST", batch);
   }
-  console.log(JSON.stringify({ ok: true, workspace_id: bundle.workspace_id, nodes_upserted: bundle.nodes.length, links_upserted: bundle.links.length, binary_uploaded: false }, null, 2));
+  console.log(JSON.stringify({
+    ok: true,
+    workspace_id: bundle.workspace_id,
+    nodes_upserted: nodesToPush.length,
+    links_upserted: linksToPush.length,
+    nodes_skipped_older: nodesSkippedOlder,
+    nodes_conflicts_preserved_remote: nodesConflicted,
+    links_skipped_older: linksSkippedOlder,
+    binary_uploaded: false
+  }, null, 2));
 }
 async function pull(since, outputPath) {
   const workspaceId = uuid(env(CONFIG.workspace_id_env), CONFIG.workspace_id_env);
   if (since && Number.isNaN(Date.parse(since))) throw new Error("since must be an ISO timestamp");
   const request = client();
-  async function getTable(table, order) {
-    const params = new URLSearchParams({ select: "*", workspace_id: "eq." + workspaceId, order });
-    if (since) params.set("updated_at", "gte." + new Date(Date.parse(since) - 2000).toISOString());
-    const rows = await request(table, params.toString());
-    if (!Array.isArray(rows)) throw new Error("expected array response from " + table);
-    return rows;
-  }
-  const nodes = await getTable(CONFIG.supabase.nodes_table, "updated_at.asc,id.asc");
-  const links = await getTable(CONFIG.supabase.links_table, "updated_at.asc,source_id.asc,target_id.asc,relation.asc");
-  const json = JSON.stringify({ schema_version: 1, workspace_id: workspaceId, nodes, links }, null, 2) + "\n";
+  const nodes = await readAllTable(request, CONFIG.supabase.nodes_table, workspaceId, "updated_at.asc,id.asc", since);
+  const links = await readAllTable(request, CONFIG.supabase.links_table, workspaceId, "updated_at.asc,source_id.asc,target_id.asc,relation.asc", since);
+  const json = JSON.stringify({ schema_version: 1, workspace_id: workspaceId, nodes, links }, null, 2) + "\\n";
   if (outputPath) {
     fs.writeFileSync(path.resolve(outputPath), json, "utf8");
     console.error("Wrote " + nodes.length + " nodes and " + links.length + " links to " + path.resolve(outputPath));
@@ -149,6 +343,27 @@ async function pull(since, outputPath) {
 }
 async function main(argv) {
   const [command, ...args] = argv;
+  if (command === "bundle") {
+    const inputPath = args[0], outputIndex = args.indexOf("--output");
+    const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
+    if (!inputPath || (outputIndex >= 0 && !outputPath)) throw new Error("usage: sync.js bundle mnemos-export.json [--output bundle.json]");
+    const workspaceId = uuid(env(CONFIG.workspace_id_env), CONFIG.workspace_id_env);
+    const bundle = exportToBundle(JSON.parse(fs.readFileSync(path.resolve(inputPath), "utf8")), workspaceId);
+    const json = JSON.stringify(bundle, null, 2) + "\\n";
+    if (outputPath) fs.writeFileSync(path.resolve(outputPath), json, "utf8");
+    else process.stdout.write(json);
+    if (outputPath) console.error("Wrote " + bundle.nodes.length + " nodes and " + bundle.links.length + " links to " + path.resolve(outputPath));
+    return;
+  }
+  if (command === "unbundle") {
+    const inputPath = args[0], outputIndex = args.indexOf("--output");
+    const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
+    if (!inputPath || !outputPath) throw new Error("usage: sync.js unbundle remote-bundle.json --output mnemos-export.json");
+    const payload = bundleToExport(JSON.parse(fs.readFileSync(path.resolve(inputPath), "utf8")));
+    fs.writeFileSync(path.resolve(outputPath), JSON.stringify(payload, null, 2) + "\\n", "utf8");
+    console.error("Wrote portable Mnemos import with " + payload.memories.length + " memories and " + payload.links.length + " links");
+    return;
+  }
   if (command === "push") return push(args[0]);
   if (command === "pull") {
     let since = null, output = null;
@@ -159,6 +374,6 @@ async function main(argv) {
     }
     return pull(since, output);
   }
-  throw new Error("usage: sync.js push bundle.json | sync.js pull [ISO_TIMESTAMP] [--output file.json]");
+  throw new Error("usage: sync.js bundle mnemos-export.json [--output bundle.json] | push bundle.json | pull [ISO_TIMESTAMP] [--output file.json] | unbundle remote-bundle.json --output mnemos-export.json");
 }
 main(process.argv.slice(2)).catch(error => { console.error("mnemos sync: " + error.message); process.exitCode = 1; });
