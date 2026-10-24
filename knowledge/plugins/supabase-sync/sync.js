@@ -335,7 +335,7 @@ async function pull(since, outputPath) {
   const request = client();
   const nodes = await readAllTable(request, CONFIG.supabase.nodes_table, workspaceId, "updated_at.asc,id.asc", since);
   const links = await readAllTable(request, CONFIG.supabase.links_table, workspaceId, "updated_at.asc,source_id.asc,target_id.asc,relation.asc", since);
-  const json = JSON.stringify({ schema_version: 1, workspace_id: workspaceId, nodes, links }, null, 2) + "\\n";
+  const json = JSON.stringify({ schema_version: 1, workspace_id: workspaceId, nodes, links }, null, 2) + "\n";
   if (outputPath) {
     fs.writeFileSync(path.resolve(outputPath), json, "utf8");
     console.error("Wrote " + nodes.length + " nodes and " + links.length + " links to " + path.resolve(outputPath));
@@ -349,7 +349,7 @@ async function main(argv) {
     if (!inputPath || (outputIndex >= 0 && !outputPath)) throw new Error("usage: sync.js bundle mnemos-export.json [--output bundle.json]");
     const workspaceId = uuid(env(CONFIG.workspace_id_env), CONFIG.workspace_id_env);
     const bundle = exportToBundle(JSON.parse(fs.readFileSync(path.resolve(inputPath), "utf8")), workspaceId);
-    const json = JSON.stringify(bundle, null, 2) + "\\n";
+    const json = JSON.stringify(bundle, null, 2) + "\n";
     if (outputPath) fs.writeFileSync(path.resolve(outputPath), json, "utf8");
     else process.stdout.write(json);
     if (outputPath) console.error("Wrote " + bundle.nodes.length + " nodes and " + bundle.links.length + " links to " + path.resolve(outputPath));
@@ -360,7 +360,7 @@ async function main(argv) {
     const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
     if (!inputPath || !outputPath) throw new Error("usage: sync.js unbundle remote-bundle.json --output mnemos-export.json");
     const payload = bundleToExport(JSON.parse(fs.readFileSync(path.resolve(inputPath), "utf8")));
-    fs.writeFileSync(path.resolve(outputPath), JSON.stringify(payload, null, 2) + "\\n", "utf8");
+    fs.writeFileSync(path.resolve(outputPath), JSON.stringify(payload, null, 2) + "\n", "utf8");
     console.error("Wrote portable Mnemos import with " + payload.memories.length + " memories and " + payload.links.length + " links");
     return;
   }
