@@ -78,7 +78,7 @@ async function callTool(name: string, rawArgs: unknown, ownerId: string) {
     const rows = await sql`select id, content, kind, tags, source, metadata, created_at, updated_at from mnemos.memories where owner_id = ${ownerId}::uuid order by created_at desc limit 10000`;
     const scored = rows.map((row: Record<string, unknown>) => {
       const haystack = [row.content, row.kind, ...(Array.isArray(row.tags) ? row.tags : []), row.source ?? ""].join(" ").toLocaleLowerCase();
-      const score = terms.reduce((n, term) => n + (haystack.includes(term) ? 1 : 0), 0);
+      const score = terms.reduce((n, term) => n + Math.max(0, haystack.split(term).length - 1), 0);
       return { row, score };
     }).filter((item: { score: number }) => item.score > 0).sort((a: { score: number }, b: { score: number }) => b.score - a.score);
     return scored.slice(0, limit).map((item: { row: unknown }) => item.row);
@@ -135,7 +135,9 @@ Deno.serve(async (req: Request) => {
   if (method === "ping") return response(jsonRpc(id, {}));
   if (method === "tools/list") return response(jsonRpc(id, { tools }));
   if (method === "tools/call") {
-    const params = parseArgs(body.params);
+    let params: Record<string, unknown>;
+    try { params = parseArgs(body.params); }
+    catch (e) { return response(rpcError(id, -32602, e instanceof Error ? e.message : "invalid tool params"), 400); }
     if (typeof params.name !== "string") return response(rpcError(id, -32602, "tool name is required"), 400);
     try {
       const result = await callTool(params.name, params.arguments ?? {}, claims.sub as string);

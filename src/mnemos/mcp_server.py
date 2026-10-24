@@ -226,7 +226,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         return serve(db_path=args.db)
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, sqlite3.Error) as exc:
         print(f"mnemos-mcp: error: {exc}", file=sys.stderr)
         return 2
 

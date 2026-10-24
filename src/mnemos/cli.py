@@ -5,6 +5,7 @@ import contextlib
 import hashlib
 import io
 import json
+import sqlite3
 import sys
 import time
 from pathlib import Path
@@ -170,52 +171,38 @@ def main(argv: list[str] | None = None) -> int:
                     metadata=report,
                 )
             artifact_ids = []
-            dependency_ids = {}
-            existing_dependency_ids = {}
-            existing_dependency_records = {}
-            dependency_record_by_key = {}
             existing_artifact_ids = {}
             latest_artifact_by_path = {}
-            for existing in store.list_all():
+            for existing in store.list_all(kind="binary_artifact"):
                 metadata = existing.get("metadata") or {}
-                if existing.get("kind") == "runtime_dependency" and metadata.get("schema") == "mnemos-dependency-evidence-v1":
-                    existing_name = str(metadata.get("name", "")).strip()
-                    existing_format = str(metadata.get("format", "")).strip()
-                    key = (existing_format, existing_name.casefold())
-                    if existing_name and existing_format and key not in existing_dependency_ids:
-                        existing_dependency_ids[key] = existing["id"]
-                        existing_dependency_records[key] = existing
-                elif existing.get("kind") == "binary_artifact":
-                    existing_path = str(metadata.get("path", "")).strip()
-                    existing_sha = metadata.get("sha256")
-                    if existing_path and existing_sha:
-                        existing_artifact_ids[(existing_path, existing_sha)] = existing["id"]
-                    elif (
-                        existing_path and metadata.get("sample_sha256")
-                        and (metadata.get("binary_details") or {}).get("status") != "file_changed_during_inspection"
-                    ):
-                        existing_artifact_ids[(
-                            existing_path, None, "sample", metadata.get("sample_sha256"), metadata.get("size_bytes")
-                        )] = existing["id"]
-                    elif (
-                        existing_path
-                        and metadata.get("mtime_ns") is not None
-                        and metadata.get("size_bytes") is not None
-                        and (metadata.get("binary_details") or {}).get("status") != "file_changed_during_inspection"
-                    ):
-                        existing_artifact_ids[(
-                            existing_path, None, metadata.get("mtime_ns"), metadata.get("size_bytes")
-                        )] = existing["id"]
-                    if existing_path:
-                        previous = latest_artifact_by_path.get(existing_path)
-                        current_rank = (str(existing.get("created_at", "")), int(metadata.get("observed_at_ns") or 0), int(metadata.get("mtime_ns") or 0))
-                        previous_metadata = (previous or {}).get("metadata") or {}
-                        previous_rank = (str((previous or {}).get("created_at", "")), int(previous_metadata.get("observed_at_ns") or 0), int(previous_metadata.get("mtime_ns") or 0))
-                        if previous is None or current_rank > previous_rank:
-                            latest_artifact_by_path[existing_path] = existing
+                existing_path = str(metadata.get("path", "")).strip()
+                existing_sha = metadata.get("sha256")
+                if existing_path and existing_sha:
+                    existing_artifact_ids[(existing_path, existing_sha)] = existing["id"]
+                elif (
+                    existing_path and metadata.get("sample_sha256")
+                    and (metadata.get("binary_details") or {}).get("status") != "file_changed_during_inspection"
+                ):
+                    existing_artifact_ids[(
+                        existing_path, None, "sample", metadata.get("sample_sha256"), metadata.get("size_bytes")
+                    )] = existing["id"]
+                elif (
+                    existing_path
+                    and metadata.get("mtime_ns") is not None
+                    and metadata.get("size_bytes") is not None
+                    and (metadata.get("binary_details") or {}).get("status") != "file_changed_during_inspection"
+                ):
+                    existing_artifact_ids[(
+                        existing_path, None, metadata.get("mtime_ns"), metadata.get("size_bytes")
+                    )] = existing["id"]
+                if existing_path:
+                    previous = latest_artifact_by_path.get(existing_path)
+                    current_rank = (str(existing.get("created_at", "")), int(metadata.get("observed_at_ns") or 0), int(metadata.get("mtime_ns") or 0))
+                    previous_metadata = (previous or {}).get("metadata") or {}
+                    previous_rank = (str((previous or {}).get("created_at", "")), int(previous_metadata.get("observed_at_ns") or 0), int(previous_metadata.get("mtime_ns") or 0))
+                    if previous is None or current_rank > previous_rank:
+                        latest_artifact_by_path[existing_path] = existing
             artifact_records_created = 0
-            dependency_records_created = 0
-            dependency_links = 0
             for artifact in report["artifacts"]:
                 artifact_path = str(artifact.get("path", ""))
                 artifact_sha = artifact.get("sha256")
@@ -256,122 +243,21 @@ def main(argv: list[str] | None = None) -> int:
                     latest_artifact_by_path[artifact_path] = record
                 store.link(snapshot["id"], artifact_id, relation="contains_artifact")
                 artifact_ids.append(artifact_id)
-                details = artifact.get("binary_details") or {}
-                dependencies = []
-                if details.get("format") == "Mach-O":
-                    for item in details.get("dependencies", []):
-                        dependencies.append({
-                            "name": item.get("name", ""),
-                            "kind": item.get("kind", "load"),
-                            "format": "Mach-O",
-                        })
-                if details.get("format") == "ELF":
-                    for item in details.get("dependencies", []):
-                        dependencies.append({
-                            "name": item.get("name", ""),
-                            "kind": item.get("kind", "needed"),
-                            "format": "ELF",
-                        })
-                for library in details.get("imports", []):
-                    dependencies.append({
-                        "name": library.get("library", ""),
-                        "kind": "import",
-                        "format": "PE",
-                        "symbols": library.get("symbols", []),
-                    })
-                for dependency in dependencies:
-                    name = dependency["name"].strip()
-                    if not name:
-                        continue
-                    key = (dependency["format"], name.casefold())
-                    source_evidence = {
-                        "artifact_sha256": artifact.get("sha256"),
-                        "sample_sha256": artifact.get("sample_sha256"),
-                        "artifact_path": artifact.get("path"),
-                        "observed_mtime_ns": artifact.get("mtime_ns") if artifact.get("sha256") is None else None,
-                        "file_size_bytes": artifact.get("size_bytes") if artifact.get("sha256") is None else None,
-                        "parser_status": details.get("status"),
-                        "analysis_limits": details.get("analysis_limits", []),
-                        "method": "static-file-metadata",
-                        "execution_performed": False,
-                        "network_used": False,
-                    }
-                    if key not in dependency_ids:
-                        if key in existing_dependency_ids:
-                            dependency_ids[key] = existing_dependency_ids[key]
-                            dependency_record_by_key[key] = existing_dependency_records[key]
-                        else:
-                            dep_record = store.add(
-                                f"Runtime dependency: {name}",
-                                kind="runtime_dependency",
-                                tags=[dependency["format"].lower(), dependency["kind"]],
-                                source="mnemos-static-binary-metadata",
-                                metadata={
-                                    "schema": "mnemos-dependency-evidence-v1",
-                                    "name": name,
-                                    "format": dependency["format"],
-                                    "kind": dependency["kind"],
-                                    "kinds": [dependency["kind"]],
-                                    "symbols": dependency.get("symbols", []),
-                                    "evidence": source_evidence,
-                                    "evidence_sources": [source_evidence],
-                                },
-                            )
-                            dependency_ids[key] = dep_record["id"]
-                            dependency_record_by_key[key] = dep_record
-                            existing_dependency_ids[key] = dep_record["id"]
-                            existing_dependency_records[key] = dep_record
-                            dependency_records_created += 1
-                    dep_record = dependency_record_by_key[key]
-                    dep_metadata = dict(dep_record.get("metadata") or {})
-                    evidence_sources = dep_metadata.get("evidence_sources")
-                    if not isinstance(evidence_sources, list):
-                        legacy_evidence = dep_metadata.get("evidence")
-                        evidence_sources = [legacy_evidence] if isinstance(legacy_evidence, dict) else []
-                    evidence_key = (
-                        source_evidence["artifact_path"], source_evidence["artifact_sha256"],
-                        source_evidence.get("sample_sha256"), source_evidence.get("observed_mtime_ns"),
-                        source_evidence.get("file_size_bytes"),
-                    )
-                    if not any(
-                        isinstance(item, dict)
-                        and (
-                            item.get("artifact_path"), item.get("artifact_sha256"), item.get("sample_sha256"),
-                            item.get("observed_mtime_ns"), item.get("file_size_bytes"),
-                        ) == evidence_key
-                        for item in evidence_sources
-                    ):
-                        evidence_sources.append(source_evidence)
-                    dep_metadata["evidence_sources"] = evidence_sources
-                    existing_kinds = dep_metadata.get("kinds", [])
-                    kinds = set(existing_kinds) if isinstance(existing_kinds, list) else set()
-                    if dep_metadata.get("kind"):
-                        kinds.add(dep_metadata["kind"])
-                    kinds.add(dependency["kind"])
-                    dep_metadata["kinds"] = sorted(kinds)
-                    existing_symbols = dep_metadata.get("symbols", [])
-                    incoming_symbols = dependency.get("symbols", [])
-                    if not isinstance(existing_symbols, list):
-                        existing_symbols = []
-                    if not isinstance(incoming_symbols, list):
-                        incoming_symbols = []
-                    symbol_map = {}
-                    for symbol in existing_symbols + incoming_symbols:
-                        if isinstance(symbol, dict):
-                            symbol_map[json.dumps(symbol, sort_keys=True)] = symbol
-                    dep_metadata["symbols"] = [symbol_map[key] for key in sorted(symbol_map)]
-                    dependency_record_by_key[key] = store.update_metadata(dependency_ids[key], dep_metadata)
-                    store.link(artifact_id, dependency_ids[key], relation="depends_on")
-                    dependency_links += 1
             evolution_report = evolve_graph(store)
+            artifact_id_set = set(artifact_ids)
+            scan_dependency_links = [
+                link for link in store.links()
+                if link["source_id"] in artifact_id_set and link["relation"] == "depends_on"
+            ]
+            dependency_record_ids = {link["target_id"] for link in scan_dependency_links}
             print(json.dumps({
                 "snapshot_id": snapshot["id"],
                 "graph_evolution": evolution_report,
                 "artifact_records": len(artifact_ids),
                 "artifact_records_created": artifact_records_created,
-                "dependency_records": len(dependency_ids),
-                "dependency_records_created": dependency_records_created,
-                "dependency_links": dependency_links,
+                "dependency_records": len(dependency_record_ids),
+                "dependency_records_created": evolution_report["dependency_nodes_created"],
+                "dependency_links": len(scan_dependency_links),
                 "report": report,
             }, ensure_ascii=False, indent=2))
             if not evolution_report["ok"]:
@@ -418,7 +304,7 @@ def main(argv: list[str] | None = None) -> int:
             memories, links = store.import_data(payload)
             print(f"Imported {memories} memories and {links} links.")
         return 0
-    except (ValueError, KeyError, OSError, json.JSONDecodeError) as exc:
+    except (ValueError, KeyError, OSError, sqlite3.Error, json.JSONDecodeError) as exc:
         print(f"mnemos: error: {exc}", file=sys.stderr)
         return 2
 
