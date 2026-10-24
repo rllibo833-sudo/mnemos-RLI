@@ -3,14 +3,14 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mnemos-memory"
+name = "mnemos-rli"
 version = "0.2.0"
-description = "Portable, local-first memory for AI agents"
+description = "Offline system integrity evidence, artifact comparison, and reconstruction"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "Mnemos contributors" }]
-keywords = ["ai-agents", "memory", "knowledge-graph", "local-first", "mcp"]
+keywords = ["integrity", "diagnostics", "artifact-analysis", "offline", "reconstruction"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",

@@ -16,6 +16,7 @@ from .analysis import analyze_graph
 from .daemon import run_daemon
 from .evolution import evolve_graph
 from .graph import render_graph
+from .live_graph import serve_live_graph
 from .store import MemoryStore
 
 
@@ -233,7 +234,7 @@ def _verify_release_manifest(store: MemoryStore, manifest: dict, snapshot_id: st
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="mnemos", description="Local-first, portable memory for AI agents.")
+    parser = argparse.ArgumentParser(prog="mnemos", description="Offline system integrity evidence, artifact comparison, and reconstruction.")
     parser.add_argument("--db", help="Database path (default: ~/.mnemos/memory.sqlite3 or MNEMOS_DB).")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("init", help="Initialize the local memory database.")
@@ -257,10 +258,6 @@ def _parser() -> argparse.ArgumentParser:
                        help="Output an interactive HTML graph or graph JSON.")
     graph.add_argument("--live", action="store_true", help="Serve a local graph viewer that refreshes as the graph grows.")
     graph.add_argument("--port", type=int, default=8765, help="Loopback port for --live (default: 8765).")
-    export = commands.add_parser("export", help="Export all memories and links to JSON.")
-    export.add_argument("--output", default="mnemos-export.json")
-    imp = commands.add_parser("import", help="Import a Mnemos JSON export without overwriting existing IDs.")
-    imp.add_argument("input")
     mapping = commands.add_parser("map-device", help="Inventory this device offline; scan only explicitly supplied paths.")
     mapping.add_argument("--path", action="append", default=[], help="File or directory to inspect for binary artifacts; repeatable.")
     mapping.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected across selected directories.")
@@ -282,15 +279,10 @@ def _parser() -> argparse.ArgumentParser:
     daemon.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected per scan.")
     daemon.add_argument("--interval", type=float, default=300, help="Seconds between full scans (default: 300).")
     daemon.add_argument("--once", action="store_true", help="Run one scan and exit.")
-    live = commands.add_parser("live-graph", help="Loopback live graph with /mnem?mode=damaged")
+    live = commands.add_parser("live-graph", help="Serve local integrity evidence at /mnem?mode=damaged.")
     live.add_argument("--port", type=int, default=8765)
-    live.add_argument("--output", default="/data/data/com.termux/files/usr/tmp/mnemos_live.html")
+    live.add_argument("--output", help="Optional path to save a static copy of the viewer.")
     commands.add_parser("doctor", help="Check local SQLite integrity and relationship constraints.")
-    commands.add_parser("sync-status", help="Show device identity and locally queued changes.")
-    pending = commands.add_parser("outbox", help="List pending local changes awaiting sync.")
-    pending.add_argument("--limit", type=int, default=100)
-    validate = commands.add_parser("validate-export", help="Validate an export JSON before importing it.")
-    validate.add_argument("input")
     return parser
 
 
@@ -353,6 +345,8 @@ def main(argv: list[str] | None = None) -> int:
                                   emit=lambda message: print(message, file=sys.stderr))
             except KeyboardInterrupt:
                 return 130
+        elif args.command == "live-graph":
+            return serve_live_graph(store, args.output, args.port)
         elif args.command == "map-device":
             report = collect_device_map(args.path, max_files=args.max_files)
             # Explicit host and scope identity keeps imported graph history isolated.
@@ -508,15 +502,6 @@ def main(argv: list[str] | None = None) -> int:
             report = store.diagnostics()
             print(json.dumps(report, ensure_ascii=False, indent=2))
             return 0 if report["ok"] else 1
-        elif args.command == "sync-status":
-            print(json.dumps(store.sync_status(), ensure_ascii=False, indent=2))
-        elif args.command == "outbox":
-            print(json.dumps(store.pending_changes(limit=args.limit), ensure_ascii=False, indent=2))
-        elif args.command == "validate-export":
-            payload = json.loads(Path(args.input).read_text(encoding="utf-8"))
-            report = MemoryStore.validate_export(payload)
-            print(json.dumps(report, ensure_ascii=False, indent=2))
-            return 0 if report["ok"] else 1
         elif args.command == "add":
             item = store.add(args.content, kind=args.kind, tags=args.tag, source=args.source)
             print(json.dumps(item, ensure_ascii=False, indent=2))
@@ -541,15 +526,6 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 path = render_graph(memories, links, args.output)
             print(f"Graph written to {path.resolve()}")
-        elif args.command == "export":
-            path = Path(args.output)
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps(store.export_data(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-            print(f"Export written to {path.resolve()}")
-        elif args.command == "import":
-            payload = json.loads(Path(args.input).read_text(encoding="utf-8"))
-            memories, links = store.import_data(payload)
-            print(f"Imported {memories} memories and {links} links.")
         return 0
     except (ValueError, KeyError, OSError, sqlite3.Error, json.JSONDecodeError) as exc:
         print(f"mnemos: error: {exc}", file=sys.stderr)

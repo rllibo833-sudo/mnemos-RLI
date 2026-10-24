@@ -35,9 +35,13 @@ def _load_hash_cache():
 def _save_hash_cache(c):
     try:
         CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
-        if len(c)>20000: c=dict(sorted(c.items(), key=lambda kv: kv[1].get("at",0))[-15000:])
-        CACHE_PATH.write_text(json.dumps(c))
-    except: pass
+        if len(c) > 20000:
+            c = dict(sorted(c.items(), key=lambda kv: kv[1].get("at", 0))[-15000:])
+        temporary = CACHE_PATH.with_suffix(".tmp")
+        temporary.write_text(json.dumps(c, separators=(",", ":")), encoding="utf-8")
+        os.replace(temporary, CACHE_PATH)
+    except OSError:
+        pass
 _HASH_CACHE=None
 def _get_cache():
     global _HASH_CACHE
@@ -703,6 +707,33 @@ def _sample_sha256(path: Path, file_size: int) -> str | None:
     return digest.hexdigest()
 
 
+def _cached_sha256(path: Path, info: os.stat_result) -> str | None:
+    """Reuse a full hash only while file identity and metadata remain unchanged."""
+    if info.st_size > MAX_HASH_BYTES:
+        return None
+    try:
+        key = str(path.resolve())
+        cache = _get_cache()
+        cached = cache.get(key)
+        identity = (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns)
+        if isinstance(cached, dict) and (
+            cached.get("dev"), cached.get("ino"), cached.get("size"), cached.get("mtime_ns")
+        ) == identity:
+            digest = cached.get("sha256")
+            if isinstance(digest, str) and len(digest) == 64:
+                return digest
+        digest = _sha256(path)
+        if digest:
+            cache[key] = {"dev": info.st_dev, "ino": info.st_ino, "size": info.st_size,
+                          "mtime_ns": info.st_mtime_ns, "sha256": digest, "at": time.time()}
+            _save_hash_cache(cache)
+        else:
+            cache.pop(key, None)
+        return digest
+    except (OSError, TypeError, ValueError):
+        return _sha256(path)
+
+
 def _artifact(path: Path) -> dict[str, Any] | None:
     try:
         info = path.stat(follow_symlinks=False)
@@ -713,7 +744,7 @@ def _artifact(path: Path) -> dict[str, Any] | None:
         fmt = classify_binary(header)
         if fmt is None and not (info.st_mode & 0o111):
             return None
-        digest = _sha256(path)
+        digest = _cached_sha256(path, info)
         sample_digest = _sample_sha256(path, info.st_size) if digest is None else None
         details = inspect_binary(path, fmt)
         after = path.stat(follow_symlinks=False)
