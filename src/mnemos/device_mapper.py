@@ -24,6 +24,45 @@ TOOL_NAMES = (
 )
 SKIP_DIRS = {".git", ".hg", ".svn", ".venv", "venv", "__pycache__", "node_modules", ".cache"}
 MAX_HASH_BYTES = 256 * 1024 * 1024
+
+import json
+CACHE_PATH = Path.home() / ".cache" / "mnemos" / "hash_cache.json"
+def _load_hash_cache():
+    try:
+        if CACHE_PATH.exists(): return json.loads(CACHE_PATH.read_text())
+    except: pass
+    return {}
+def _save_hash_cache(c):
+    try:
+        CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        if len(c)>20000: c=dict(sorted(c.items(), key=lambda kv: kv[1].get("at",0))[-15000:])
+        CACHE_PATH.write_text(json.dumps(c))
+    except: pass
+_HASH_CACHE=None
+def _get_cache():
+    global _HASH_CACHE
+    if _HASH_CACHE is None: _HASH_CACHE=_load_hash_cache()
+    return _HASH_CACHE
+
+def _normalize_os_type():
+    import platform, os
+    s=platform.system() or __import__("sys").platform
+    low=s.lower()
+    if "TERMUX_VERSION" in os.environ or "com.termux" in os.environ.get("PREFIX","").lower(): t="android-termux"
+    elif low.startswith("darwin"): t="macos"
+    elif low.startswith("win"): t="windows"
+    elif low.startswith("linux"): t="linux"
+    else: t=low
+    return {"raw":s,"normalized":t}
+
+def _detect_sandbox_id():
+    import os
+    env=os.environ; sb="host"; det={}
+    if os.path.exists("/.dockerenv") or Path("/run/.containerenv").exists(): sb="docker"
+    if env.get("FLATPAK_ID"): sb="flatpak"; det["flatpak_id"]=env["FLATPAK_ID"]
+    if "com.termux" in env.get("PREFIX","").lower() or "TERMUX_VERSION" in env: sb="android-termux" if sb=="host" else sb
+    return {"sandbox_id":sb,"details":det,"is_sandboxed":sb!="host"}
+
 SAMPLE_HASH_WINDOW_BYTES = 64 * 1024
 MAGIC = (
     (b"\x7fELF", "ELF"),
@@ -694,6 +733,7 @@ def _artifact(path: Path) -> dict[str, Any] | None:
                 "method": "static-file-metadata",
                 "source_path": str(path),
                 "sha256": digest,
+                "signature_status": details.get("signature_status","unknown"),
                 "sample_sha256": sample_digest,
                 "sample_hash_method": "first-middle-last-bounded-regions" if sample_digest else None,
                 "file_size_bytes": info.st_size,
@@ -709,6 +749,7 @@ def _artifact(path: Path) -> dict[str, Any] | None:
             "mtime_ns": info.st_mtime_ns,
             "mode": stat.S_IMODE(info.st_mode),
             "sha256": digest,
+                "signature_status": details.get("signature_status","unknown"),
             "sample_sha256": sample_digest,
             "sample_hash_method": "first-middle-last-bounded-regions" if sample_digest else None,
             "observed_at_ns": time.time_ns(),
@@ -815,6 +856,10 @@ def collect_device_map(paths: Iterable[str | Path] = (), *, max_files: int = 200
         "schema": "mnemos-device-map-v1",
         "captured_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "device": {
+            "os_type": _normalize_os_type()["normalized"],
+            "sandbox_id": _detect_sandbox_id()["sandbox_id"],
+            "sandbox_details": _detect_sandbox_id()["details"],
+
             "os": platform.system() or sys.platform,
             "os_release": platform.release(),
             "os_version": platform.version(),

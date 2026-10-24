@@ -401,3 +401,52 @@ def analyze_graph(
         fingerprint=input_fingerprint, tags=["analysis", RULE_SET],
         source="mnemos-analyze", metadata=result_metadata,
     )
+
+
+from collections import defaultdict
+
+def _fast_index_links(links):
+    by_source=defaultdict(list); by_target=defaultdict(list)
+    for l in links:
+        by_source[l.get("source_id")].append(l)
+        by_target[l.get("target_id")].append(l)
+    return by_source, by_target
+
+def analyze_damaged(store, paths=None):
+    mems=store.list_all(); links=store.links()
+    by_id={m["id"]:m for m in mems}
+    by_source, by_target=_fast_index_links(links)
+    by_path=defaultdict(list)
+    for a in [m for m in mems if m.get("kind")=="binary_artifact"]:
+        p=(a.get("metadata") or {}).get("path") or ""
+        by_path[str(p)].append(a)
+    damaged=[]; reasons=[]
+    for path, vers in by_path.items():
+        if len(vers)>1:
+            uniq=set((v.get("metadata") or {}).get("sha256") or (v.get("metadata") or {}).get("sample_sha256") for v in vers)
+            if len(uniq)>1:
+                for v in vers: damaged.append(v["id"])
+                reasons.append({"path":path,"reason":"hash_mismatch_same_path","count":len(vers),"hashes":list(uniq)[:5]})
+        for v in vers:
+            bd=(v.get("metadata") or {}).get("binary_details") or {}
+            if bd.get("status")!="parsed":
+                if v["id"] not in damaged: damaged.append(v["id"])
+                reasons.append({"id":v["id"],"path":path,"reason":bd.get("status"),"limits":bd.get("analysis_limits",[])})
+    cross=[]
+    name_to_os=defaultdict(set)
+    snaps=[m for m in mems if m.get("kind")=="device_snapshot"]
+    for snap in snaps:
+        meta=snap.get("metadata") or {}
+        os_type=(meta.get("device") or {}).get("os_type") or meta.get("os_type") or "unknown"
+        sandbox=(meta.get("device") or {}).get("sandbox_id") or "host"
+        for l in by_source.get(snap["id"],[]):
+            if l.get("relation")=="contains_artifact":
+                art=by_id.get(l.get("target_id"))
+                if art:
+                    key=(art.get("metadata") or {}).get("path") or art.get("content") or art["id"]
+                    name_to_os[key].add(f"{os_type}/{sandbox}")
+    for name, os_set in name_to_os.items():
+        if len(os_set)>1:
+            cross.append({"name":name,"envs":sorted(os_set)})
+    import time
+    return {"schema":"mnemos-damaged-report-v1","damaged_artifact_ids":sorted(set(damaged)),"damaged_count":len(set(damaged)),"reasons":sorted(reasons,key=lambda x: str(x.get("path"))),"cross_os_artifacts":cross[:100],"hash_mismatches":[r for r in reasons if r.get("reason")=="hash_mismatch_same_path"],"total_artifacts":len([m for m in mems if m.get("kind")=="binary_artifact"]),"generated_at_ns":time.time_ns()}
