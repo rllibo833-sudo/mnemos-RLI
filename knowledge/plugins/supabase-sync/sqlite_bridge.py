@@ -10,17 +10,22 @@ def main():
  if not {'memories','links'}<=names: raise RuntimeError('expected memories and links tables')
  if a.command=='export':
   ms=[]
-  for rr in d.execute('select * from memories'):
+  memory_cols={x[1] for x in d.execute('pragma table_info(memories)')}
+  memory_query='select * from memories'
+  if 'deleted' in memory_cols: memory_query += ' where deleted=0 or deleted is null'
+  active_ids=set()
+  for rr in d.execute(memory_query):
    r=dict(rr); raw=r.get('tags',r.get('tags_json','[]')); meta=r.get('metadata',r.get('metadata_json','{}'))
    try: tags=json.loads(raw) if isinstance(raw,str) else raw
    except Exception: tags=[]
    try: metadata=json.loads(meta) if isinstance(meta,str) else meta
    except Exception: metadata={}
+   active_ids.add(str(r['id']))
    ms.append({'id':r['id'],'content':r.get('content',''),'kind':r.get('kind','note'),'tags':tags if isinstance(tags,list) else [],'source':r.get('source'),'metadata':metadata if isinstance(metadata,dict) else {},'created_at':r.get('created_at'),'updated_at':r.get('updated_at')})
-  ls=[{'source_id':r['source_id'],'target_id':r['target_id'],'relation':r['relation'],'created_at':r['created_at'] if 'created_at' in r.keys() else None} for r in d.execute('select * from links')]
+  ls=[{'source_id':r['source_id'],'target_id':r['target_id'],'relation':r['relation'],'created_at':r['created_at'] if 'created_at' in r.keys() else None} for r in d.execute('select * from links') if str(r['source_id']) in active_ids and str(r['target_id']) in active_ids]
   payload={'format':'mnemos-export-v1','exported_at':datetime.now(timezone.utc).isoformat(),'memories':ms,'links':ls}
   if not a.output: raise RuntimeError('--output required')
-  Path(a.output).write_text(json.dumps(payload,ensure_ascii=False)+'\\n',encoding='utf-8')
+  Path(a.output).write_text(json.dumps(payload,ensure_ascii=False)+'\n',encoding='utf-8')
   print(json.dumps({'snapshot_id':digest(payload),'memories':len(ms),'links':len(ls),'outbox_pending':'not safely identifiable; no rows acknowledged'})); return
  if a.command=='ack': raise RuntimeError('ACK disabled until a stable outbox schema and immutable row fingerprint are available; no data acknowledged')
  if not a.input: raise RuntimeError('--input required')
@@ -28,11 +33,11 @@ def main():
  for m in payload.get('memories',[]):
   old=d.execute('select * from memories where id=?',(m['id'],)).fetchone(); local=dict(old) if old else {}; rt=str(m.get('updated_at') or m.get('created_at') or ''); lt=str(local.get('updated_at') or local.get('created_at') or '')
   if old and (not rt or rt<=lt): preserved+=1; continue
-  vals={'id':m['id'],'content':m.get('content',''),'kind':m.get('kind','note'),'tags_json':json.dumps(m.get('tags',[]) if isinstance(m.get('tags'),list) else []),'source':m.get('source'),'metadata_json':json.dumps(m.get('metadata',{})),'created_at':m.get('created_at') or rt,'updated_at':rt}
+  vals={'id':m['id'],'content':m.get('content',''),'kind':m.get('kind','note'),'tags_json':json.dumps(m.get('tags',[]) if isinstance(m.get('tags'),list) else []),'tags':json.dumps(m.get('tags',[]) if isinstance(m.get('tags'),list) else []),'source':m.get('source'),'metadata_json':json.dumps(m.get('metadata',{})),'metadata':json.dumps(m.get('metadata',{})),'created_at':m.get('created_at') or rt,'updated_at':rt,'deleted':0}
   if not old:
-   cc=[c for c in ('id','content','kind','tags_json','source','metadata_json','created_at','updated_at') if c in mc]; d.execute('insert into memories ('+','.join(cc)+') values ('+','.join('?' for _ in cc)+')',[vals[c] for c in cc]); added+=1
+   cc=[c for c in ('id','content','kind','tags_json','tags','source','metadata_json','metadata','created_at','updated_at','deleted') if c in mc]; d.execute('insert into memories ('+','.join(cc)+') values ('+','.join('?' for _ in cc)+')',[vals[c] for c in cc]); added+=1
   else:
-   cc=[c for c in ('content','kind','tags_json','source','metadata_json','updated_at') if c in mc]; d.execute('update memories set '+','.join(c+'=?' for c in cc)+' where id=?',[vals[c] for c in cc]+[m['id']]); updated+=1
+   cc=[c for c in ('content','kind','tags_json','tags','source','metadata_json','updated_at') if c in mc]; d.execute('update memories set '+','.join(c+'=?' for c in cc)+' where id=?',[vals[c] for c in cc]+[m['id']]); updated+=1
  for l in payload.get('links',[]):
   if d.execute('select 1 from links where source_id=? and target_id=? and relation=?',(l['source_id'],l['target_id'],l.get('relation','relates_to'))).fetchone(): continue
   if d.execute('select count(*) from memories where id in (?,?)',(l['source_id'],l['target_id'])).fetchone()[0]!=2: continue

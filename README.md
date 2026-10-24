@@ -4,7 +4,7 @@
 
 Mnemos helps agents preserve useful knowledge across sessions: decisions, facts, solutions, project context, and links between them. Its goal is simple: **learn once, recall anywhere**.
 
-> Status: early foundation. The local memory engine and graph viewer are being built incrementally. APIs and formats may evolve before the first stable release.
+> Status: local SQLite, explicit graph links, MCP tools, and an optional authenticated Supabase workspace-sync plugin are present. Live sharing requires the shared-graph schema, workspace membership, and user access-token configuration; no local data is uploaded automatically.
 
 ## Why Mnemos?
 
@@ -47,9 +47,9 @@ Mnemos supports CLI use, a portable agent skill, and a local stdio MCP adapter f
 - [Agent Integration Guide](docs/agent-integration.md) — practical recall, capture, links, and backup/restore workflows, including safety boundaries.
 - [Mnemos Memory Skill](skills/mnemos-memory/SKILL.md) — instructions a compatible agent host can load.
 - [MCP Integration](docs/mcp-integration.md) — structured tools for compatible hosts supporting a local stdio MCP server.
-- [Cloud Foundation](docs/cloud-foundation.md) — status, private Supabase schema, and secure remote MCP deployment plan.
+- [Cloud Foundation](docs/cloud-foundation.md) — current cloud boundary, shared workspace sync, and security requirements.
 
-**Important environment boundary:** the current MCP adapter is local stdio. A dedicated cloud storage foundation is being prepared, but this does not yet mean ChatGPT or another cloud-hosted agent is connected. See [Cloud Foundation](docs/cloud-foundation.md) for the verified status and remaining work.
+**Important environment boundary:** the local MCP adapter remains stdio. The Knowledge branch includes an opt-in bundle push/pull plugin for authenticated Supabase users, but this does not by itself expose a remote MCP endpoint or connect a cloud-hosted agent. Live sync requires applying the shared-graph migration and configuring workspace membership first.
 
 ## What is stored?
 

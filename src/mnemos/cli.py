@@ -3,12 +3,12 @@
 import argparse
 import json
 import sys
+import subprocess
 from pathlib import Path
 
 from .graph import render_graph
 from .store import MemoryStore
 from .contract import bundle_from_snapshot, snapshot_graph, unbundle_to_store, roundtrip_snapshot
-from .supabase_sync import sync_minimal
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -40,9 +40,9 @@ def _parser() -> argparse.ArgumentParser:
     bundle.add_argument("--output", required=True)
     unbundle = commands.add_parser("unbundle", help="Import a graph snapshot with updated_at conflict protection.")
     unbundle.add_argument("input")
-    sync = commands.add_parser("sync", help="Snapshot locally and optionally sync with Supabase.")
-    sync.add_argument("--dry-run", action="store_true", help="Plan minimal Supabase payload offline; never contacts Supabase.")
-    commands.add_parser("simulate-supabase-sync", help="Simulate minimal Supabase sync offline.")
+    sync = commands.add_parser("sync", help="Sync the local graph with the configured shared Supabase workspace.")
+    sync.add_argument("--dry-run", action="store_true", help="Validate and measure the local bundle without network access.")
+    commands.add_parser("simulate-supabase-sync", help="Offline simulation using the shared-graph sync plugin.")
     simulate = commands.add_parser("simulate-bundle", help="Run an offline bundle/unbundle round trip.")
     simulate.add_argument("--input", help="Existing export JSON; defaults to local SQLite.")
     simulate.add_argument("--output", help="Optional round-trip output JSON.")
@@ -91,19 +91,18 @@ def main(argv: list[str] | None = None) -> int:
             preserved = sum(isinstance(item.get("tags"), list) for item in memories if isinstance(item, dict))
             links_count = len(result.get("links", []))
             print(f"SIM: {len(memories)} memories, {links_count} links, tags_arrays_preserved: {preserved}")
-        elif args.command == "sync":
-            if not args.dry_run:
-                raise ValueError("Supabase network sync is disabled; run sync --dry-run")
-            result = sync_minimal(store, dry_run=True)
-            print("payload KB: {:.2f}".format(result["payload_kb"]))
-            print("memories baru: {}".format(result["new_memories"]))
-            print("memories pending: {}".format(result["pending_memories"]))
-            print("links filtered: {}".format(result["links_filtered"]))
-            print("outbox changes: {}".format(result["changed_items"]))
-        elif args.command == "simulate-supabase-sync":
-            result = sync_minimal(store, dry_run=True)
-            print("{} local -> {} to push ({:.2f} KB) -> {} links filtered".format(result["local_memories"], result["pending_memories"], result["payload_kb"], result["links_filtered"]))
-            print("memories baru: {}; outbox changes: {}".format(result["new_memories"], result["changed_items"]))
+        elif args.command in {"sync", "simulate-supabase-sync"}:
+            plugin = Path(__file__).resolve().parents[2] / "knowledge" / "plugins" / "supabase-sync" / "sync.js"
+            if not plugin.is_file():
+                raise RuntimeError("shared-graph sync plugin is unavailable; run from the Mnemos repository checkout")
+            command = ["node", str(plugin), "sync"]
+            if args.db:
+                command.extend(["--db", str(args.db)])
+            if args.command == "simulate-supabase-sync":
+                command.append("--simulate")
+            elif args.dry_run:
+                command.append("--dry-run")
+            return subprocess.run(command, check=False).returncode
         return 0
     except (ValueError, KeyError, OSError, RuntimeError, json.JSONDecodeError) as exc:
         print(f"mnemos: error: {exc}", file=sys.stderr)

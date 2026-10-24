@@ -50,6 +50,21 @@ function safeObject(value) {
 function sha256(text) {
   return crypto.createHash("sha256").update(text, "utf8").digest("hex");
 }
+function stableJson(value) {
+  if (Array.isArray(value)) return "[" + value.map(stableJson).join(",") + "]";
+  if (value && typeof value === "object") {
+    return "{" + Object.keys(value).sort().map(key => JSON.stringify(key) + ":" + stableJson(value[key])).join(",") + "}";
+  }
+  return JSON.stringify(value) ?? "null";
+}
+function nodeFingerprint(node) {
+  return sha256(stableJson({ id: node.id, kind: node.kind, title: node.title, content: node.content,
+    content_sha256: node.content_sha256, source: node.source, metadata: node.metadata, media: node.media }));
+}
+function linkFingerprint(link) {
+  return sha256(stableJson({ source_id: link.source_id, target_id: link.target_id, relation: link.relation,
+    provenance: link.provenance, confidence: link.confidence, metadata: link.metadata }));
+}
 function validateBundle(bundle, expectedWorkspace) {
   if (!bundle || bundle.schema_version !== 1 || !Array.isArray(bundle.nodes) || !Array.isArray(bundle.links)) {
     throw new Error("bundle must have schema_version: 1, nodes: [], and links: []");
@@ -109,7 +124,7 @@ function client() {
       Accept: "application/json"
     }, extraHeaders);
     if (body !== undefined) headers["Content-Type"] = "application/json";
-    if (method === "POST" || method === "PATCH") headers.Prefer = "resolution=merge-duplicates,return=minimal";
+    if ((method === "POST" || method === "PATCH") && !headers.Prefer) headers.Prefer = "resolution=merge-duplicates,return=minimal";
     let lastError;
     for (let attempt = 0; attempt < 4; attempt++) {
       let response;
@@ -228,7 +243,7 @@ function bundleToExport(bundle) {
       kind: node.kind,
       tags,
       source: null,
-      metadata,
+      metadata: Object.assign({}, metadata, node.source && typeof node.source === "object" ? { source_reference: node.source } : {}),
       created_at: node.created_at || new Date().toISOString(),
       updated_at: node.updated_at || node.created_at || new Date().toISOString()
     };
@@ -281,7 +296,8 @@ async function push(bundlePath) {
   const remoteLinks = await readAllTable(request, CONFIG.supabase.links_table, workspaceId, "updated_at.asc,source_id.asc,target_id.asc,relation.asc", null);
   const remoteNodeById = new Map(remoteNodes.map(node => [rowKeyNode(node), node]));
   const remoteLinkByKey = new Map(remoteLinks.map(link => [rowKeyLink(link), link]));
-  let nodesSkippedOlder = 0, nodesConflicted = 0, linksSkippedOlder = 0;
+  let nodesSkippedOlder = 0, nodesConflicted = 0, linksSkippedOlder = 0, linksConflicted = 0;
+  const remoteNodeConflictsToTouch = [], remoteLinkConflictsToTouch = [];
   const nodesToPush = bundle.nodes.filter(node => {
     const remote = remoteNodeById.get(node.id);
     if (!remote) return true;
@@ -289,12 +305,15 @@ async function push(bundlePath) {
     const remoteTime = Date.parse(remote.updated_at || remote.created_at || 0) || 0;
     if (localTime < remoteTime) { nodesSkippedOlder++; return false; }
     const differs = node.content_sha256 !== remote.content_sha256 ||
-      JSON.stringify(node.metadata) !== JSON.stringify(remote.metadata) ||
-      JSON.stringify(node.source) !== JSON.stringify(remote.source) ||
-      JSON.stringify(node.media) !== JSON.stringify(remote.media) ||
+      stableJson(node.metadata) !== stableJson(remote.metadata) ||
+      stableJson(node.source) !== stableJson(remote.source) ||
+      stableJson(node.media) !== stableJson(remote.media) ||
       node.content !== remote.content || node.kind !== remote.kind || node.title !== remote.title;
     if (localTime === remoteTime) {
-      if (differs) nodesConflicted++;
+      if (!differs) return false;
+      nodesConflicted++;
+      if (nodeFingerprint(node) < nodeFingerprint(remote)) return true;
+      remoteNodeConflictsToTouch.push(remote);
       return false;
     }
     return differs;
@@ -304,7 +323,16 @@ async function push(bundlePath) {
     if (!remote) return true;
     const localTime = Date.parse(link.updated_at || link.created_at || 0) || 0;
     const remoteTime = Date.parse(remote.updated_at || remote.created_at || 0) || 0;
-    if (localTime <= remoteTime) { linksSkippedOlder++; return false; }
+    if (localTime < remoteTime) { linksSkippedOlder++; return false; }
+    if (localTime === remoteTime) {
+      const differs = stableJson({ relation: link.relation, provenance: link.provenance, confidence: link.confidence, metadata: link.metadata }) !==
+        stableJson({ relation: remote.relation, provenance: remote.provenance, confidence: remote.confidence, metadata: remote.metadata });
+      if (!differs) { linksSkippedOlder++; return false; }
+      linksConflicted++;
+      if (linkFingerprint(link) < linkFingerprint(remote)) return true;
+      remoteLinkConflictsToTouch.push(remote);
+      return false;
+    }
     return true;
   });
   const availableIds = new Set(remoteNodes.map(node => node.id));
@@ -315,10 +343,21 @@ async function push(bundlePath) {
     }
   }
   for (const batch of batches(nodesToPush, BATCH_SIZE)) if (batch.length) {
-    await request(CONFIG.supabase.nodes_table, "on_conflict=owner_id,workspace_id,id", "POST", batch);
+    await request(CONFIG.supabase.nodes_table, "on_conflict=workspace_id,id", "POST", batch);
   }
   for (const batch of batches(linksToPush, BATCH_SIZE)) if (batch.length) {
-    await request(CONFIG.supabase.links_table, "on_conflict=owner_id,workspace_id,source_id,target_id,relation", "POST", batch);
+    await request(CONFIG.supabase.links_table, "on_conflict=workspace_id,source_id,target_id,relation", "POST", batch);
+  }
+  // A deterministic fingerprint winner is propagated by bumping the remote row's
+  // update timestamp, so the next pull can apply it even when original timestamps tie.
+  for (const row of remoteNodeConflictsToTouch) {
+    const params = new URLSearchParams({ workspace_id: "eq." + workspaceId, id: "eq." + row.id });
+    await request(CONFIG.supabase.nodes_table, params.toString(), "PATCH", { updated_at: new Date().toISOString() });
+  }
+  for (const row of remoteLinkConflictsToTouch) {
+    const params = new URLSearchParams({ workspace_id: "eq." + workspaceId, source_id: "eq." + row.source_id,
+      target_id: "eq." + row.target_id, relation: "eq." + row.relation });
+    await request(CONFIG.supabase.links_table, params.toString(), "PATCH", { updated_at: new Date().toISOString() });
   }
   console.log(JSON.stringify({
     ok: true,
@@ -326,8 +365,9 @@ async function push(bundlePath) {
     nodes_upserted: nodesToPush.length,
     links_upserted: linksToPush.length,
     nodes_skipped_older: nodesSkippedOlder,
-    nodes_conflicts_preserved_remote: nodesConflicted,
+    nodes_conflicts_resolved_deterministically: nodesConflicted,
     links_skipped_older: linksSkippedOlder,
+    links_conflicts_resolved_deterministically: linksConflicted,
     binary_uploaded: false
   }, null, 2));
 }
@@ -350,21 +390,51 @@ function runBridge(args) {
   return r.stdout;
 }
 async function syncLocal(args) {
-  const index = args.indexOf("--db"); const db = index >= 0 ? args[index + 1] : null; const dry = args.includes("--dry-run");
+  const index = args.indexOf("--db"); const db = index >= 0 ? args[index + 1] : null; const simulation = args.includes("--simulate"); const dry = args.includes("--dry-run") || simulation;
   if (index >= 0 && (!db || db.startsWith("--"))) throw new Error("--db requires PATH");
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemos-sync-"));
   const exp = path.join(dir, "export.json"); const bundlePath = path.join(dir, "bundle.json"); const remotePath = path.join(dir, "remote.json"); const importPath = path.join(dir, "import.json");
   const dbArgs = db ? ["--db", path.resolve(db)] : [];
   try {
     const counts = JSON.parse(runBridge(["export", "--output", exp, ...dbArgs]));
-    const payload = JSON.parse(fs.readFileSync(exp, "utf8")); const workspace = uuid(env(CONFIG.workspace_id_env), CONFIG.workspace_id_env);
+    const payload = JSON.parse(fs.readFileSync(exp, "utf8")); const workspace = dry
+      ? (process.env[CONFIG.workspace_id_env] || "00000000-0000-4000-8000-000000000000").trim()
+      : uuid(env(CONFIG.workspace_id_env), CONFIG.workspace_id_env);
     const bundle = exportToBundle(payload, workspace); fs.writeFileSync(bundlePath, JSON.stringify(bundle) + "\n", "utf8");
-    if (dry) { console.log(JSON.stringify({ mode: "dry-run", memories: bundle.nodes.length, links: bundle.links.length, network_initialized: false, outbox_acknowledged: 0, remote_verified: false }, null, 2)); return; }
+    if (dry) {
+      const payloadBytes = Buffer.byteLength(JSON.stringify(bundle), "utf8");
+      const report = { mode: simulation ? "offline-simulation" : "dry-run", local_memories: bundle.nodes.length,
+        eligible_memories: bundle.nodes.length, links_filtered: bundle.links.length, payload_bytes: payloadBytes,
+        payload_kb: Number((payloadBytes / 1024).toFixed(2)), network_initialized: false,
+        outbox_acknowledged: 0, remote_verified: false };
+      if (simulation) console.log(bundle.nodes.length + " local -> " + bundle.nodes.length + " eligible to sync (" + report.payload_kb.toFixed(2) + " KB) -> " + bundle.links.length + " links filtered");
+      console.log(JSON.stringify(report, null, 2));
+      return;
+    }
     await push(bundlePath); await pull(null, remotePath);
     const remote = JSON.parse(fs.readFileSync(remotePath, "utf8")); const back = bundleToExport(remote); fs.writeFileSync(importPath, JSON.stringify(back) + "\n", "utf8");
     const imported = JSON.parse(runBridge(["import", "--input", importPath, ...dbArgs]));
     console.log(JSON.stringify({ mode: "live-sync", local_memories: bundle.nodes.length, local_links: bundle.links.length, remote_memories: back.memories.length, remote_links: back.links.length, imported, outbox_acknowledged: 0, outbox_ack_deferred: true, reason: "outbox schema cannot be safely identified by this bridge; no ACK issued" }, null, 2));
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+}
+async function createWorkspace(name) {
+  if (typeof name !== "string" || !name.trim() || name.trim().length > 160) {
+    throw new Error("workspace name must contain 1 to 160 characters");
+  }
+  const rows = await client()("knowledge_workspaces", "select=id,name,owner_id", "POST",
+    [{ name: name.trim() }], { Prefer: "return=representation" });
+  if (!Array.isArray(rows) || !rows[0] || typeof rows[0].id !== "string") {
+    throw new Error("Supabase did not return the created workspace; verify schema and workspace insert policy");
+  }
+  console.log(JSON.stringify({ ok: true, workspace_id: rows[0].id, name: rows[0].name, role: "admin" }, null, 2));
+}
+async function addWorkspaceMember(workspaceId, userId, role) {
+  uuid(workspaceId, "workspace_id");
+  uuid(userId, "user_id");
+  if (!["reader", "writer", "admin"].includes(role)) throw new Error("role must be reader, writer, or admin");
+  await client()("knowledge_workspace_members", "on_conflict=workspace_id,user_id", "POST",
+    [{ workspace_id: workspaceId, user_id: userId, role }]);
+  console.log(JSON.stringify({ ok: true, workspace_id: workspaceId, user_id: userId, role }, null, 2));
 }
 async function main(argv) {
   const [command, ...args] = argv;
@@ -397,6 +467,20 @@ async function main(argv) {
     if (back.memories.length !== source.memories.length || back.links.length !== source.links.length || tags !== source.memories.length || new Set(back.memories.map(m => m.id)).size !== source.memories.length) throw new Error("offline round-trip invariant failed");
     console.log(JSON.stringify({ mode: "offline-simulation", memories: back.memories.length, links: back.links.length, tags_arrays_preserved: tags, identity_preserved: true, relations_preserved: true, network_initialized: false }, null, 2)); return;
   }
+  if (command === "workspace") {
+    const action = args[0];
+    if (action === "create") {
+      const nameIndex = args.indexOf("--name");
+      if (nameIndex < 0 || !args[nameIndex + 1]) throw new Error('usage: sync.js workspace create --name "Workspace name"');
+      return createWorkspace(args[nameIndex + 1]);
+    }
+    if (action === "member-add") {
+      const workspaceId = args[1], userId = args[2], roleIndex = args.indexOf("--role");
+      if (!workspaceId || !userId || roleIndex < 0 || !args[roleIndex + 1]) throw new Error("usage: sync.js workspace member-add WORKSPACE_UUID USER_UUID --role reader|writer|admin");
+      return addWorkspaceMember(workspaceId, userId, args[roleIndex + 1]);
+    }
+    throw new Error("usage: sync.js workspace create --name NAME | workspace member-add WORKSPACE_UUID USER_UUID --role reader|writer|admin");
+  }
   if (command === "sync") return syncLocal(args);
   if (command === "push") return push(args[0]);
   if (command === "pull") {
@@ -408,6 +492,6 @@ async function main(argv) {
     }
     return pull(since, output);
   }
-  throw new Error("usage: sync.js bundle mnemos-export.json [--output bundle.json] | simulate export.json roundtrip.json | sync [--db PATH] [--dry-run] | push bundle.json | pull [ISO_TIMESTAMP] [--output file.json] | unbundle remote-bundle.json --output mnemos-export.json");
+  throw new Error("usage: sync.js bundle mnemos-export.json [--output bundle.json] | simulate export.json roundtrip.json | sync [--db PATH] [--dry-run] | workspace create --name NAME | workspace member-add WORKSPACE_UUID USER_UUID --role ROLE | push bundle.json | pull [ISO_TIMESTAMP] [--output file.json] | unbundle remote-bundle.json --output mnemos-export.json");
 }
 main(process.argv.slice(2)).catch(error => { console.error("mnemos sync: " + error.message); process.exitCode = 1; });

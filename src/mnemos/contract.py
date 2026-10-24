@@ -1,6 +1,6 @@
 """Portable graph contract and conservative local/remote merge helpers."""
 from __future__ import annotations
-import hashlib, json, os, urllib.error, urllib.parse, urllib.request
+import hashlib, json
 from datetime import datetime, timezone
 from pathlib import Path
 OUTBOX_TABLE = """CREATE TABLE IF NOT EXISTS sync_outbox (id INTEGER PRIMARY KEY AUTOINCREMENT, op TEXT NOT NULL, payload_json TEXT NOT NULL, created_at TEXT NOT NULL, ack_at TEXT, attempts INTEGER NOT NULL DEFAULT 0)"""
@@ -62,55 +62,3 @@ def unbundle_to_store(bundle_path,store,protect_updated_at=True):
             link_id=str(link.get("id") or hashlib.sha256((str(source)+"\0"+str(target)+"\0"+str(link.get("relation","relates_to"))).encode()).hexdigest()[:32])
             cur=db.execute("INSERT OR IGNORE INTO links(id,source_id,target_id,relation,created_at) VALUES(?,?,?,?,?)",(link_id,str(source),str(target),str(link.get("relation","relates_to")),str(link.get("created_at") or _now()))); added_links+=max(0,cur.rowcount)
     return {"memories_added":added,"memories_updated":updated,"memories_preserved_local":preserved,"links_added":added_links,"local_deletes":0}
-def _request(base,token,key,table,query="",method="GET",body=None,prefer=None):
-    url=base.rstrip("/")+"/rest/v1/"+table+(("?"+query) if query else ""); headers={"apikey":key,"Authorization":"Bearer "+token,"Accept":"application/json"}
-    if body is not None: headers["Content-Type"]="application/json"
-    if prefer: headers["Prefer"]=prefer
-    req=urllib.request.Request(url,data=json.dumps(body).encode() if body is not None else None,headers=headers,method=method)
-    try:
-        with urllib.request.urlopen(req,timeout=10) as response:
-            raw=response.read(); return json.loads(raw) if raw else None
-    except urllib.error.HTTPError as exc: raise RuntimeError("Supabase "+method+" "+table+" HTTP "+str(exc.code)+": "+exc.read().decode("utf-8","replace")[:250]) from exc
-    except (urllib.error.URLError,TimeoutError) as exc: raise RuntimeError("Supabase network failure: "+str(exc)) from exc
-def sync_snapshot(store,out_path,supabase_url=None):
-    snapshot=snapshot_graph(store); target=bundle_from_snapshot(snapshot,out_path)
-    report={"snapshot":str(target),"memories":len(snapshot["memories"]),"links":len(snapshot["links"]),"network_attempted":False,"outbox_ack":"deferred"}
-    if not supabase_url: report["remote"]="skipped (no --supabase-url)"; return report
-    base=supabase_url.strip().rstrip("/"); key=os.environ.get("SUPABASE_ANON_KEY","").strip(); token=os.environ.get("SUPABASE_ACCESS_TOKEN","").strip(); workspace=os.environ.get("WORKSPACE_ID","").strip()
-    if not key or not token or not workspace: raise RuntimeError("SUPABASE_ANON_KEY, SUPABASE_ACCESS_TOKEN, and WORKSPACE_ID are required for remote sync")
-    report["network_attempted"]=True; quoted=urllib.parse.quote(workspace,safe=""); remote_memories=[]; offset=0
-    while True:
-        page=_request(base,token,key,"memories","select=id,workspace_id,kind,content,tags,source,metadata,created_at,updated_at&workspace_id=eq."+quoted+"&order=updated_at.asc,id.asc&limit=500&offset="+str(offset)) or []; remote_memories.extend(page)
-        if len(page)<500: break
-        offset+=len(page)
-    remote_by_id={str(x["id"]):x for x in remote_memories}; upserts=[]
-    for item in snapshot["memories"]:
-        remote=remote_by_id.get(str(item["id"]))
-        if remote and _time(remote.get("updated_at"))>=_time(item.get("updated_at")): continue
-        content=str(item.get("content","")); upserts.append({"id":str(item["id"]),"workspace_id":workspace,"kind":str(item.get("kind","note")),"content":content,"tags":item.get("tags",[]) if isinstance(item.get("tags",[]),list) else [],"source":item.get("source"),"metadata":item.get("metadata",{}),"content_sha256":hashlib.sha256(content.encode()).hexdigest(),"schema_version":1,"created_at":item.get("created_at") or _now(),"updated_at":item.get("updated_at") or item.get("created_at") or _now()})
-    for i in range(0,len(upserts),100): _request(base,token,key,"memories","on_conflict=id","POST",upserts[i:i+100],"resolution=merge-duplicates,return=minimal")
-    remote_links=[]; offset=0
-    while True:
-        page=_request(base,token,key,"links","select=id,workspace_id,source_id,target_id,relation,created_at,updated_at&workspace_id=eq."+quoted+"&order=updated_at.asc,id.asc&limit=500&offset="+str(offset)) or []; remote_links.extend(page)
-        if len(page)<500: break
-        offset+=len(page)
-    known={(str(x.get("source_id")),str(x.get("target_id")),str(x.get("relation"))) for x in remote_links}; link_rows=[]
-    for link in snapshot["links"]:
-        key_tuple=(str(link.get("source_id")),str(link.get("target_id")),str(link.get("relation","relates_to")))
-        if key_tuple in known: continue
-        link_rows.append({"id":str(link.get("id") or hashlib.sha256("\0".join(key_tuple).encode()).hexdigest()[:32]),"workspace_id":workspace,"source_id":key_tuple[0],"target_id":key_tuple[1],"relation":key_tuple[2],"created_at":link.get("created_at") or _now(),"updated_at":link.get("updated_at") or link.get("created_at") or _now()})
-    for i in range(0,len(link_rows),100): _request(base,token,key,"links","on_conflict=id","POST",link_rows[i:i+100],"resolution=merge-duplicates,return=minimal")
-    pulled={"format":"mnemos-export-v1","memories":[],"links":[]}
-    for table,fields in [("memories","id,workspace_id,kind,content,tags,source,metadata,created_at,updated_at"),("links","id,workspace_id,source_id,target_id,relation,created_at,updated_at")]:
-        offset=0
-        while True:
-            page=_request(base,token,key,table,"select="+fields+"&workspace_id=eq."+quoted+"&order=updated_at.asc,id.asc&limit=500&offset="+str(offset)) or []
-            for row in page:
-                if table=="memories": pulled["memories"].append({k:row.get(k) for k in ("id","content","kind","tags","source","metadata","created_at","updated_at")})
-                else: pulled["links"].append({k:row.get(k) for k in ("id","source_id","target_id","relation","created_at")})
-            if len(page)<500: break
-            offset+=len(page)
-    pull_path=target.with_suffix(target.suffix+".pull.json"); pull_path.write_text(json.dumps(pulled,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
-    merged=unbundle_to_store(pull_path,store,protect_updated_at=True)
-    report.update({"remote":"push-pull completed","remote_memories_read":len(pulled["memories"]),"remote_links_read":len(pulled["links"]),"local_merge":merged,"outbox_ack":"deferred; no ACK issued"})
-    return report

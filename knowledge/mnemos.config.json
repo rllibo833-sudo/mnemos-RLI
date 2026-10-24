@@ -6,8 +6,8 @@
     "url_env": "SUPABASE_URL",
     "anon_key_env": "SUPABASE_ANON_KEY",
     "access_token_env": "SUPABASE_ACCESS_TOKEN",
-    "nodes_table": "memories",
-    "links_table": "links",
+    "nodes_table": "knowledge_nodes",
+    "links_table": "knowledge_links",
     "never_use_service_role_key": true,
     "bundles_table": "bundles"
   },

@@ -1,29 +1,31 @@
 # Mnemos Cloud Foundation
 
-## Status
+## Current boundary
 
-The dedicated Supabase project is provisioned separately from any other project. The initial private database schema stores Mnemos memories and explicit links. It is intentionally not exposed through the public Supabase Data API.
+SQLite remains the local source of work. The optional Knowledge-branch sync plugin transfers bounded text and graph metadata to Supabase only when explicitly invoked. It does not upload original media or run automatically. The local stdio MCP server remains independent; this plugin is not a deployed remote MCP endpoint.
 
-## Storage model
+## Shared graph model
 
-- `mnemos.memories`: stable UUID, content, kind, tags, source, JSON metadata, and timestamps.
-- `mnemos.links`: stable UUID, source/target memory IDs, relation, and creation timestamp.
-- Foreign keys cascade link deletion when a memory is removed.
-- Duplicate links and self-links are rejected.
-- Row-level security is enabled; direct grants to `anon`, `authenticated`, and `public` are revoked.
+- `public.knowledge_workspaces` defines a workspace and its owner.
+- `public.knowledge_workspace_members` grants reader, writer, or admin access.
+- `public.knowledge_nodes` and `public.knowledge_links` are keyed by workspace and stable local IDs, so authorized members read and write the same graph rather than separate per-user copies.
+- Row-level security derives access from workspace membership. The public anon key alone does not grant access; use a signed-in user's access token.
+- Source references are reduced to safe metadata. Secrets, local paths, and binary payloads are not synchronized.
 
-## Remote MCP status
+The older private `mnemos` schema migration is a separate legacy foundation and is not the table contract used by `knowledge/plugins/supabase-sync/sync.js`.
 
-The current production MCP adapter is a local stdio server backed by SQLite. The cloud schema alone does not make it a remote MCP service. A remote adapter still needs to be implemented and deployed, with explicit authentication, bounded request parsing, and tests for all existing tools. Do not expose the Supabase service-role key or accept unauthenticated memory operations.
+## Local use
 
-## Deployment plan
+Dry-run the local graph bundle without network access:
 
-1. Apply the SQL migration to the dedicated Mnemos Supabase project.
-2. Implement a remote MCP transport using the existing Mnemos tool contract.
-3. Configure a server-side secret through the hosting provider's secret manager; never commit it to the repository.
-4. Test search/add/get/list/link/export against the hosted database and verify unauthenticated requests are rejected.
-5. Document the simplest compatible AI host setup and backup/restore procedure.
+```bash
+python -m mnemos.cli sync --dry-run
+```
 
-## Important
+For live push/pull, configure `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_ACCESS_TOKEN`, and `MNEMOS_WORKSPACE_ID`. Apply `supabase/migrations/20261024100000_shared_knowledge_graph.sql` before syncing. Create a workspace as an authenticated user; its owner is automatically assigned admin. Add collaborators to `public.knowledge_workspace_members` as reader, writer, or admin.
 
-Creating a Supabase project and schema does not mean the AI host is connected. Cross-provider MCP support depends on the host and its plan. The database currently starts empty; local SQLite data has not been uploaded.
+The sync plugin compares timestamps and content hashes, batches requests, and resolves equal-timestamp content conflicts using a canonical fingerprint, then advances the winning row's remote update timestamp so a subsequent pull converges. It refuses truncated pulls or bundles with unsupported tombstones. It does not acknowledge a transactional SQLite outbox; retries rely on idempotent workspace-keyed upserts. Deletion propagation is deliberately not enabled until a local tombstone protocol exists.
+
+## Security and verification
+
+Never put a service-role key in a device, skill, agent, or repository. Use the authenticated user's JWT and RLS. The repository code can be syntax-checked offline, but a live round trip and cross-account isolation must be verified against the configured Supabase project before claiming production readiness. No local SQLite data has been uploaded as part of these code changes.
