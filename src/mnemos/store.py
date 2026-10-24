@@ -1,4 +1,4 @@
-import json, hashlib
+import json, hashlib, uuid, os
 from pathlib import Path
 import sqlite3
 from contextlib import contextmanager
@@ -8,14 +8,12 @@ def _now(): return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 class MemoryStore:
     def __init__(self, db_path=None):
-        import os
         p = Path(os.path.expanduser(str(db_path or os.environ.get("MNEMOS_DB") or "~/.mnemos/memory.sqlite3"))).expanduser().resolve()
         p.parent.mkdir(parents=True, exist_ok=True)
         self.db_path = p
         self.conn = sqlite3.connect(str(p), check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         self._init_db()
-
     def _init_db(self):
         self.conn.execute("""CREATE TABLE IF NOT EXISTS memories (
             id TEXT PRIMARY KEY, content TEXT, kind TEXT,
@@ -24,32 +22,14 @@ class MemoryStore:
         self.conn.execute("""CREATE TABLE IF NOT EXISTS links (
             id TEXT PRIMARY KEY, source_id TEXT, target_id TEXT,
             relation TEXT, created_at TEXT)""")
-        # migrate old schema
         try:
-            cols=[r[1] for r in self.conn.execute("PRAGMA table_info(memories)").fetchall()]
-            if "tags" in cols and "tags_json" not in cols:
+            mcols=[r[1] for r in self.conn.execute("PRAGMA table_info(memories)").fetchall()]
+            if "tags" in mcols and "tags_json" not in mcols:
                 self.conn.execute("ALTER TABLE memories ADD COLUMN tags_json TEXT")
-            if "metadata" in cols and "metadata_json" not in cols:
+            if "metadata" in mcols and "metadata_json" not in mcols:
                 self.conn.execute("ALTER TABLE memories ADD COLUMN metadata_json TEXT")
-            if "updated_at" not in cols:
-                self.conn.execute("ALTER TABLE memories ADD COLUMN updated_at TEXT")
-        except: pass
-        # old links table with src/dst -> migrate
-        try:
-            lcols=[r[1] for r in self.conn.execute("PRAGMA table_info(links)").fetchall()]
-            if "src" in lcols:
-                self.conn.execute("DROP TABLE IF EXISTS links_old")
-                self.conn.execute("ALTER TABLE links RENAME TO links_old")
-                self.conn.execute("""CREATE TABLE links (id TEXT PRIMARY KEY, source_id TEXT, target_id TEXT, relation TEXT, created_at TEXT)""")
-                for r in self.conn.execute("SELECT * FROM links_old").fetchall():
-                    sid = r["src"] if "src" in r.keys() else ""
-                    tid = r["dst"] if "dst" in r.keys() else ""
-                    if sid and tid:
-                        lid = hashlib.sha256((sid+"\0"+tid).encode()).hexdigest()[:32]
-                        self.conn.execute("INSERT OR IGNORE INTO links(id,source_id,target_id,relation,created_at) VALUES(?,?,?,?,?)",(lid,sid,tid,"relates_to",_now()))
         except: pass
         self.conn.commit()
-
     @contextmanager
     def _connect(self):
         try:
@@ -57,45 +37,104 @@ class MemoryStore:
             self.conn.commit()
         finally:
             pass
-
-    def _col(self,row,*names,default=None):
-        if row is None: return default
-        keys=row.keys() if hasattr(row,'keys') else []
-        for n in names:
-            if n in keys and row[n] is not None: return row[n]
-        return default
-
-    def _memory(self,row):
-        tr=self._col(row,"tags_json","tags",default="[]")
-        mr=self._col(row,"metadata_json","metadata",default="{}")
-        try: tags=json.loads(tr) if isinstance(tr,str) else (tr or [])
+    def _row_to_mem(self, row):
+        if row is None: return None
+        tr = row["tags_json"] if "tags_json" in row.keys() and row["tags_json"] is not None else "[]"
+        mr = row["metadata_json"] if "metadata_json" in row.keys() and row["metadata_json"] is not None else "{}"
+        try: tags = json.loads(tr) if isinstance(tr,str) else (tr or [])
         except: tags=[]
-        try: meta=json.loads(mr) if isinstance(mr,str) else (mr or {})
+        try: meta = json.loads(mr) if isinstance(mr,str) else (mr or {})
         except: meta={}
-        return {"id":self._col(row,"id"),"content":self._col(row,"content",default=""),"kind":self._col(row,"kind",default="note"),"tags":tags,"source":self._col(row,"source",default=""),"metadata":meta,"created_at":self._col(row,"created_at"),"updated_at":self._col(row,"updated_at","created_at",default=self._col(row,"created_at")),"deleted":self._col(row,"deleted",default=0)}
-
-    def list(self,limit=10000,q=None):
+        return {"id": row["id"],"content": row["content"],"kind": row["kind"] or "note","tags": tags,"source": row["source"] or "","metadata": meta,"created_at": row["created_at"],"updated_at": row["updated_at"] or row["created_at"],"deleted": row["deleted"] if "deleted" in row.keys() else 0}
+    def add(self, content, kind="note", tags=None, source=None, metadata=None):
+        if not isinstance(content,str) or not content.strip():
+            raise ValueError("content must be non-empty")
+        tags = tags or []; metadata = metadata or {}
+        if not isinstance(tags,list) or any(not isinstance(t,str) for t in tags):
+            raise ValueError("'tags' must be array of strings")
+        if not isinstance(metadata,dict):
+            raise ValueError("'metadata' must be object")
+        nid = uuid.uuid4().hex[:16]; now=_now()
+        self.conn.execute("INSERT INTO memories (id,content,kind,tags_json,source,metadata_json,created_at,updated_at,deleted) VALUES (?,?,?,?,?,?,?,?,?)",
+            (nid, content.strip(), str(kind), json.dumps(tags), source, json.dumps(metadata), now, now, 0))
+        self.conn.commit()
+        return self.get(nid)
+    def get(self, mem_id):
+        cur=self.conn.execute("SELECT * FROM memories WHERE id=?",(str(mem_id),))
+        row=cur.fetchone()
+        if not row: raise KeyError(f"memory {mem_id} not found")
+        return self._row_to_mem(row)
+    def list(self, limit=10000, q=None):
         cur=self.conn.execute("SELECT * FROM memories WHERE deleted=0 OR deleted IS NULL ORDER BY created_at DESC LIMIT ?",(limit,))
-        return [self._memory(r) for r in cur.fetchall()]
-
-    def links(self):
-        cur=self.conn.execute("SELECT id,source_id,target_id,relation,created_at FROM links LIMIT 10000")
+        return [self._row_to_mem(r) for r in cur.fetchall()]
+    def search(self, query, limit=20):
+        if not isinstance(query,str): raise ValueError("query must be string")
+        q=query.lower()
+        all_mems=self.list(limit=10000)
+        out=[]
+        for m in all_mems:
+            hay=(m.get("content","")+" "+" ".join(m.get("tags",[]))).lower()
+            if q in hay:
+                out.append(m)
+            if len(out)>=limit: break
+        return out
+    def link(self, source_id, target_id, relation="relates_to"):
+        s=str(source_id); t=str(target_id)
+        if s==t: raise ValueError("cannot link to self")
+        if not self.conn.execute("SELECT 1 FROM memories WHERE id=?",(s,)).fetchone():
+            raise KeyError(f"source {s} not found")
+        if not self.conn.execute("SELECT 1 FROM memories WHERE id=?",(t,)).fetchone():
+            raise KeyError(f"target {t} not found")
+        lid=hashlib.sha256((s+"\0"+t+"\0"+str(relation)).encode()).hexdigest()[:32]
+        now=_now()
+        self.conn.execute("INSERT OR IGNORE INTO links (id,source_id,target_id,relation,created_at) VALUES (?,?,?,?,?)",(lid,s,t,str(relation),now))
+        self.conn.commit()
+        cur=self.conn.execute("SELECT * FROM links WHERE id=?",(lid,))
+        r=cur.fetchone()
+        return {"id": r["id"],"source_id": r["source_id"],"target_id": r["target_id"],"relation": r["relation"],"created_at": r["created_at"]}
+    def links(self, mem_id=None):
+        if mem_id is None:
+            cur=self.conn.execute("SELECT * FROM links ORDER BY created_at DESC LIMIT 10000")
+        else:
+            cur=self.conn.execute("SELECT * FROM links WHERE source_id=? OR target_id=? ORDER BY created_at DESC LIMIT 10000",(str(mem_id),str(mem_id)))
         return [dict(r) for r in cur.fetchall()]
-
     def export_data(self):
         return {"format":"mnemos-export-v1","memories":self.list(limit=10000),"links":self.links()}
-
-    def import_data(self,payload):
-        mems=payload.get("memories",[]); links=payload.get("links",[])
-        self.conn.execute("DELETE FROM memories"); self.conn.execute("DELETE FROM links")
+    def import_data(self, payload):
+        if not isinstance(payload,dict): raise ValueError("bundle must be object")
+        if "format" in payload and payload["format"]!="mnemos-export-v1":
+            raise ValueError(f"unsupported format {payload['format']}")
+        if "memories" not in payload or "links" not in payload:
+            if "nodes" not in payload: raise ValueError("bundle requires memories/links")
+        mems=payload.get("memories") or payload.get("nodes") or []
+        links=payload.get("links") or []
+        added_m=0; added_l=0
         for m in mems:
-            self.conn.execute("INSERT OR REPLACE INTO memories (id,content,kind,tags_json,source,metadata_json,created_at,updated_at,deleted) VALUES (?,?,?,?,?,?,?,?,?)",
-                (str(m.get("id")),str(m.get("content","")),str(m.get("kind","note")),json.dumps(m.get("tags",[]) if isinstance(m.get("tags",[]),list) else []),m.get("source"),json.dumps(m.get("metadata",{})),m.get("created_at") or _now(),m.get("updated_at") or m.get("created_at") or _now(), m.get("deleted",0)))
+            if not isinstance(m,dict): continue
+            mid=str(m.get("id") or uuid.uuid4().hex[:16])
+            if self.conn.execute("SELECT 1 FROM memories WHERE id=?",(mid,)).fetchone(): continue
+            content=str(m.get("content","")).strip()
+            if not content: continue
+            tags=m.get("tags",[])
+            if not isinstance(tags,list): tags=[]
+            meta=m.get("metadata",{})
+            if not isinstance(meta,dict): meta={}
+            created=m.get("created_at") or _now()
+            updated=m.get("updated_at") or created
+            self.conn.execute("INSERT OR IGNORE INTO memories (id,content,kind,tags_json,source,metadata_json,created_at,updated_at,deleted) VALUES (?,?,?,?,?,?,?,?,?)",
+                (mid, content, str(m.get("kind","note")), json.dumps(tags), m.get("source"), json.dumps(meta), created, updated, 0))
+            added_m+=1
         for l in links:
-            src=l.get("source_id") or l.get("src") or ""; dst=l.get("target_id") or l.get("dst") or ""
+            if not isinstance(l,dict): continue
+            src=l.get("source_id") or l.get("src") or ""
+            dst=l.get("target_id") or l.get("dst") or ""
             if not src or not dst or src==dst: continue
-            lid=str(l.get("id") or hashlib.sha256((src+"\0"+dst+"\0"+str(l.get("relation","relates_to"))).encode()).hexdigest()[:32])
-            self.conn.execute("INSERT OR REPLACE INTO links(id,source_id,target_id,relation,created_at) VALUES(?,?,?,?,?)",(lid,str(src),str(dst),str(l.get("relation","relates_to")),str(l.get("created_at") or _now())))
+            if not self.conn.execute("SELECT 1 FROM memories WHERE id=?",(str(src),)).fetchone(): continue
+            if not self.conn.execute("SELECT 1 FROM memories WHERE id=?",(str(dst),)).fetchone(): continue
+            rel=str(l.get("relation") or "relates_to")
+            lid=str(l.get("id") or hashlib.sha256((str(src)+"\0"+str(dst)+"\0"+rel).encode()).hexdigest()[:32])
+            cur=self.conn.execute("INSERT OR IGNORE INTO links (id,source_id,target_id,relation,created_at) VALUES (?,?,?,?,?)",(lid,str(src),str(dst),rel,str(l.get("created_at") or _now())))
+            added_l+=cur.rowcount
         self.conn.commit()
-
-Store = MemoryStore
+        return (added_m, added_l)
+Store=MemoryStore
