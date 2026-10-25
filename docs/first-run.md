@@ -36,7 +36,7 @@ mnemos --help
 mnemos doctor
 ```
 
-The CLI help is the source of truth for supported commands. `doctor` reports local SQLite and relationship diagnostics. On Linux it can also report a missing user-level systemd service as a failure; that is relevant only if you intend to run the background service. A one-shot scan does not require enabling the service.
+The CLI help is the source of truth for supported commands. `doctor` reports local SQLite and relationship diagnostics, plus the status of the optional service. A disabled user-level systemd service is informational and does not fail the local database check. A one-shot scan does not require enabling the service.
 
 ## 3. Record an observation
 
