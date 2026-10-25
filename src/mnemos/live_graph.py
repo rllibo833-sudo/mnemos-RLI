@@ -1,6 +1,6 @@
 """Loopback-only, read-only viewer for integrity and dependency-impact evidence."""
 from __future__ import annotations
-import http.server, json, socketserver
+import http.server, json, socketserver, sys
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
@@ -354,6 +354,15 @@ def make_handler(store):
                 self.wfile.write(body)
                 return
             self.send_error(404)
+        def handle_error(self, request, client_address):
+            # Browsers may cancel an in-flight navigation or refresh while a
+            # response is being written. Treat that as a disconnected client,
+            # not as a server failure; preserve tracebacks for real exceptions.
+            exc_type, exc, _ = sys.exc_info()
+            if isinstance(exc, (BrokenPipeError, ConnectionResetError, ConnectionAbortedError)):
+                return
+            super().handle_error(request, client_address)
+
         def log_message(self, fmt, *args):
             return
     return Handler
