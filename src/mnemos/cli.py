@@ -630,8 +630,9 @@ def main(argv: list[str] | None = None) -> int:
             report = collect_device_map(args.path, max_files=args.max_files)
             if report.get("scan", {}).get("scope_missing") or not report.get("scan", {}).get("scope"):
                 raise ValueError("device map has no valid scan scope; no snapshot was saved.")
-            # Explicit host and scope identity keeps imported graph history isolated.
-            report["device_id"] = store.device_id()
+            # Bind each snapshot identity to this database and its observed host
+            # fingerprint. A copied SQLite file must not silently merge histories
+            # from differently named hosts into one device timeline.
             device_meta = report.get("device") or {}
             system = str(device_meta.get("os") or sys.platform).casefold()
             environment = str(device_meta.get("environment_class") or device_meta.get("os_type") or "")
@@ -642,6 +643,18 @@ def main(argv: list[str] | None = None) -> int:
                 else "linux" if system.startswith("linux")
                 else str(device_meta.get("os_type") or system)
             )
+            host_identity = {
+                "hostname": str(device_meta.get("hostname") or ""),
+                "os": system,
+                "os_release": str(device_meta.get("os_release") or ""),
+                "architecture": str(device_meta.get("architecture") or ""),
+                "environment": environment,
+            }
+            host_fingerprint = hashlib.sha256(
+                json.dumps(host_identity, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            ).hexdigest()[:16]
+            report["device_id"] = f"{store.device_id()}@{host_fingerprint}"
+            report["host_identity_method"] = "database-and-host-fingerprint-v1"
             report["scope_path"] = sorted({
                 str(Path(path).expanduser().resolve()) for path in args.path
             })

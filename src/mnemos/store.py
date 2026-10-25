@@ -28,8 +28,23 @@ class MemoryStore(GraphStore):
 
     def __init__(self, path: str | Path | None = None):
         self.path = resolve_db(path)
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._secure_default_path = path is None and "MNEMOS_DB" not in os.environ
+        self.path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        if self._secure_default_path and os.name != "nt" and not self.path.parent.is_symlink():
+            try:
+                os.chmod(self.path.parent, 0o700)
+            except OSError:
+                pass
         self._initialize()
+        # Local evidence and memory databases may contain private project data.
+        # Restrict only the implicit per-user database; explicit custom paths may
+        # intentionally be shared and retain their caller-selected permissions.
+        if (self._secure_default_path and os.name != "nt" and self.path.exists()
+                and not self.path.is_symlink()):
+            try:
+                os.chmod(self.path, 0o600)
+            except OSError:
+                pass
 
     def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self.path, timeout=30.0)

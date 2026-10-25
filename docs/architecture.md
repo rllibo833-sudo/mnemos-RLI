@@ -6,7 +6,7 @@ Mnemos-RLI on `main` is an **offline integrity-evidence and reconstruction tool*
 
 ## Current components
 
-- **Local store:** Python standard-library SQLite, selected by `--db` or `MNEMOS_DB`.
+- **Local store:** Python standard-library SQLite, selected by `--db` or `MNEMOS_DB`. The implicit `~/.mnemos/memory.sqlite3` store is owner-only on POSIX; explicit database paths retain caller-controlled permissions.
 - **Device mapper:** traverses only explicitly supplied paths and extracts bounded static metadata from recognized binaries and executable files.
 - **Artifact evidence:** stores paths, metadata, full SHA-256 where permitted by the size limit, sampled fingerprints for larger files, and parser status.
 - **Snapshots:** device inventory observations with scan scope, environment metadata, completeness, and a fingerprint used to avoid redundant snapshots.
