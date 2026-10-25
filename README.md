@@ -67,3 +67,31 @@ The `main` branch is the offline integrity/reconstruction product. The separate 
 ## Development status
 
 This is an evolving engineering tool. The current CI suite passing means the existing automated checks passed; it does not establish complete cross-OS coverage or guarantee every diagnostic path. Changes should improve real evidence handling rather than add placeholder output, duplicate documentation, or tests that substitute for implementation.
+
+
+## Background daemon and startup service
+
+Run a foreground daemon for an explicitly selected scan scope:
+
+```sh
+mnemos daemon --path ./path-to-inspect --interval 300
+```
+
+On Linux with systemd, register and start a **user-level** service (no root privileges):
+
+```sh
+mnemos daemon --path ./path-to-inspect --interval 300 --enable-service
+systemctl --user status mnemos
+systemctl --user is-enabled mnemos
+mnemos doctor
+```
+
+The generated unit is `~/.config/systemd/user/mnemos.service`. It runs as the current user and is managed with `systemctl --user`; it is not a system-wide service. To allow user services to start at boot without an interactive login, the host administrator may separately enable lingering with `loginctl enable-linger USER`. Mnemos does not change this administrator-level policy automatically.
+
+To stop and remove the user-level service:
+
+```sh
+mnemos daemon --path ./path-to-inspect --disable-service
+```
+
+A system-level service is a separate administrator-managed installation, typically at `/etc/systemd/system/mnemos.service`, managed with `sudo systemctl`. Mnemos' enable/disable flags manage only the current user's service and never edit or disable a system-level unit.

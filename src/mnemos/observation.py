@@ -502,9 +502,10 @@ def check_service_registration() -> dict[str, Any]:
     candidates = []
     if system == "linux":
         candidates = [
-            (Path.home() / ".config/systemd/user/mnemos.service", ["systemctl", "--user", "is-enabled", "mnemos.service"]),
-            (Path("/etc/systemd/system/mnemos.service"), ["systemctl", "is-enabled", "mnemos.service"]),
+            (Path.home() / ".config/systemd/user/mnemos.service", ["systemctl", "--user", "is-enabled", "mnemos"]),
         ]
+        results["system_unit_path"] = "/etc/systemd/system/mnemos.service"
+        results["system_unit_registered"] = Path(results["system_unit_path"]).exists()
     elif system == "darwin":
         candidates = [(Path.home() / "Library/LaunchAgents/com.mnemos.daemon.plist",
                        ["launchctl", "list", "com.mnemos.daemon"])]
@@ -521,7 +522,7 @@ def check_service_registration() -> dict[str, Any]:
             check["command_exit_code"] = proc.returncode
             check["command_output"] = (proc.stdout or proc.stderr).strip()[:500]
             check["enabled"] = proc.returncode == 0 and (
-                system != "linux" or "disabled" not in proc.stdout.lower()
+                system != "linux" or proc.stdout.strip() == "enabled"
             )
         except (OSError, subprocess.SubprocessError) as exc:
             results["failures"].append(f"{' '.join(command)}: {exc}")
@@ -529,6 +530,36 @@ def check_service_registration() -> dict[str, Any]:
         results["service_registered"] = results["service_registered"] or exists
         results["service_enabled"] = results["service_enabled"] or check["enabled"]
     return results
+
+
+def disable_service_registration() -> dict[str, Any]:
+    """Disable and remove Mnemos' per-user startup service without elevation."""
+    import platform as platform_module
+    import subprocess
+
+    system = platform_module.system().lower()
+    if system == "linux":
+        target = Path.home() / ".config/systemd/user/mnemos.service"
+        subprocess.run(
+            ["systemctl", "--user", "disable", "--now", "mnemos"],
+            capture_output=True, text=True, timeout=15, check=False,
+        )
+        existed = target.exists()
+        if existed:
+            target.unlink()
+        subprocess.run(["systemctl", "--user", "daemon-reload"], check=True, timeout=15)
+        return {"service_registered": False, "service_enabled": False, "removed": existed, "path": str(target)}
+    if system == "darwin":
+        target = Path.home() / "Library/LaunchAgents/com.mnemos.daemon.plist"
+        subprocess.run(["launchctl", "unload", str(target)], capture_output=True, text=True, timeout=15, check=False)
+        existed = target.exists()
+        if existed:
+            target.unlink()
+        return {"service_registered": False, "service_enabled": False, "removed": existed, "path": str(target)}
+    if system == "windows":
+        subprocess.run(["schtasks", "/Delete", "/F", "/TN", "Mnemos"], capture_output=True, text=True, timeout=15, check=False)
+        return {"service_registered": False, "service_enabled": False}
+    raise OSError(f"Automatic startup service cleanup is not supported on {system}.")
 
 
 def enable_service_registration() -> dict[str, Any]:

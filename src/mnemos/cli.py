@@ -464,7 +464,8 @@ def _parser() -> argparse.ArgumentParser:
     daemon.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected per scan.")
     daemon.add_argument("--interval", type=float, default=300, help="Seconds between full scans (default: 300).")
     daemon.add_argument("--once", action="store_true", help="Run one scan and exit.")
-    daemon.add_argument("--enable-service", action="store_true", help="Register this exact daemon command for user-level startup and enable it.")
+    daemon.add_argument("--enable-service", action="store_true", help="Register this exact daemon command as a user-level service and enable it.")
+    daemon.add_argument("--disable-service", action="store_true", help="Stop, disable, and remove the user-level startup service.")
     daemon.add_argument("--service-status", action="store_true", help="Audit startup service registration without changing it.")
     daemon.add_argument("--status-port", type=int, default=8080, help="Loopback monitoring API port (default: 8080).")
     daemon.add_argument("--no-status-server", action="store_true", help="Do not start the read-only monitoring API alongside the daemon.")
@@ -529,14 +530,22 @@ def main(argv: list[str] | None = None) -> int:
                 "dependency_states": metadata.get("dependency_states", []),
             }, ensure_ascii=False, indent=2))
         elif args.command == "daemon":
-            if not args.path:
-                raise ValueError("daemon requires at least one explicit --path.")
+            if not args.path and not (args.service_status or args.disable_service):
+                raise ValueError("daemon requires at least one explicit --path, except for service management.")
             if args.max_files < 1 or args.interval <= 0:
                 raise ValueError("--max-files and --interval must be positive.")
-            from .observation import ScanOrchestrator, check_service_registration, enable_service_registration
+            from .observation import (
+                ScanOrchestrator, check_service_registration,
+                disable_service_registration, enable_service_registration,
+            )
             if args.service_status:
                 print(json.dumps(check_service_registration(), ensure_ascii=False, indent=2))
                 return 0
+            if args.disable_service:
+                service = disable_service_registration()
+                status = check_service_registration()
+                print(json.dumps({"service": service, "status": status}, ensure_ascii=False, indent=2))
+                return 0 if not status["service_enabled"] else 1
             if args.enable_service:
                 # Register the daemon command without the one-shot install flags.
                 original_argv = sys.argv[:]
@@ -778,6 +787,15 @@ def main(argv: list[str] | None = None) -> int:
                 return 1
         elif args.command == "doctor":
             report = store.diagnostics()
+            from .observation import check_service_registration
+            service = check_service_registration()
+            report["service"] = service
+            if service.get("platform") == "linux" and not service.get("service_enabled"):
+                report["ok"] = False
+                report.setdefault("failures", []).append(
+                    "user-level systemd service is not enabled; run "
+                    "'mnemos daemon --path PATH --enable-service'."
+                )
             print(json.dumps(report, ensure_ascii=False, indent=2))
             return 0 if report["ok"] else 1
         elif args.command == "add":
