@@ -23,6 +23,9 @@ classifiers = [
 ]
 dependencies = []
 
+[project.optional-dependencies]
+macos-events = ["watchdog>=4.0", "pyobjc-framework-CoreServices>=10.0"]
+
 [project.scripts]
 mnemos = "mnemos.cli:main"
 mnemos-mcp = "mnemos.mcp_server:main"

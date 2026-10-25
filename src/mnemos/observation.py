@@ -401,7 +401,18 @@ class ScanOrchestrator:
             except (OSError, AttributeError, NotImplementedError) as exc:
                 self.event_monitor_errors.append(f"inotify unavailable: {type(exc).__name__}: {exc}")
         elif sys.platform == "darwin":
-            self.event_monitor_errors.append("FSEvents backend is not implemented in this build; polling remains active.")
+            try:
+                from .daemon import WatchdogEventBackend
+                self.event_monitor = WatchdogEventBackend(
+                    self.paths, prefer_fsevents=True, polling_timeout=min(1.0, self.interval)
+                )
+                self.event_monitor_active = True
+                self.event_monitor_type = self.event_monitor.event_monitor_type
+                self.event_monitor_errors.extend(self.event_monitor.errors)
+            except (ImportError, OSError, RuntimeError, ValueError) as exc:
+                self.event_monitor_errors.append(
+                    f"macOS event monitoring unavailable: {type(exc).__name__}: {exc}; polling remains active."
+                )
         elif sys.platform == "win32":
             self.event_monitor_errors.append("ETW backend is not implemented in this build; polling remains active.")
         else:
