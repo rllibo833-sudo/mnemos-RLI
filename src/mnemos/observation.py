@@ -493,6 +493,7 @@ def check_service_registration() -> dict[str, Any]:
     """Read-only audit of user-level startup service registration."""
     import os
     import platform as platform_module
+    import shutil
     import subprocess
     system = platform_module.system().lower()
     results: dict[str, Any] = {
@@ -501,6 +502,15 @@ def check_service_registration() -> dict[str, Any]:
     }
     candidates = []
     if system == "linux":
+        if not shutil.which("systemctl"):
+            results["service_manager_available"] = False
+            results["failures"].append(
+                "systemctl is unavailable; user-level service management requires a systemd environment."
+            )
+            results["system_unit_path"] = "/etc/systemd/system/mnemos.service"
+            results["system_unit_registered"] = Path(results["system_unit_path"]).exists()
+            return results
+        results["service_manager_available"] = True
         candidates = [
             (Path.home() / ".config/systemd/user/mnemos.service", ["systemctl", "--user", "is-enabled", "mnemos"]),
         ]
@@ -535,10 +545,13 @@ def check_service_registration() -> dict[str, Any]:
 def disable_service_registration() -> dict[str, Any]:
     """Disable and remove Mnemos' per-user startup service without elevation."""
     import platform as platform_module
+    import shutil
     import subprocess
 
     system = platform_module.system().lower()
     if system == "linux":
+        if not shutil.which("systemctl"):
+            raise OSError("Cannot disable Mnemos service: systemctl is unavailable in this Linux environment.")
         target = Path.home() / ".config/systemd/user/mnemos.service"
         subprocess.run(
             ["systemctl", "--user", "disable", "--now", "mnemos"],
@@ -567,18 +580,21 @@ def enable_service_registration() -> dict[str, Any]:
     import os
     import platform as platform_module
     import shlex
+    import shutil
     import subprocess
     import sys
     exe = shlex.quote(sys.executable)
     args = " ".join(shlex.quote(item) for item in sys.argv)
     system = platform_module.system().lower()
     if system == "linux":
+        if not shutil.which("systemctl"):
+            raise OSError("Cannot enable Mnemos service: systemctl is unavailable in this Linux environment.")
         target = Path.home() / ".config/systemd/user/mnemos.service"
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(
-            "[Unit]\\nDescription=Mnemos-RLI offline integrity monitor\\nAfter=default.target\\n\\n"
-            "[Service]\\nType=simple\\nExecStart=" + exe + " -m mnemos " + args + "\\n"
-            "Restart=on-failure\\nRestartSec=5\\n\\n[Install]\\nWantedBy=default.target\\n",
+            "[Unit]\nDescription=Mnemos-RLI offline integrity monitor\nAfter=default.target\n\n"
+            "[Service]\nType=simple\nExecStart=" + exe + " -m mnemos.cli " + args + "\n"
+            "Restart=on-failure\nRestartSec=5\n\n[Install]\nWantedBy=default.target\n",
             encoding="utf-8",
         )
         subprocess.run(["systemctl", "--user", "daemon-reload"], check=True, timeout=15)
@@ -589,13 +605,13 @@ def enable_service_registration() -> dict[str, Any]:
         target.parent.mkdir(parents=True, exist_ok=True)
         import plistlib
         target.write_bytes(plistlib.dumps({
-            "Label": "com.mnemos.daemon", "ProgramArguments": [sys.executable, "-m", "mnemos", *sys.argv],
+            "Label": "com.mnemos.daemon", "ProgramArguments": [sys.executable, "-m", "mnemos.cli", *sys.argv],
             "RunAtLoad": True, "KeepAlive": True,
         }))
         subprocess.run(["launchctl", "load", str(target)], check=True, timeout=15)
         return {"service_registered": True, "service_enabled": True, "path": str(target)}
     if system == "windows":
-        command = f'"{sys.executable}" -m mnemos ' + " ".join(shlex.quote(item) for item in sys.argv)
+        command = subprocess.list2cmdline([sys.executable, "-m", "mnemos.cli", *sys.argv])
         subprocess.run(["schtasks", "/Create", "/F", "/SC", "ONLOGON", "/TN", "Mnemos",
                         "/TR", command], check=True, timeout=15)
         return {"service_registered": True, "service_enabled": True, "command": command}
