@@ -180,7 +180,7 @@ def analyze_graph(
             dep_links.setdefault(link["target_id"], []).append(by_id[link["source_id"]])
 
     parser_uncertainty = any(
-        (_metadata(artifact).get("binary_details") or {}).get("status") != "parsed"
+        (_metadata(artifact).get("binary_details") or {}).get("status") not in {"parsed", "not_applicable"}
         for snapshot in latest_complete.values()
         for artifact in snapshot_artifacts.get(snapshot["id"], [])
     )
@@ -255,7 +255,7 @@ def analyze_graph(
         for artifact in snapshot_artifacts.get(snapshot["id"], []):
             details = _metadata(artifact).get("binary_details")
             status = details.get("status") if isinstance(details, dict) else "unknown"
-            if status != "parsed":
+            if status not in {"parsed", "not_applicable"}:
                 findings.append({
                     "rule_id": "failed_validation", "severity": "review",
                     "subject_id": artifact["id"],
@@ -376,7 +376,7 @@ def analyze_graph(
             continue
         current_artifacts = snapshot_artifacts.get(current["id"], [])
         failed = [item for item in current_artifacts
-                  if (_metadata(item).get("binary_details") or {}).get("status") != "parsed"]
+                  if (_metadata(item).get("binary_details") or {}).get("status") not in {"parsed", "not_applicable"}]
         if failed:
             unknown_scopes.append({**identity_fields, "scope": list(scope), "snapshot_id": current["id"],
                                    "reason": "failed_validation", "artifact_ids": sorted(item["id"] for item in failed)})
@@ -570,7 +570,7 @@ def analyze_damaged(store, paths=None):
                 reasons.append({"path":path,"reason":"hash_mismatch_same_path","count":len(vers),"hashes":list(uniq)[:5]})
         for v in vers:
             bd=(v.get("metadata") or {}).get("binary_details") or {}
-            if bd.get("status")!="parsed":
+            if bd.get("status") not in {"parsed","not_applicable"}:
                 if v["id"] not in damaged: damaged.append(v["id"])
                 reasons.append({"id":v["id"],"path":path,"reason":bd.get("status"),"limits":bd.get("analysis_limits",[])})
     cross=[]
