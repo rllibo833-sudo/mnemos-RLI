@@ -29,6 +29,16 @@ A result should distinguish at least:
 
 A sampled fingerprint is not interchangeable with a full SHA-256. An incomplete scan cannot prove an artifact is missing. A release manifest proves only the comparison against its contents; it does not authenticate the manifest author.
 
+## Artifact Coverage & Scope Limitations
+
+Coverage has separate event and integrity layers:
+
+- The device mapper recognizes a bounded set of binary formats and records binary artifact evidence. SHA-256 comparison applies only to recognizable binary artifacts for which a full hash is available; sampled fingerprints are not full SHA-256 values.
+- Text files and files that do not match a recognized binary format are **not currently tracked**. Metadata-only change tracking is not implemented, so the monitoring API must report `metadata_tracking: false`.
+- Filesystem event monitoring can report activity such as access/open, create, modify, move, or delete where the active OS backend exposes those event types. Backend capabilities differ; an event record is not proof that content integrity was checked.
+- Integrity-check coverage is consequently a subset of filesystem-event coverage. An event can concern a non-binary file that has no integrity-comparison record.
+- `/api/monitoring-status` reports `artifact_coverage.total_paths_monitored` as the number of configured scope roots, `binary_artifacts_tracked` as binary artifacts linked to the latest device snapshot, and `integrity_check_capable_percent` as the percentage of files examined in that snapshot that were recognized as binary artifacts. This percentage is approximate and is not a score or proof of full filesystem coverage.
+
 ## Trust boundaries
 
 - The scanner treats inspected files as untrusted data and never executes them.

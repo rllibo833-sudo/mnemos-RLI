@@ -1,4 +1,13 @@
-"""Shared Graph Contract - Mnemos Living Knowledge Graph"""
+"""Shared graph data contracts.
+
+Artifact coverage contract for Mnemos-RLI: content-hash integrity comparisons apply only
+to recognizable binary artifacts. Text and unrecognized files are not currently tracked
+by content hash or metadata-only change detection (metadata tracking is disabled). OS
+filesystem events such as access/open, create, modify, move, or delete are activity
+evidence only and do not imply that the affected file was integrity-checked. Integrity
+coverage is therefore a subset of event-monitor coverage; callers must expose these
+limitations rather than imply full-filesystem monitoring.
+"""
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, asdict

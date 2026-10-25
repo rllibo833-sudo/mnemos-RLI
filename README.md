@@ -52,6 +52,16 @@ Sampled fingerprints are not full-content hashes. A scan covers only the explici
 
 Cached SHA-256 values are an optimization, not a cryptographic attestation of the filesystem. Cache reuse checks file identity plus size, modification time, and change time; files observed changing during inspection lose their trusted digest. Privileged changes that preserve all available metadata cannot be ruled out by a metadata-keyed cache, so use a fresh trusted baseline or force a full re-hash when that threat model matters.
 
+## Artifact Coverage & Scope Limitations
+
+Mnemos-RLI separates filesystem event visibility from content-integrity evidence:
+
+- **Hash comparison is limited to recognizable binary artifacts** detected by the device mapper. It is not a hash audit of every file in the selected roots.
+- **Text and other unrecognized files are not currently tracked**, either by content hash or by metadata-only change detection. The current monitoring API therefore reports `metadata_tracking: false`. A metadata-only mode would need to be implemented and explicitly enabled before this can be reported as true.
+- **Event monitoring is not an integrity verdict.** Depending on the operating-system backend, the daemon can record filesystem events such as access/open, create, modify, move, and delete under watched roots. Those events describe observed activity; they do not prove that file contents were hashed or validated.
+- **Integrity-check coverage is a subset of event-monitor coverage.** A file event may be observed for a path that is not a recognized binary artifact and therefore has no corresponding binary hash comparison. Periodic scans can also miss short-lived changes between scans when the OS event backend is unavailable.
+- The `/api/monitoring-status` response exposes `artifact_coverage`: watched root count, binary artifacts linked to the latest device snapshot, whether metadata-only tracking is active, and the approximate share of files examined that were recognized as binary artifacts. The percentage is a coverage indicator, not a security score; it can be zero when no scan denominator is available.
+
 ## Safety and boundaries
 
 - Only scan paths you are authorized to inspect.

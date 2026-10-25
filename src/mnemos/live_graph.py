@@ -357,6 +357,59 @@ def make_handler(store):
                         if level in counts:
                             counts[level] += 1
                     last_gap = max(0.0, now_ts - float(observation["timestamp"])) if observation else None
+
+                    # Coverage is derived from the latest persisted device snapshot,
+                    # not from aggregate historical inventory counts.
+                    snapshots = store.list_all(kind="device_snapshot")
+                    latest_snapshot = max(snapshots, key=snapshot_order_key) if snapshots else None
+                    snapshot_meta = (latest_snapshot.get("metadata") or {}) if latest_snapshot else {}
+                    scan_meta = snapshot_meta.get("scan") if isinstance(snapshot_meta.get("scan"), dict) else {}
+                    scope_paths = (runtime or {}).get("paths") or ((observation or {}).get("paths", []))
+                    if not scope_paths:
+                        scope_paths = snapshot_meta.get("scope_path") or scan_meta.get("scope") or []
+                    if not isinstance(scope_paths, list):
+                        scope_paths = []
+                    total_paths_monitored = len({
+                        str(path).strip() for path in scope_paths
+                        if isinstance(path, str) and path.strip()
+                    })
+                    all_items = store.list_all()
+                    item_by_id = {
+                        item.get("id"): item for item in all_items
+                        if isinstance(item, dict) and isinstance(item.get("id"), str)
+                    }
+                    snapshot_id = latest_snapshot.get("id") if latest_snapshot else None
+                    artifact_ids = {
+                        link.get("target_id") for link in store.links()
+                        if link.get("source_id") == snapshot_id
+                        and link.get("relation") == "contains_artifact"
+                        and isinstance(link.get("target_id"), str)
+                    } if snapshot_id else set()
+                    binary_artifacts_tracked = sum(
+                        1 for artifact_id in artifact_ids
+                        if artifact_id in item_by_id
+                        and item_by_id[artifact_id].get("kind") == "binary_artifact"
+                    )
+                    examined_files = max(0, _safe_int(scan_meta.get("examined_files")))
+                    integrity_percent = (
+                        round(min(100.0, binary_artifacts_tracked * 100.0 / examined_files), 1)
+                        if examined_files else 0.0
+                    )
+                    event_monitor_active = bool(
+                        (runtime or {}).get("event_monitor_active")
+                        or (observation or {}).get("event_monitor_active")
+                    )
+                    artifact_coverage = {
+                        "total_paths_monitored": total_paths_monitored,
+                        "binary_artifacts_tracked": binary_artifacts_tracked,
+                        "metadata_tracking": False,
+                        "integrity_check_capable_percent": integrity_percent,
+                        "note": (
+                            "Event monitor active; hash comparison applies to recognizable binary artifacts only"
+                            if event_monitor_active else
+                            "Event monitor unavailable; periodic scans are fallback; hash comparison applies to recognizable binary artifacts only"
+                        ),
+                    }
                     body_obj = {
                         "daemon_running": daemon_running,
                         "daemon_status_note": "Runtime heartbeat is stale or the process is not alive." if runtime and not daemon_running else None,
@@ -370,6 +423,7 @@ def make_handler(store):
                             "interval": (runtime or {}).get("interval_seconds"),
                         },
                         "last_observation": observation,
+                        "artifact_coverage": artifact_coverage,
                         "risk_summary": counts,
                         "unobserved_scope": {
                             "event_monitor_fallback": not bool((runtime or {}).get("event_monitor_active") or (observation or {}).get("event_monitor_active")),
