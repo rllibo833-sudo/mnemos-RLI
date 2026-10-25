@@ -6,6 +6,7 @@ import hashlib
 import io
 import json
 import re
+import shutil
 import sqlite3
 import sys
 import time
@@ -16,7 +17,7 @@ from .analysis import analyze_graph
 from .daemon import run_daemon
 from .evolution import evolve_graph
 from .graph import render_graph
-from .live_graph import serve_live_graph
+from .live_graph import _evidence, serve_live_graph
 from .store import MemoryStore
 
 
@@ -287,6 +288,131 @@ def _verify_release_manifest(store: MemoryStore, manifest: dict, snapshot_id: st
     }
 
 
+
+def _terminal_graph(store: MemoryStore, refresh_seconds: float = 5.0) -> int:
+    """Show a compact, read-only forensic dashboard in the current terminal."""
+    if refresh_seconds <= 0:
+        raise ValueError("--refresh must be greater than zero.")
+    interactive = sys.stdout.isatty()
+    width = max(48, min(shutil.get_terminal_size((80, 24)).columns, 110))
+
+    def clip(value, limit):
+        value = " ".join(str(value if value not in (None, "") else "—").split())
+        return value if len(value) <= limit else value[:max(1, limit - 1)] + "…"
+
+    def render(data):
+        inventory = data.get("inventory") or {}
+        graph_nodes = data.get("graph_nodes") or []
+        graph_edges = data.get("graph_edges") or []
+        snapshots = sorted(
+            (node for node in graph_nodes if node.get("kind") == "device_snapshot"),
+            key=lambda node: (node.get("observation_ts_ns") or 0, node.get("created_at") or ""),
+        )
+        findings = data.get("nodes") or []
+        traces = data.get("traces") or []
+        lines = [
+            "MNEMOS-RLI | DIGITAL FORENSICS",
+            "=" * min(width, 72),
+            f"State: {data.get('status', 'UNKNOWN')}  |  Findings: {data.get('integrity_finding_count', 0)}"
+            f"  |  Potential impacts: {data.get('dependency_impact_count', 0)}"
+            f"  |  Unknown: {data.get('unknown_count', 0)}",
+            f"Evidence: {inventory.get('snapshots', 0)} snapshots · "
+            f"{inventory.get('binary_artifacts', 0)} artifacts · "
+            f"{inventory.get('runtime_dependencies', 0)} dependencies",
+            f"Relationships: {len(graph_edges)}  |  Compared artifacts: {data.get('compared_count', 0)}"
+            f"  |  Scope: {clip(data.get('analysis_scope_status', 'unknown'), 28)}",
+            "",
+            "SNAPSHOT TIMELINE",
+        ]
+        if snapshots:
+            for node in snapshots[-5:]:
+                stamp = node.get("observed_at") or node.get("created_at") or "time unknown"
+                scope = node.get("scope") or []
+                scope_text = ", ".join(str(item) for item in scope) if isinstance(scope, list) else str(scope)
+                flags = "complete" if node.get("scan_complete") else "incomplete/unscoped"
+                lines.append(
+                    f"  {clip(stamp, 19)}  {clip(node.get('id'), 12)}  [{flags}]"
+                )
+                if scope_text:
+                    lines.append(f"    scope: {clip(scope_text, width - 10)}")
+        else:
+            lines.append("  No device snapshots recorded.")
+        lines.extend(["", "INTEGRITY FINDINGS"])
+        if findings:
+            for item in findings[:8]:
+                status = item.get("status") or item.get("report_status") or "UNKNOWN"
+                path = item.get("path") or item.get("changed_path") or "(path unavailable)"
+                reason = item.get("reason") or item.get("summary") or ""
+                lines.append(f"  [{clip(status, 16)}] {clip(path, width - 22)}")
+                if reason:
+                    lines.append(f"    {clip(reason, width - 6)}")
+        else:
+            lines.append("  No comparison findings in the current view.")
+        lines.extend(["", "DEPENDENCY IMPACT"])
+        if traces:
+            for trace in traces[:5]:
+                lines.append(
+                    f"  [POTENTIAL] {clip(trace.get('changed_path'), width - 14)}"
+                )
+                lines.append(
+                    f"    dependency: {clip(trace.get('dependency_name'), width - 17)}"
+                    f" | consumers: {len(trace.get('dependent_artifacts') or [])}"
+                )
+        else:
+            lines.append("  No potential dependency-impact paths reported.")
+        lines.extend(["", "KEY RELATIONSHIPS"])
+        names = {
+            node.get("id"): node.get("label") or node.get("path") or node.get("name") or node.get("id")
+            for node in graph_nodes
+        }
+        useful_relations = {
+            "observed_after", "contains_artifact", "depends_on",
+            "current_observation", "baseline_observation", "integrity_status",
+            "potential_impact",
+        }
+        shown = 0
+        for edge in graph_edges:
+            relation = edge.get("relation") or "relates_to"
+            if relation not in useful_relations:
+                continue
+            source = names.get(edge.get("source_id"), edge.get("source_id"))
+            target = names.get(edge.get("target_id"), edge.get("target_id"))
+            marker = "~>" if edge.get("inferred") else "->"
+            lines.append(
+                f"  {clip(source, max(12, width // 3))} {marker} {clip(relation, 20)} "
+                f"{marker} {clip(target, max(12, width // 3))}"
+            )
+            shown += 1
+            if shown >= 10:
+                break
+        if not shown:
+            lines.append("  No connected evidence relationships available yet.")
+        lines.extend([
+            "",
+            clip(data.get("message") or "Read-only analysis; stored evidence is not modified.", width),
+            f"Auto-refresh: {refresh_seconds:g}s  |  Ctrl+C to exit"
+            if interactive else "Snapshot view (non-interactive terminal).",
+        ])
+        return "\n".join(clip(line, width) for line in lines)
+
+    try:
+        while True:
+            data = _evidence(store, "damaged")
+            if interactive:
+                sys.stdout.write("\x1b[2J\x1b[H")
+            print(render(data), flush=True)
+            if not interactive:
+                return 0
+            time.sleep(refresh_seconds)
+    except KeyboardInterrupt:
+        if interactive:
+            print("\nMnemos dashboard stopped.")
+        return 0
+    except Exception as exc:
+        print(f"Mnemos dashboard error: {exc}", file=sys.stderr)
+        return 1
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="mnemos", description="Offline system integrity evidence, artifact comparison, and reconstruction.")
     parser.add_argument("--db", help="Database path (default: ~/.mnemos/memory.sqlite3 or MNEMOS_DB).")
@@ -335,9 +461,11 @@ def _parser() -> argparse.ArgumentParser:
     daemon.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected per scan.")
     daemon.add_argument("--interval", type=float, default=300, help="Seconds between full scans (default: 300).")
     daemon.add_argument("--once", action="store_true", help="Run one scan and exit.")
-    live = commands.add_parser("live-graph", help="Serve local integrity evidence at /mnem?mode=damaged.")
-    live.add_argument("--port", type=int, default=8765)
-    live.add_argument("--output", help="Optional path to save a static copy of the viewer.")
+    live = commands.add_parser("live-graph", help="Show the live forensic evidence dashboard in the terminal.")
+    live.add_argument("--refresh", type=float, default=5.0, help="Terminal refresh interval in seconds (default: 5).")
+    live.add_argument("--web", action="store_true", help="Use the optional browser-based graph viewer.")
+    live.add_argument("--port", type=int, default=8765, help="Loopback port for --web (default: 8765).")
+    live.add_argument("--output", help="Optional path to save a static browser viewer when using --web.")
     commands.add_parser("doctor", help="Check local SQLite integrity and relationship constraints.")
     return parser
 
@@ -406,7 +534,9 @@ def main(argv: list[str] | None = None) -> int:
             except KeyboardInterrupt:
                 return 130
         elif args.command == "live-graph":
-            return serve_live_graph(store, args.output, args.port)
+            if args.web:
+                return serve_live_graph(store, args.output, args.port)
+            return _terminal_graph(store, args.refresh)
         elif args.command == "map-device":
             if not args.path:
                 raise ValueError(
