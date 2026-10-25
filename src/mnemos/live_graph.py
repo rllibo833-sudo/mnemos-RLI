@@ -11,6 +11,7 @@ from .integrity import (
 )
 
 MAX_NODES = 100
+MAX_SNAPSHOTS = 16
 
 def _safe_int(value: Any, default: int = 0) -> int:
     try:
@@ -92,7 +93,24 @@ def _evidence(store, mode):
     # Prioritize recent snapshots and evidence directly connected to them so a
     # large knowledge store cannot push the actual forensic timeline off-screen.
     ordered_snapshots = sorted(snapshots, key=snapshot_order_key)
-    recent_snapshots = ordered_snapshots[-8:]
+    required_snapshot_ids = {
+        snapshot_id
+        for report in reports
+        for snapshot_id in (report.get("current_snapshot_id"), report.get("baseline_snapshot_id"))
+        if snapshot_id
+    }
+    recent_snapshots = [
+        item for item in reversed(ordered_snapshots)
+        if item.get("id") in required_snapshot_ids
+    ][:MAX_SNAPSHOTS]
+    selected_snapshot_ids = {item.get("id") for item in recent_snapshots}
+    for item in reversed(ordered_snapshots):
+        if len(recent_snapshots) >= MAX_SNAPSHOTS:
+            break
+        if item.get("id") not in selected_snapshot_ids:
+            recent_snapshots.append(item)
+            selected_snapshot_ids.add(item.get("id"))
+    recent_snapshots.sort(key=snapshot_order_key)
     snapshot_ids = {item["id"] for item in recent_snapshots}
     artifact_ids = {link.get("target_id") for link in links
                     if link.get("relation") == "contains_artifact" and link.get("source_id") in snapshot_ids}
@@ -102,7 +120,16 @@ def _evidence(store, mode):
                       and by_id[item_id].get("kind") == "binary_artifact"]
     dependency_items = [by_id[item_id] for item_id in dependency_ids if item_id in by_id
                         and by_id[item_id].get("kind") == "runtime_dependency"]
+    priority_paths = {
+        node.get("path")
+        for report in reports for node in report.get("nodes", [])
+        if node.get("path") and (
+            node.get("status") in FINDING_STATUSES
+            or node.get("status") in {"UNKNOWN", "BASELINE_ONLY"}
+        )
+    }
     artifact_items.sort(key=lambda item: (str(item.get("created_at") or ""), str(item.get("id") or "")), reverse=True)
+    artifact_items.sort(key=lambda item: (str((item.get("metadata") or {}).get("path") or "") not in priority_paths))
     dependency_items.sort(key=lambda item: (str(item.get("created_at") or ""), str(item.get("id") or "")), reverse=True)
 
     graph_nodes = []
@@ -237,7 +264,30 @@ def _evidence(store, mode):
         if kind == "runtime_dependency":
             return (5, str(node.get("name") or ""), str(node.get("id") or ""))
         return (6, str(node.get("label") or ""), str(node.get("id") or ""))
-    graph_nodes = sorted(graph_nodes, key=_node_priority)[:MAX_NODES]
+    prioritized_nodes = sorted(graph_nodes, key=_node_priority)
+    category_limits = {
+        "device_snapshot": MAX_SNAPSHOTS,
+        "integrity": 38,
+        "binary_artifact": 24,
+        "runtime_dependency": 16,
+        "impact": 6,
+    }
+    graph_nodes, category_counts = [], {}
+    for node in prioritized_nodes:
+        category = node.get("kind") if node.get("kind") in category_limits else "impact"
+        if category_counts.get(category, 0) >= category_limits[category]:
+            continue
+        graph_nodes.append(node)
+        category_counts[category] = category_counts.get(category, 0) + 1
+        if len(graph_nodes) >= MAX_NODES:
+            break
+    if len(graph_nodes) < MAX_NODES:
+        selected_ids = {node["id"] for node in graph_nodes}
+        graph_nodes.extend(
+            node for node in prioritized_nodes
+            if node["id"] not in selected_ids
+        )
+        graph_nodes = graph_nodes[:MAX_NODES]
     rendered_ids = {node["id"] for node in graph_nodes}
     deduped_edges, seen_edges = [], set()
     for edge in graph_edges:
