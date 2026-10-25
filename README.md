@@ -17,28 +17,64 @@ Its identity is **evidence before conclusions**: a changed hash is a comparison 
 - **Live evidence graph:** on refresh, compare stored snapshots and derive dependency-impact traces from changed evidence → candidate runtime dependency → active consumer artifacts. Each trace carries snapshot provenance, dependency source evidence, and explicit limitations; cross-device/scope and historical consumers are excluded. The loopback-only viewer computes analysis without writing results or running a new scan.
 - **Offline operation:** scanning, storage, comparison, and viewing do not need network access.
 
-## Quick start
+## Quick start (Python 3.11+)
 
-Install from the repository using your preferred Python environment, then run:
+From a terminal with Python installed, clone the repository and install it into an isolated virtual environment:
 
 ```sh
-mnemos doctor
-mnemos map-device --path ./path-to-inspect
-mnemos live-graph
+git clone https://github.com/rllibo833-sudo/mnemos-RLI.git
+cd mnemos-RLI
+python -m venv .venv
 ```
 
-Open the local URL printed by `live-graph`. Repeat `map-device` with the same scope to create a second observation for comparison. A single scan is a baseline, not enough evidence to conclude that an artifact is damaged.
+Activate the environment, then install the local package:
 
-Create and verify a trusted release manifest:
+```sh
+# Linux / macOS
+. .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install .
+```
+
+On Windows PowerShell, activate with `.venv\\Scripts\\Activate.ps1` instead. If PowerShell blocks activation, use a permitted Python environment or the platform's activation policy; do not run the tool as administrator just to install it.
+
+Confirm the installed CLI and local database before scanning:
+
+```sh
+mnemos --help
+mnemos doctor
+```
+
+Scan only a directory you are authorized to inspect. Start with a small, known directory rather than your whole system:
+
+```sh
+mnemos map-device --path ./directory-to-inspect
+```
+
+The command prints JSON containing a `snapshot_id` and the scan report. Save the snapshot ID if you want to use it for a release manifest. The scanner recognizes a bounded set of binary/executable formats; a successful command does **not** mean every file in that directory was hashed.
+
+To view the stored evidence graph in a browser, explicitly enable the loopback-only web viewer:
+
+```sh
+mnemos live-graph --web
+```
+
+Use the local URL printed by the command. Without `--web`, `mnemos live-graph` renders in the terminal. The viewer reads stored observations; it does not start a new scan. Run `mnemos map-device` again with the same path to collect a later observation for comparison.
+
+For a reproducible first run, see [First-run guide](docs/first-run.md).
+
+Create and verify a release manifest only after a complete scan containing recognized binary artifacts with full SHA-256 hashes:
 
 ```sh
 mnemos map-device --path ./release-directory
+# Copy snapshot_id from the JSON output into SNAPSHOT_ID.
 mnemos release-manifest --snapshot-id SNAPSHOT_ID --release-id RELEASE_ID --output release-manifest.json
 mnemos map-device --path ./release-directory
-mnemos verify-release --manifest release-manifest.json --snapshot-id SNAPSHOT_ID
+# Copy the new snapshot_id from this second scan into CURRENT_SNAPSHOT_ID.
+mnemos verify-release --manifest release-manifest.json --snapshot-id CURRENT_SNAPSHOT_ID
 ```
 
-Replace the example IDs with values printed by the actual command. A manifest's hash list does not authenticate who created it; protect the manifest through a separate trusted distribution or signing process.
+A release manifest's hash list does not authenticate who created it; protect the manifest through a separate trusted distribution or signing process. Command names and options are discoverable with `mnemos --help` and `mnemos COMMAND --help`.
 
 ## Evidence semantics
 
