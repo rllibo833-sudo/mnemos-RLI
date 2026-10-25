@@ -790,7 +790,11 @@ def main(argv: list[str] | None = None) -> int:
             from .observation import check_service_registration
             service = check_service_registration()
             report["service"] = service
-            if service.get("platform") == "linux" and not service.get("service_enabled"):
+            if (
+                service.get("platform") == "linux"
+                and service.get("service_manager_available", True)
+                and not service.get("service_enabled")
+            ):
                 report["ok"] = False
                 report.setdefault("failures", []).append(
                     "user-level systemd service is not enabled; run "
