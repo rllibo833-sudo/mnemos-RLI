@@ -203,7 +203,7 @@ def render_timeline_html(report: dict[str, Any], asset: str | None = None) -> st
         })
 
     trace = report.get("execution_trace")
-    if isinstance(trace, dict):
+    if isinstance(trace, dict) and isinstance(trace.get("timeline"), list) and trace.get("timeline"):
         for item in trace.get("timeline", []):
             if not isinstance(item, dict):
                 continue
