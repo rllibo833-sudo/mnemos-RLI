@@ -460,7 +460,7 @@ def _parser() -> argparse.ArgumentParser:
     forensic.add_argument("--asset", help="Trace a specific asset path or evidence ID.")
     forensic.add_argument("--timeline", action="store_true", help="Include the asset observation-to-finding timeline.")
     forensic.add_argument("--format", choices=("json", "html"), default="json", help="Output forensic JSON or a self-contained HTML timeline.")
-    forensic.add_argument("--output", help="Output file for HTML (default: /tmp/mnemos-timeline.html).")
+    forensic.add_argument("--output", help="Output file for HTML (default: ~/.mnemos/reports/mnemos-timeline.html).")
     daemon = commands.add_parser("daemon", help="Continuously refresh an offline device map for explicitly selected paths.")
     daemon.add_argument("--path", action="append", default=[], help="File or directory to scan; repeatable.")
     daemon.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected per scan.")
@@ -515,7 +515,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.format == "html":
                 import webbrowser
                 from .forensics import render_timeline_html
-                output = Path(args.output or "/tmp/mnemos-timeline.html").expanduser()
+                output = Path(args.output).expanduser() if args.output else (Path.home() / ".mnemos" / "reports" / "mnemos-timeline.html")
                 output.parent.mkdir(parents=True, exist_ok=True)
                 output.write_text(render_timeline_html(report, asset=args.asset), encoding="utf-8")
                 print(json.dumps({"format": "html", "output": str(output.resolve()), "events": sum(len(group.get("observations", [])) for group in report.get("timelines", [])) + len(report.get("integrity_findings", [])) + len((report.get("execution_trace") or {}).get("timeline", []))}, ensure_ascii=False, indent=2))
