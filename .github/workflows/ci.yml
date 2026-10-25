@@ -30,3 +30,11 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Verify package metadata
         run: python -m pip install --no-deps -e .
+      - name: Smoke-test installed CLI against an isolated database
+        shell: bash
+        run: |
+          DB_PATH="$RUNNER_TEMP/mnemos-smoke.sqlite3"
+          mnemos --db "$DB_PATH" init
+          mnemos --db "$DB_PATH" add "mnemos-cli-smoke-marker"
+          mnemos --db "$DB_PATH" search "mnemos-cli-smoke-marker" | python -c "import json, sys; result = json.load(sys.stdin); assert 'mnemos-cli-smoke-marker' in json.dumps(result), result"
+          mnemos --db "$DB_PATH" doctor

@@ -815,10 +815,18 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "doctor":
             report = store.diagnostics()
             from .observation import check_service_registration
-            # A background service is optional. Its absence must not make the
-            # local database diagnostic fail for users who only want one-shot
-            # scans or interactive CLI commands.
-            report["service"] = check_service_registration()
+            service = check_service_registration()
+            report["service"] = service
+            if (
+                service.get("platform") == "linux"
+                and service.get("service_manager_available", True)
+                and not service.get("service_enabled")
+            ):
+                report["ok"] = False
+                report.setdefault("failures", []).append(
+                    "user-level systemd service is not enabled; run "
+                    "'mnemos daemon --path PATH --enable-service'."
+                )
             print(json.dumps(report, ensure_ascii=False, indent=2))
             return 0 if report["ok"] else 1
         elif args.command == "add":
