@@ -1,6 +1,6 @@
 """Loopback-only, read-only viewer for integrity and dependency-impact evidence."""
 from __future__ import annotations
-import http.server, json, socketserver, sys
+import http.server, json, socketserver, sys, time
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
@@ -332,6 +332,54 @@ def make_handler(store):
                 body = HTML.encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(body)
+                return
+            if parsed.path == "/api/monitoring-status":
+                try:
+                    observation = store.latest_observation()
+                    histories = compare_snapshot_histories(
+                        [item for item in store.list_all() if item.get("kind") == "device_snapshot"],
+                        store.links(),
+                        {item.get("id"): item for item in store.list_all() if isinstance(item.get("id"), str)},
+                    )
+                    counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0, "unknown": 0}
+                    for history in histories:
+                        for node in history.get("nodes", []):
+                            status = node.get("status")
+                            if status in FINDING_STATUSES:
+                                counts["medium"] += 1
+                            elif status in {"UNKNOWN", "INCOMPLETE_SCAN", "BASELINE_ONLY"}:
+                                counts["unknown"] += 1
+                    now_ts = time.time()
+                    last_gap = max(0.0, now_ts - float(observation["timestamp"])) if observation else None
+                    body_obj = {
+                        "daemon_running": None,
+                        "daemon_status_note": "Runtime liveness is not persisted; this endpoint reports stored evidence only.",
+                        "event_monitor": {
+                            "active": bool(observation and observation.get("event_monitor_active")),
+                            "type": observation.get("event_monitor_type") if observation else None,
+                            "errors": observation.get("event_monitor_errors", []) if observation else [],
+                        },
+                        "polling": {"active": False, "interval": None,
+                                    "note": "Polling activity cannot be inferred reliably from stored snapshots alone."},
+                        "last_observation": observation,
+                        "risk_summary": counts,
+                        "unobserved_scope": {
+                            "event_monitor_fallback": not bool(observation and observation.get("event_monitor_active")),
+                            "polling_interval_seconds": None,
+                            "last_gap_seconds": last_gap,
+                            "scope": observation.get("paths", []) if observation else [],
+                        },
+                    }
+                    body = json.dumps(body_obj, ensure_ascii=False).encode("utf-8")
+                except Exception:
+                    self.send_error(500, "Unable to read stored monitoring evidence")
+                    return
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
                 self.send_header("Content-Length", str(len(body)))
                 self.send_header("Cache-Control", "no-store")
                 self.end_headers()

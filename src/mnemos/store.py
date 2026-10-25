@@ -99,6 +99,31 @@ class MemoryStore(GraphStore):
                 );
                 CREATE INDEX IF NOT EXISTS idx_sync_outbox_pending
                     ON sync_outbox(acknowledged_at, seq);
+                CREATE TABLE IF NOT EXISTS device_observation (
+                    id TEXT PRIMARY KEY,
+                    timestamp REAL NOT NULL,
+                    scan_type TEXT NOT NULL,
+                    paths TEXT NOT NULL DEFAULT '[]',
+                    max_files INTEGER NOT NULL DEFAULT 0,
+                    files_attempted INTEGER NOT NULL DEFAULT 0,
+                    files_scanned INTEGER NOT NULL DEFAULT 0,
+                    files_failed INTEGER NOT NULL DEFAULT 0,
+                    dirs_failed TEXT NOT NULL DEFAULT '[]',
+                    hit_max_files_limit INTEGER NOT NULL DEFAULT 0,
+                    truncated_due_to TEXT,
+                    event_monitor_active INTEGER NOT NULL DEFAULT 0,
+                    event_monitor_type TEXT,
+                    event_monitor_errors TEXT NOT NULL DEFAULT '[]',
+                    coverage_complete INTEGER NOT NULL DEFAULT 0,
+                    confidence_level TEXT NOT NULL DEFAULT 'unknown'
+                );
+                CREATE INDEX IF NOT EXISTS idx_device_observation_timestamp
+                    ON device_observation(timestamp DESC);
+                CREATE TABLE IF NOT EXISTS snapshot_observation (
+                    snapshot_id TEXT NOT NULL REFERENCES memories(id) ON DELETE CASCADE,
+                    observation_id TEXT NOT NULL REFERENCES device_observation(id) ON DELETE CASCADE,
+                    PRIMARY KEY(snapshot_id, observation_id)
+                );
                 INSERT OR IGNORE INTO mnemos_meta(key, value)
                     VALUES ('schema_version', '2');
                 INSERT OR IGNORE INTO mnemos_meta(key, value)
@@ -680,6 +705,55 @@ class MemoryStore(GraphStore):
             "incomplete_snapshot_ids": incomplete, "empty_scope_count": len(empty_scope),
             "incomplete_snapshot_count": len(incomplete), "offline": True,
         }
+
+    def save_observation(self, observation: dict[str, Any], snapshot_id: str | None = None) -> dict[str, Any]:
+        """Persist a scan observation separately from the deduplicated snapshot."""
+        required = ("id", "timestamp", "scan_type")
+        if any(key not in observation for key in required):
+            raise ValueError("Observation requires id, timestamp, and scan_type.")
+        values = (
+            str(observation["id"]), float(observation["timestamp"]), str(observation["scan_type"]),
+            json.dumps(observation.get("paths", []), ensure_ascii=False),
+            int(observation.get("max_files", 0)), int(observation.get("files_attempted", 0)),
+            int(observation.get("files_scanned", 0)), int(observation.get("files_failed", 0)),
+            json.dumps(observation.get("dirs_failed", []), ensure_ascii=False),
+            int(bool(observation.get("hit_max_files_limit"))), observation.get("truncated_due_to"),
+            int(bool(observation.get("event_monitor_active"))), observation.get("event_monitor_type"),
+            json.dumps(observation.get("event_monitor_errors", []), ensure_ascii=False),
+            int(bool(observation.get("coverage_complete"))), str(observation.get("confidence_level", "unknown")),
+        )
+        with self._connect() as db:
+            db.execute("""INSERT OR REPLACE INTO device_observation
+                (id,timestamp,scan_type,paths,max_files,files_attempted,files_scanned,files_failed,
+                 dirs_failed,hit_max_files_limit,truncated_due_to,event_monitor_active,event_monitor_type,
+                 event_monitor_errors,coverage_complete,confidence_level)
+                VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", values)
+            if snapshot_id:
+                db.execute("INSERT OR IGNORE INTO snapshot_observation(snapshot_id,observation_id) VALUES(?,?)",
+                           (snapshot_id, str(observation["id"])))
+        return dict(observation)
+
+    @staticmethod
+    def _observation(row: sqlite3.Row) -> dict[str, Any]:
+        item = dict(row)
+        for key in ("paths", "dirs_failed", "event_monitor_errors"):
+            try:
+                item[key] = json.loads(item.get(key) or "[]")
+            except (TypeError, json.JSONDecodeError):
+                item[key] = []
+        for key in ("hit_max_files_limit", "event_monitor_active", "coverage_complete"):
+            item[key] = bool(item.get(key))
+        return item
+
+    def observations(self, *, limit: int = 100) -> list[dict[str, Any]]:
+        with self._connect() as db:
+            rows = db.execute("SELECT * FROM device_observation ORDER BY timestamp DESC, id DESC LIMIT ?",
+                              (max(1, min(int(limit), 10000)),)).fetchall()
+        return [self._observation(row) for row in rows]
+
+    def latest_observation(self) -> dict[str, Any] | None:
+        items = self.observations(limit=1)
+        return items[0] if items else None
 
     def diagnostics(self) -> dict[str, Any]:
         """Inspect local SQLite integrity without modifying data or using the network."""

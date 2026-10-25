@@ -13,6 +13,7 @@ import time
 from pathlib import Path, PurePosixPath
 
 from .device_mapper import collect_device_map
+from .observation import Observation
 from .analysis import analyze_graph
 from .daemon import run_daemon
 from .evolution import evolve_graph
@@ -456,6 +457,8 @@ def _parser() -> argparse.ArgumentParser:
     analyze.add_argument("--window-days", type=int, default=30, help="Observation window for churn analysis (default: 30 days).")
     forensic = commands.add_parser("forensics", help="Reconstruct a forensic case from stored offline evidence.")
     forensic.add_argument("--path", action="append", default=[], help="Restrict to snapshots with this exact scan scope; repeatable.")
+    forensic.add_argument("--asset", help="Trace a specific asset path or evidence ID.")
+    forensic.add_argument("--timeline", action="store_true", help="Include the asset observation-to-finding timeline.")
     daemon = commands.add_parser("daemon", help="Continuously refresh an offline device map for explicitly selected paths.")
     daemon.add_argument("--path", action="append", default=[], help="File or directory to scan; repeatable.")
     daemon.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected per scan.")
@@ -499,6 +502,9 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "forensics":
             from .forensics import reconstruct_case
             report = reconstruct_case(store, paths=args.path or None)
+            if args.asset and args.timeline:
+                from .observation import trace_execution_path
+                report["execution_trace"] = trace_execution_path(store, args.asset)
             print(json.dumps(report, ensure_ascii=False, indent=2))
         elif args.command == "analyze":
             result, created = analyze_graph(
@@ -607,6 +613,8 @@ def main(argv: list[str] | None = None) -> int:
                     source="mnemos-device-mapper",
                     metadata=report,
                 )
+            observation = Observation.from_scan(report, paths=report["scope_path"], max_files=args.max_files)
+            store.save_observation(observation.to_dict(), snapshot_id=snapshot["id"])
             artifact_ids = []
             existing_artifact_ids = {}
             for existing in store.list_all(kind="binary_artifact"):

@@ -805,7 +805,7 @@ def _cached_sha256(path: Path, info: os.stat_result) -> str | None:
         return _sha256(path)
 
 
-def _artifact(path: Path) -> dict[str, Any] | None:
+def _artifact(path: Path, scan_status: dict[str, Any] | None = None) -> dict[str, Any] | None:
     try:
         info = path.stat(follow_symlinks=False)
         if not stat.S_ISREG(info.st_mode) or path.is_symlink():
@@ -898,7 +898,11 @@ def _artifact(path: Path) -> dict[str, Any] | None:
             ),
             "binary_details": details,
         }
-    except OSError:
+    except OSError as exc:
+        if scan_status is not None:
+            scan_status.setdefault("file_errors", []).append({
+                "path": str(path), "error": type(exc).__name__,
+            })
         return None
 
 
@@ -915,7 +919,7 @@ def discover_artifacts(
     status.update({
         "examined_files": 0, "limit_reached": False,
         "depth_limit_reached": False, "skipped_symlink_roots": 0,
-        "traversal_errors": [],
+        "traversal_errors": [], "file_errors": [],
     })
     roots = tuple(paths)
     if not roots:
@@ -965,7 +969,7 @@ def discover_artifacts(
         for candidate in candidates:
             if root.is_file():
                 examined += 1
-            item = _artifact(candidate)
+            item = _artifact(candidate, scan_status=status)
             if item is not None:
                 found.append(item)
             if examined >= max_files:
@@ -978,6 +982,7 @@ def discover_artifacts(
     status["complete"] = not (
         status["limit_reached"] or status["depth_limit_reached"]
         or status["skipped_symlink_roots"] or status["traversal_errors"]
+        or status["file_errors"]
     )
     # Stable ordering makes snapshots easy to compare and review.
     found.sort(key=lambda item: item["path"])
@@ -1031,6 +1036,7 @@ def collect_device_map(paths: Iterable[str | Path] = (), *, max_files: int = 200
             "depth_limit_reached": scan_status["depth_limit_reached"],
             "skipped_symlink_roots": scan_status["skipped_symlink_roots"],
             "traversal_errors": scan_status["traversal_errors"],
+            "file_errors": scan_status["file_errors"],
             "network_used": False,
             "executed_scanned_files": False,
         },
