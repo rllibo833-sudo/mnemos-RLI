@@ -1,0 +1,43 @@
+name: Build Python package
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "pyproject.toml"
+      - "README.md"
+      - "LICENSE"
+      - ".github/workflows/package.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheel and source distribution
+        run: |
+          python -m pip install --upgrade build twine
+          python -m build
+          python -m twine check dist/*
+      - name: Generate SHA-256 checksums
+        run: |
+          cd dist
+          sha256sum *.whl *.tar.gz > SHA256SUMS
+      - name: Upload installable package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mnemos-rli-python-package
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
