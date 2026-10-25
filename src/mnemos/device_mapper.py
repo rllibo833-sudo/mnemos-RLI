@@ -140,72 +140,6 @@ MAGIC = (
 )
 
 
-FILE_SIGNATURES = (
-    (b"\x89PNG\r\n\x1a\n", "PNG image"),
-    (b"\xff\xd8\xff", "JPEG image"),
-    (b"GIF87a", "GIF image"),
-    (b"GIF89a", "GIF image"),
-    (b"RIFF", "RIFF container"),
-    (b"\x1a\x45\xdf\xa3", "Matroska/WebM media"),
-    (b"%PDF-", "PDF document"),
-    (b"SQLite format 3\x00", "SQLite database"),
-    (b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1", "OLE compound document"),
-    (b"Rar!\x1a\x07", "RAR archive"),
-    (b"7z\xbc\xaf\x27\x1c", "7-Zip archive"),
-    (b"\x1f\x8b", "GZIP archive"),
-    (b"BZh", "BZIP2 archive"),
-    (b"\xfd7zXZ\x00", "XZ archive"),
-    (b"#!", "Script text"),
-)
-
-EXTENSION_HINTS = {
-    ".jpg": "JPEG image (extension hint)", ".jpeg": "JPEG image (extension hint)",
-    ".png": "PNG image (extension hint)", ".gif": "GIF image (extension hint)",
-    ".webp": "WebP image (extension hint)", ".bmp": "BMP image (extension hint)",
-    ".tif": "TIFF image (extension hint)", ".tiff": "TIFF image (extension hint)",
-    ".heic": "HEIF/HEIC image (extension hint)", ".avif": "AVIF image (extension hint)",
-    ".mp4": "MP4 media (extension hint)", ".m4v": "MP4 media (extension hint)",
-    ".mov": "QuickTime media (extension hint)", ".mkv": "Matroska media (extension hint)",
-    ".webm": "WebM media (extension hint)", ".avi": "AVI media (extension hint)",
-    ".mp3": "MP3 audio (extension hint)", ".wav": "WAV audio (extension hint)",
-    ".flac": "FLAC audio (extension hint)", ".ogg": "Ogg audio (extension hint)",
-    ".m4a": "M4A audio (extension hint)", ".aac": "AAC audio (extension hint)",
-    ".pdf": "PDF document (extension hint)", ".doc": "Word document (extension hint)",
-    ".docx": "Office document/ZIP (extension hint)", ".xls": "Spreadsheet (extension hint)",
-    ".xlsx": "Spreadsheet/ZIP (extension hint)", ".ppt": "Presentation (extension hint)",
-    ".pptx": "Presentation/ZIP (extension hint)", ".txt": "Text file (extension hint)",
-    ".csv": "CSV data (extension hint)", ".json": "JSON data (extension hint)",
-    ".xml": "XML data (extension hint)", ".html": "HTML document (extension hint)",
-    ".db": "Database (extension hint)", ".sqlite": "SQLite database (extension hint)",
-    ".sqlite3": "SQLite database (extension hint)", ".torrent": "BitTorrent metainfo (extension hint)",
-    ".zip": "ZIP archive (extension hint)", ".rar": "RAR archive (extension hint)",
-    ".7z": "7-Zip archive (extension hint)", ".gz": "GZIP archive (extension hint)",
-    ".tar": "TAR archive (extension hint)", ".apk": "Android package/ZIP (extension hint)",
-    ".dex": "Dalvik executable (extension hint)", ".so": "Shared library (extension hint)",
-    ".dll": "Windows library (extension hint)", ".exe": "Windows executable (extension hint)",
-}
-
-def classify_file(header: bytes, path: Path) -> tuple[str, str]:
-    """Classify ordinary files by content first, using extensions only as an explicit hint."""
-    binary = classify_binary(header)
-    if binary:
-        return binary, "magic_signature"
-    for magic, label in FILE_SIGNATURES:
-        if header.startswith(magic):
-            return label, "magic_signature"
-    extension = path.suffix.casefold()
-    if extension in EXTENSION_HINTS:
-        return EXTENSION_HINTS[extension], "extension_hint_only"
-    if not header:
-        return "empty file", "content_observed"
-    if b"\x00" not in header:
-        try:
-            header.decode("utf-8")
-            return "text/unknown", "content_observed"
-        except UnicodeDecodeError:
-            pass
-    return "binary/unknown", "content_observed"
-
 
 def classify_binary(header: bytes) -> str | None:
     """Return a format label from file magic without loading or executing a file."""
@@ -879,15 +813,11 @@ def _artifact(path: Path) -> dict[str, Any] | None:
         with path.open("rb") as stream:
             header = stream.read(4096)
         fmt = classify_binary(header)
-        observed_format, format_basis = classify_file(header, path)
+        if not fmt:
+            return None
         digest = _cached_sha256(path, info)
         sample_digest = _sample_sha256(path, info.st_size) if digest is None else None
-        details = inspect_binary(path, fmt) if fmt else {
-            "status": "not_applicable",
-            "format": observed_format,
-            "classification_basis": format_basis,
-            "analysis_note": "Inventoried and hashed as a file; no format-specific parser was applied.",
-        }
+        details = inspect_binary(path, fmt)
         after = path.stat(follow_symlinks=False)
         changed_during_inspection = (
             info.st_dev != after.st_dev
@@ -900,7 +830,7 @@ def _artifact(path: Path) -> dict[str, Any] | None:
         if changed_during_inspection:
             digest = None
             sample_digest = None
-            details = {"status": "file_changed_during_inspection", "format": fmt or "unknown"}
+            details = {"status": "file_changed_during_inspection", "format": fmt}
         ctime_ns = getattr(info, "st_ctime_ns", int(info.st_ctime * 1_000_000_000))
         file_type = (
             "regular_file" if stat.S_ISREG(info.st_mode) else
@@ -943,7 +873,7 @@ def _artifact(path: Path) -> dict[str, Any] | None:
             },
             "path": str(path),
             "name": path.name,
-            "format": fmt or observed_format,
+            "format": fmt,
             "size_bytes": info.st_size,
             "mtime_ns": info.st_mtime_ns,
             "ctime_ns": ctime_ns,
