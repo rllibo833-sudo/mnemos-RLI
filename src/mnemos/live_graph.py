@@ -2,11 +2,22 @@
 from __future__ import annotations
 import http.server, json, socketserver
 from pathlib import Path
+from typing import Any
 from urllib.parse import parse_qs, urlparse
 from .analysis import analyze_graph
-from .integrity import FINDING_STATUSES, compare_snapshot_histories
+from .integrity import (
+    FINDING_STATUSES, compare_snapshot_histories,
+    snapshot_is_complete, snapshot_order_key, snapshot_scope_identity,
+)
 
 MAX_NODES = 100
+
+def _safe_int(value: Any, default: int = 0) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError, OverflowError):
+        return default
+
 HTML = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mnemos-RLI Live Evidence Graph</title><style>
 :root{color-scheme:dark;background:#0b1018;color:#e4edf7;font:14px system-ui,sans-serif}body{margin:0;padding:20px;max-width:1500px;margin-inline:auto}h1{font-size:22px}p,.small{color:#9eafc2}.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0}button,select{background:#172334;color:#e4edf7;border:1px solid #34475f;border-radius:6px;padding:8px}#summary{padding:12px;background:#121d2b;border:1px solid #26384c;border-radius:8px}.section{margin-top:20px}.section h2{font-size:17px}#graph-layout{display:grid;grid-template-columns:minmax(0,3fr) minmax(250px,1fr);gap:12px;margin-top:12px}#graph-wrap{background:#0e1621;border:1px solid #26384c;border-radius:8px;min-height:500px;overflow:hidden}#graph{width:100%;height:620px;display:block}#details{background:#121a25;border:1px solid #34475f;border-radius:8px;padding:14px;overflow-wrap:anywhere;align-self:start;min-height:160px}.detail-line{font-size:12px;color:#c0cedd;margin-top:9px;overflow-wrap:anywhere}.node{cursor:pointer;stroke:#09111b;stroke-width:2}.node-label{fill:#e4edf7;font-size:11px;pointer-events:none}.edge{stroke:#52667d;stroke-width:1.4;opacity:.8}.edge-label{fill:#8fa4ba;font-size:9px}.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:#aebed0;margin:8px 0}.dot{display:inline-block;width:9px;height:9px;border-radius:50%}@media(max-width:800px){#graph-layout{grid-template-columns:1fr}#graph{height:480px}}
 </style></head><body><h1>MNEMOS-RLI / Live Evidence Graph</h1><p>Offline analysis · stored scans only · inspected files are never executed · viewer does not write analysis results</p><div class="bar"><label>View <select id="filter"><option value="damaged">Findings and unknowns</option><option value="all">All compared artifacts</option></select></label><button id="refresh">Refresh evidence</button></div><div id="summary">Loading evidence…</div><div class="section"><h2>Evidence relationship graph</h2><p>Nodes represent stored evidence. Solid lines are relationships recorded in SQLite; dashed red lines are explicitly inferred potential-impact paths.</p><div class="legend"><span><i class="dot" style="background:#65b7ff"></i>Snapshot</span> <span><i class="dot" style="background:#56d6a0"></i>Artifact</span> <span><i class="dot" style="background:#c4a1ff"></i>Dependency</span> <span><i class="dot" style="background:#f5bd58"></i>Integrity finding</span> <span><i class="dot" style="background:#ff7784"></i>Potential impact</span></div><div id="graph-layout"><div id="graph-wrap"><svg id="graph" viewBox="0 0 1000 620" role="img" aria-label="Interactive evidence graph"></svg></div><aside id="details"><strong>Select a node</strong><div class="detail-line">Click a node to inspect evidence and connected relationships.</div></aside></div></div>
@@ -17,12 +28,14 @@ const NS='http://www.w3.org/2000/svg';function se(t,a){const e=document.createEl
 function name(n){return n.label||n.path||n.content||n.changed_path||n.id||'Evidence'}
 function color(n){if(n.node_type==='impact')return '#ff7784';if(n.node_type==='integrity')return '#f5bd58';return ({device_snapshot:'#65b7ff',binary_artifact:'#56d6a0',runtime_dependency:'#c4a1ff'})[n.kind]||'#91a5ba'}
 function draw(d){svg.replaceChildren();const ns=d.graph_nodes||[],es=d.graph_edges||[];if(!ns.length){const t=se('text',{x:500,y:310,'text-anchor':'middle',fill:'#9eafc2'});t.textContent='No evidence nodes. Run map-device with --path.';svg.append(t);return}
-const by=new Map(ns.map(n=>[n.id,n])),pos=new Map(),W=1000,H=620,left=60,right=940;
-const snapshots=ns.filter(n=>n.kind==='device_snapshot').sort((a,b)=>{const ta=Number(a.observation_ts_ns||0),tb=Number(b.observation_ts_ns||0);return ta&&tb?ta-tb:(a.observed_at||'').localeCompare(b.observed_at||'')});
+const by=new Map(ns.map(n=>[n.id,n])),pos=new Map(),W=1000,H=620;
+const snapshots=ns.filter(n=>n.kind==='device_snapshot').sort((a,b)=>Number(a.observation_ts_ns||0)-Number(b.observation_ts_ns||0));
 const artifacts=ns.filter(n=>n.kind==='binary_artifact'),deps=ns.filter(n=>n.kind==='runtime_dependency');
 const findings=ns.filter(n=>n.node_type==='integrity'||n.node_type==='impact');
-function spread(items,y,rows=1){const columns=Math.max(1,Math.ceil(items.length/rows));items.forEach((n,i)=>{const row=Math.floor(i/columns),col=i%columns,count=Math.min(columns,items.length-row*columns);pos.set(n.id,{x:count<2?W/2:left+col*(right-left)/(count-1),y:y+row*52})})}
-spread(snapshots,78,1);spread(artifacts,220,3);spread(deps,395,2);spread(findings,520,2);
+function seed(n){const group=n.kind==='device_snapshot'?0:n.kind==='binary_artifact'?1:n.kind==='runtime_dependency'?2:n.node_type==='integrity'?3:4;const peers=ns.filter(x=>(x.kind==='device_snapshot'?0:x.kind==='binary_artifact'?1:x.kind==='runtime_dependency'?2:x.node_type==='integrity'?3:4)===group);const j=peers.findIndex(x=>x.id===n.id),angle=(j/Math.max(1,peers.length))*Math.PI*2;const centers=[[500,100],[500,260],[500,430],[750,340],[250,450]],radius=[115,185,130,185,120][group];return {x:centers[group][0]+Math.cos(angle)*radius,y:centers[group][1]+Math.sin(angle)*radius}}
+ns.forEach(n=>pos.set(n.id,seed(n)));
+const validEdges=es.filter(e=>pos.has(e.source_id)&&pos.has(e.target_id));
+for(let step=0;step<55;step++){const forces=new Map(ns.map(n=>[n.id,{x:0,y:0}]));for(let i=0;i<ns.length;i++){const a=ns[i],pa=pos.get(a.id),fa=forces.get(a.id);for(let j=i+1;j<ns.length;j++){const b=ns[j],pb=pos.get(b.id);let dx=pa.x-pb.x,dy=pa.y-pb.y,dist=Math.max(1,Math.hypot(dx,dy));const push=1800/(dist*dist);fa.x+=dx/dist*push;fa.y+=dy/dist*push;const fb=forces.get(b.id);fb.x-=dx/dist*push;fb.y-=dy/dist*push}}for(const e of validEdges){if(e.source_id===e.target_id)continue;const a=pos.get(e.source_id),b=pos.get(e.target_id),dx=b.x-a.x,dy=b.y-a.y,dist=Math.max(1,Math.hypot(dx,dy)),pull=(dist-105)*0.009,fa=forces.get(e.source_id),fb=forces.get(e.target_id);fa.x+=dx/dist*pull;fa.y+=dy/dist*pull;fb.x-=dx/dist*pull;fb.y-=dy/dist*pull}const cooling=1-step/65;for(const n of ns){const p=pos.get(n.id),f=forces.get(n.id);p.x=Math.max(35,Math.min(W-35,p.x+Math.max(-10,Math.min(10,f.x*cooling))));p.y=Math.max(35,Math.min(H-35,p.y+Math.max(-10,Math.min(10,f.y*cooling))))}}
 const eg=se('g',{}),ng=se('g',{});
 for(const e of es){const a=pos.get(e.source_id),b=pos.get(e.target_id);if(!a||!b)continue;const line=se('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,class:'edge',stroke:e.inferred?'#ff7784':e.evidence_type==='temporal_order'?'#65b7ff':'#52667d','stroke-dasharray':e.inferred?'6 5':'none','stroke-width':e.evidence_type==='temporal_order'?2:1.4});eg.append(line);if(e.relation){const t=se('text',{x:(a.x+b.x)/2+3,y:(a.y+b.y)/2-3,class:'edge-label'});t.textContent=e.relation;eg.append(t)}}
 svg.append(eg);
@@ -78,9 +91,7 @@ def _evidence(store, mode):
 
     # Prioritize recent snapshots and evidence directly connected to them so a
     # large knowledge store cannot push the actual forensic timeline off-screen.
-    ordered_snapshots = sorted(snapshots, key=lambda item: (
-        int((_meta := item.get("metadata") or {}).get("observation_ts_ns") or 0),
-        str(item.get("created_at") or ""), str(item.get("id") or "")))
+    ordered_snapshots = sorted(snapshots, key=snapshot_order_key)
     recent_snapshots = ordered_snapshots[-8:]
     snapshot_ids = {item["id"] for item in recent_snapshots}
     artifact_ids = {link.get("target_id") for link in links
@@ -103,10 +114,10 @@ def _evidence(store, mode):
             "label": str(meta.get("captured_at") or item.get("created_at") or item["id"])[:16],
             "content": item.get("content"), "created_at": item.get("created_at"),
             "observed_at": str(meta.get("captured_at") or item.get("created_at") or ""),
-            "observation_ts_ns": int(meta.get("observation_ts_ns") or 0),
+            "observation_ts_ns": _safe_int(meta.get("observation_ts_ns")),
             "fingerprint": meta.get("fingerprint"), "device_id": meta.get("device_id"),
             "host_env": meta.get("host_env"), "scope": meta.get("scope_path") or scan.get("scope") or [],
-            "scan_complete": scan.get("complete") is True and bool(meta.get("scope_path") or scan.get("scope")),
+            "scan_complete": snapshot_is_complete(item) and bool(meta.get("scope_path") or scan.get("scope")),
             "unscoped": not bool(meta.get("scope_path") or scan.get("scope")),
             "limit_reached": bool(scan.get("limit_reached")),
             "depth_limit_reached": bool(scan.get("depth_limit_reached")),
@@ -146,19 +157,12 @@ def _evidence(store, mode):
     # Reconstruct temporal order only within the same device/host/exact scope.
     histories = {}
     for snapshot in recent_snapshots:
-        meta = snapshot.get("metadata") if isinstance(snapshot.get("metadata"), dict) else {}
-        scan = meta.get("scan") if isinstance(meta.get("scan"), dict) else {}
-        scope = meta.get("scope_path") or scan.get("scope") or []
-        if not scope:
+        identity = snapshot_scope_identity(snapshot)
+        if not identity[2]:
             continue
-        identity = (str(meta.get("device_id") or "legacy-device"),
-                    str(meta.get("host_env") or "legacy-host"),
-                    tuple(sorted(str(Path(path).expanduser().resolve()) for path in scope if isinstance(path, str) and path)))
         histories.setdefault(identity, []).append(snapshot)
     for history in histories.values():
-        history.sort(key=lambda item: (
-            int((item.get("metadata") or {}).get("observation_ts_ns") or 0),
-            str(item.get("created_at") or ""), str(item.get("id") or "")))
+        history.sort(key=snapshot_order_key)
         for previous, current in zip(history, history[1:]):
             if previous["id"] in graph_ids and current["id"] in graph_ids:
                 graph_edges.append({
@@ -218,7 +222,22 @@ def _evidence(store, mode):
 
     # Cap the payload after prioritizing timeline nodes, then prune every edge
     # to the exact node set that is actually rendered.
-    graph_nodes = graph_nodes[:MAX_NODES]
+    comparison_artifact_ids = {item.get("artifact_id") for item in nodes if item.get("artifact_id")}
+    def _node_priority(node):
+        kind = node.get("kind")
+        if kind == "device_snapshot":
+            return (0, str(node.get("observed_at") or ""), str(node.get("id") or ""))
+        if kind == "integrity":
+            status = node.get("status")
+            rank = 1 if status in FINDING_STATUSES or status in {"UNKNOWN", "BASELINE_ONLY"} else 4
+            return (rank, str(node.get("path") or ""), str(node.get("id") or ""))
+        if kind == "binary_artifact":
+            rank = 2 if node.get("id") in comparison_artifact_ids else 3
+            return (rank, str(node.get("path") or ""), str(node.get("id") or ""))
+        if kind == "runtime_dependency":
+            return (5, str(node.get("name") or ""), str(node.get("id") or ""))
+        return (6, str(node.get("label") or ""), str(node.get("id") or ""))
+    graph_nodes = sorted(graph_nodes, key=_node_priority)[:MAX_NODES]
     rendered_ids = {node["id"] for node in graph_nodes}
     deduped_edges, seen_edges = [], set()
     for edge in graph_edges:
