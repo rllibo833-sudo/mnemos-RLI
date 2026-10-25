@@ -340,38 +340,43 @@ def make_handler(store):
             if parsed.path == "/api/monitoring-status":
                 try:
                     observation = store.latest_observation()
-                    histories = compare_snapshot_histories(
-                        [item for item in store.list_all() if item.get("kind") == "device_snapshot"],
-                        store.links(),
-                        {item.get("id"): item for item in store.list_all() if isinstance(item.get("id"), str)},
-                    )
-                    counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0, "unknown": 0}
-                    for history in histories:
-                        for node in history.get("nodes", []):
-                            status = node.get("status")
-                            if status in FINDING_STATUSES:
-                                counts["medium"] += 1
-                            elif status in {"UNKNOWN", "INCOMPLETE_SCAN", "BASELINE_ONLY"}:
-                                counts["unknown"] += 1
+                    runtime = store.monitoring_runtime()
                     now_ts = time.time()
+                    runtime_age = max(0.0, now_ts - float(runtime["updated_at"])) if runtime else None
+                    daemon_running = False
+                    if runtime and runtime.get("status") == "running" and runtime.get("pid"):
+                        try:
+                            import os
+                            os.kill(int(runtime["pid"]), 0)
+                            daemon_running = runtime_age is not None and runtime_age < max(30.0, float(runtime.get("interval_seconds") or 0) * 2.5)
+                        except (OSError, ValueError, TypeError):
+                            daemon_running = False
+                    counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0, "unknown": 0}
+                    for assessment in store.risk_assessments(limit=10000):
+                        level = assessment.get("risk_level")
+                        if level in counts:
+                            counts[level] += 1
                     last_gap = max(0.0, now_ts - float(observation["timestamp"])) if observation else None
                     body_obj = {
-                        "daemon_running": None,
-                        "daemon_status_note": "Runtime liveness is not persisted; this endpoint reports stored evidence only.",
+                        "daemon_running": daemon_running,
+                        "daemon_status_note": "Runtime heartbeat is stale or the process is not alive." if runtime and not daemon_running else None,
                         "event_monitor": {
-                            "active": bool(observation and observation.get("event_monitor_active")),
-                            "type": observation.get("event_monitor_type") if observation else None,
-                            "errors": observation.get("event_monitor_errors", []) if observation else [],
+                            "active": bool((runtime or {}).get("event_monitor_active") or (observation or {}).get("event_monitor_active")),
+                            "type": (runtime or {}).get("event_monitor_type") or (observation or {}).get("event_monitor_type"),
+                            "errors": list(dict.fromkeys((runtime or {}).get("event_monitor_errors", []) + (observation or {}).get("event_monitor_errors", []))),
                         },
-                        "polling": {"active": False, "interval": None,
-                                    "note": "Polling activity cannot be inferred reliably from stored snapshots alone."},
+                        "polling": {
+                            "active": daemon_running,
+                            "interval": (runtime or {}).get("interval_seconds"),
+                        },
                         "last_observation": observation,
                         "risk_summary": counts,
                         "unobserved_scope": {
-                            "event_monitor_fallback": not bool(observation and observation.get("event_monitor_active")),
-                            "polling_interval_seconds": None,
+                            "event_monitor_fallback": not bool((runtime or {}).get("event_monitor_active") or (observation or {}).get("event_monitor_active")),
+                            "polling_interval_seconds": (runtime or {}).get("interval_seconds"),
                             "last_gap_seconds": last_gap,
-                            "scope": observation.get("paths", []) if observation else [],
+                            "scope": (runtime or {}).get("paths") or ((observation or {}).get("paths", [])),
+                            "runtime_heartbeat_age_seconds": runtime_age,
                         },
                     }
                     body = json.dumps(body_obj, ensure_ascii=False).encode("utf-8")
@@ -439,3 +444,16 @@ def serve_live_graph(store, output=None, port=8765, host="127.0.0.1"):
     finally:
         server.server_close()
     return 0
+
+
+def start_live_graph_server(store, *, port: int = 8080, host: str = "127.0.0.1"):
+    """Start the read-only monitoring API in a daemon thread; loopback only."""
+    import threading
+    if not 1 <= int(port) <= 65535:
+        raise ValueError("port must be between 1 and 65535.")
+    if host not in ("127.0.0.1", "::1"):
+        raise ValueError("monitoring API binds to loopback only.")
+    server = _Server((host, int(port)), make_handler(store))
+    thread = threading.Thread(target=server.serve_forever, name="mnemos-status-api", daemon=True)
+    thread.start()
+    return server, thread

@@ -464,6 +464,10 @@ def _parser() -> argparse.ArgumentParser:
     daemon.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected per scan.")
     daemon.add_argument("--interval", type=float, default=300, help="Seconds between full scans (default: 300).")
     daemon.add_argument("--once", action="store_true", help="Run one scan and exit.")
+    daemon.add_argument("--enable-service", action="store_true", help="Register this exact daemon command for user-level startup and enable it.")
+    daemon.add_argument("--service-status", action="store_true", help="Audit startup service registration without changing it.")
+    daemon.add_argument("--status-port", type=int, default=8080, help="Loopback monitoring API port (default: 8080).")
+    daemon.add_argument("--no-status-server", action="store_true", help="Do not start the read-only monitoring API alongside the daemon.")
     live = commands.add_parser("live-graph", help="Show the live forensic evidence dashboard in the terminal.")
     live.add_argument("--refresh", type=float, default=5.0, help="Terminal refresh interval in seconds (default: 5).")
     live.add_argument("--web", action="store_true", help="Use the optional browser-based graph viewer.")
@@ -527,6 +531,25 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "daemon":
             if not args.path:
                 raise ValueError("daemon requires at least one explicit --path.")
+            if args.max_files < 1 or args.interval <= 0:
+                raise ValueError("--max-files and --interval must be positive.")
+            from .observation import ScanOrchestrator, check_service_registration, enable_service_registration
+            if args.service_status:
+                print(json.dumps(check_service_registration(), ensure_ascii=False, indent=2))
+                return 0
+            if args.enable_service:
+                # Register the daemon command without the one-shot install flags.
+                original_argv = sys.argv[:]
+                try:
+                    sys.argv = ["--db", str(store.path), "daemon"]
+                    for path in args.path:
+                        sys.argv.extend(["--path", path])
+                    sys.argv.extend(["--max-files", str(args.max_files), "--interval", str(args.interval)])
+                    service = enable_service_registration()
+                finally:
+                    sys.argv = original_argv
+                print(json.dumps({"service": service, "status": check_service_registration()}, indent=2))
+                return 0
             scan_args = ["--db", str(store.path), "map-device"]
             for path in args.path:
                 scan_args.extend(["--path", path])
@@ -534,11 +557,41 @@ def main(argv: list[str] | None = None) -> int:
             def scan() -> int:
                 with contextlib.redirect_stdout(io.StringIO()):
                     return main(scan_args)
+            orchestrator = ScanOrchestrator(args.path, args.max_files, args.interval, store=store, scan_callback=scan)
+            orchestrator.once = bool(args.once)
+            status_server = None
+            if not args.no_status_server:
+                from .live_graph import start_live_graph_server
+                try:
+                    status_server, _status_thread = start_live_graph_server(store, port=args.status_port)
+                    print(f"mnemos-daemon: monitoring API http://127.0.0.1:{args.status_port}/api/monitoring-status", file=sys.stderr)
+                except OSError as exc:
+                    print(f"mnemos-daemon: monitoring API unavailable: {exc}", file=sys.stderr)
+            status = orchestrator.start_monitoring()
+            store.update_monitoring_runtime(status="running", paths=orchestrator.paths,
+                interval_seconds=args.interval, event_monitor_active=orchestrator.event_monitor_active,
+                event_monitor_type=orchestrator.event_monitor_type, event_monitor_errors=orchestrator.event_monitor_errors,
+                pid=__import__("os").getpid())
+            print(json.dumps({"status": "running", **status}, ensure_ascii=False), file=sys.stderr)
             try:
-                return run_daemon(scan, interval_seconds=args.interval, once=args.once,
-                                  emit=lambda message: print(message, file=sys.stderr))
+                if args.once:
+                    # The worker performs the initial scan immediately.
+                    orchestrator._thread.join()
+                else:
+                    while orchestrator._thread and orchestrator._thread.is_alive():
+                        orchestrator._thread.join(timeout=1.0)
+                return 0
             except KeyboardInterrupt:
                 return 130
+            finally:
+                orchestrator.stop_monitoring()
+                if status_server is not None:
+                    status_server.shutdown()
+                    status_server.server_close()
+                store.update_monitoring_runtime(status="stopped", paths=orchestrator.paths,
+                    interval_seconds=args.interval, event_monitor_active=False,
+                    event_monitor_type=None, event_monitor_errors=orchestrator.event_monitor_errors,
+                    pid=None)
         elif args.command == "live-graph":
             if args.web:
                 return serve_live_graph(store, args.output, args.port)
@@ -641,6 +694,70 @@ def main(argv: list[str] | None = None) -> int:
                 store.link(snapshot["id"], artifact_id, relation="contains_artifact")
                 artifact_ids.append(artifact_id)
             evolution_report = evolve_graph(store)
+            # Persist deterministic integrity findings and evidence-based risk assessments.
+            from .integrity import compare_snapshot_histories
+            from .observation import assess_risk
+            all_records = store.list_all()
+            by_id = {item.get("id"): item for item in all_records if isinstance(item.get("id"), str)}
+            histories = compare_snapshot_histories(
+                [item for item in all_records if item.get("kind") == "device_snapshot"], store.links(), by_id
+            )
+            for history in histories:
+                for node in history.get("nodes", []):
+                    if node.get("current_snapshot_id") != snapshot["id"]:
+                        continue
+                    status = str(node.get("status") or "UNKNOWN")
+                    if status in {"UNCHANGED", "MATCH", "PRESENT", "BASELINE_ONLY"}:
+                        continue
+                    asset_path = str(node.get("path") or "")
+                    if not asset_path:
+                        continue
+                    baseline_id = node.get("baseline_snapshot_id")
+                    current_id = node.get("current_snapshot_id")
+                    obs_a = store.observation_for_snapshot(baseline_id) if baseline_id else None
+                    obs_b = store.observation_for_snapshot(current_id) if current_id else None
+                    same_scope = bool(
+                        obs_a and obs_b and sorted(obs_a.get("paths", [])) == sorted(obs_b.get("paths", []))
+                    )
+                    confidence = "high" if same_scope and obs_a.get("coverage_complete") and obs_b.get("coverage_complete") else (
+                        "low" if obs_a or obs_b else "unknown"
+                    )
+                    kind_map = {
+                        "HASH_MISMATCH": "hash_mismatch", "MISSING": "missing",
+                        "NEW_FILE": "new", "UNKNOWN": "unobserved", "INCOMPLETE_SCAN": "unobserved",
+                        "SAMPLED_MISMATCH": "sampled_mismatch", "SIZE_CHANGE": "metadata_change",
+                        "PERM_CHANGE": "metadata_change", "OWNER_CHANGE": "metadata_change",
+                        "FILE_TYPE_CHANGE": "metadata_change",
+                    }
+                    finding_id = hashlib.sha256(
+                        f"{current_id}\0{asset_path}\0{status}".encode("utf-8")
+                    ).hexdigest()
+                    finding = {
+                        "id": finding_id, "asset_id": asset_path, "finding_type": kind_map.get(status, "unobserved"),
+                        "confidence": confidence, "reason": str(node.get("reason") or status),
+                        "observation_a_id": (obs_a or {}).get("id"), "observation_b_id": (obs_b or {}).get("id"),
+                        "snapshot_a_id": baseline_id, "snapshot_b_id": current_id,
+                        "hash_before": node.get("expected_sha256"), "hash_after": node.get("observed_sha256"),
+                        "timestamp": time.time(),
+                    }
+                    store.save_integrity_finding(finding)
+                    artifact_id = node.get("artifact_id")
+                    dependency_map = {}
+                    if artifact_id:
+                        dependency_map[asset_path] = [
+                            str((by_id.get(link.get("target_id")) or {}).get("content") or
+                                (((by_id.get(link.get("target_id")) or {}).get("metadata") or {}).get("name")) or
+                                link.get("target_id"))
+                            for link in store.links()
+                            if link.get("source_id") == artifact_id and link.get("relation") == "depends_on"
+                        ]
+                    assessment = assess_risk(finding, obs_a, obs_b, dependency_map).to_dict()
+                    store.save_risk_assessment(assessment)
+                    if assessment["risk_level"] in {"critical", "high", "medium"}:
+                        store.save_alert({
+                            "finding_id": finding_id, "severity": "critical" if assessment["risk_level"] == "critical" else "warning",
+                            "reason": assessment["reasoning"], "timestamp": time.time(),
+                        })
             artifact_id_set = set(artifact_ids)
             scan_dependency_links = [
                 link for link in store.links()

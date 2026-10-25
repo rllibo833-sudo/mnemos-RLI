@@ -124,6 +124,39 @@ class MemoryStore(GraphStore):
                     observation_id TEXT NOT NULL REFERENCES device_observation(id) ON DELETE CASCADE,
                     PRIMARY KEY(snapshot_id, observation_id)
                 );
+                CREATE TABLE IF NOT EXISTS device_integrity_finding (
+                    id TEXT PRIMARY KEY, asset_id TEXT NOT NULL, finding_type TEXT NOT NULL,
+                    confidence TEXT NOT NULL DEFAULT 'unknown', reason TEXT NOT NULL DEFAULT '',
+                    observation_a_id TEXT REFERENCES device_observation(id),
+                    observation_b_id TEXT REFERENCES device_observation(id),
+                    snapshot_a_id TEXT, snapshot_b_id TEXT, hash_before TEXT, hash_after TEXT,
+                    timestamp REAL NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_integrity_finding_asset_time
+                    ON device_integrity_finding(asset_id, timestamp DESC);
+                CREATE TABLE IF NOT EXISTS risk_assessment (
+                    id TEXT PRIMARY KEY, finding_id TEXT NOT NULL UNIQUE
+                        REFERENCES device_integrity_finding(id) ON DELETE CASCADE,
+                    risk_level TEXT NOT NULL, confidence TEXT NOT NULL, reasoning TEXT NOT NULL,
+                    unobserved_scope TEXT, depends_on_findings TEXT NOT NULL DEFAULT '[]',
+                    timestamp REAL NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS monitoring_runtime (
+                    id INTEGER PRIMARY KEY CHECK(id=1), pid INTEGER, status TEXT NOT NULL,
+                    paths TEXT NOT NULL DEFAULT '[]', interval_seconds REAL,
+                    event_monitor_active INTEGER NOT NULL DEFAULT 0, event_monitor_type TEXT,
+                    event_monitor_errors TEXT NOT NULL DEFAULT '[]', updated_at REAL NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS device_alert (
+                    id TEXT PRIMARY KEY, finding_id TEXT NOT NULL UNIQUE
+                        REFERENCES device_integrity_finding(id) ON DELETE CASCADE,
+                    severity TEXT NOT NULL, reason TEXT NOT NULL, timestamp REAL NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS device_event (
+                    id TEXT PRIMARY KEY, timestamp REAL NOT NULL, path TEXT NOT NULL,
+                    event_type TEXT NOT NULL, source TEXT NOT NULL DEFAULT 'unknown'
+                );
+                CREATE INDEX IF NOT EXISTS idx_device_event_path_time ON device_event(path, timestamp DESC);
                 INSERT OR IGNORE INTO mnemos_meta(key, value)
                     VALUES ('schema_version', '2');
                 INSERT OR IGNORE INTO mnemos_meta(key, value)
@@ -707,7 +740,7 @@ class MemoryStore(GraphStore):
         }
 
     def save_observation(self, observation: dict[str, Any], snapshot_id: str | None = None) -> dict[str, Any]:
-        """Persist a scan observation separately from the deduplicated snapshot."""
+        """Persist a scan episode without breaking snapshot-observation foreign keys."""
         required = ("id", "timestamp", "scan_type")
         if any(key not in observation for key in required):
             raise ValueError("Observation requires id, timestamp, and scan_type.")
@@ -723,15 +756,172 @@ class MemoryStore(GraphStore):
             int(bool(observation.get("coverage_complete"))), str(observation.get("confidence_level", "unknown")),
         )
         with self._connect() as db:
-            db.execute("""INSERT OR REPLACE INTO device_observation
+            db.execute("""INSERT INTO device_observation
                 (id,timestamp,scan_type,paths,max_files,files_attempted,files_scanned,files_failed,
                  dirs_failed,hit_max_files_limit,truncated_due_to,event_monitor_active,event_monitor_type,
                  event_monitor_errors,coverage_complete,confidence_level)
-                VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", values)
+                VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ON CONFLICT(id) DO UPDATE SET timestamp=excluded.timestamp, scan_type=excluded.scan_type,
+                 paths=excluded.paths, max_files=excluded.max_files, files_attempted=excluded.files_attempted,
+                 files_scanned=excluded.files_scanned, files_failed=excluded.files_failed,
+                 dirs_failed=excluded.dirs_failed, hit_max_files_limit=excluded.hit_max_files_limit,
+                 truncated_due_to=excluded.truncated_due_to, event_monitor_active=excluded.event_monitor_active,
+                 event_monitor_type=excluded.event_monitor_type, event_monitor_errors=excluded.event_monitor_errors,
+                 coverage_complete=excluded.coverage_complete, confidence_level=excluded.confidence_level""", values)
             if snapshot_id:
                 db.execute("INSERT OR IGNORE INTO snapshot_observation(snapshot_id,observation_id) VALUES(?,?)",
                            (snapshot_id, str(observation["id"])))
         return dict(observation)
+
+    def observation_for_snapshot(self, snapshot_id: str) -> dict[str, Any] | None:
+        with self._connect() as db:
+            row = db.execute("""SELECT o.* FROM device_observation o
+                JOIN snapshot_observation so ON so.observation_id=o.id
+                WHERE so.snapshot_id=? ORDER BY o.timestamp DESC LIMIT 1""", (snapshot_id,)).fetchone()
+        return self._observation(row) if row else None
+
+    def save_integrity_finding(self, finding: dict[str, Any]) -> dict[str, Any]:
+        required = ("id", "asset_id", "finding_type", "timestamp")
+        if any(key not in finding for key in required):
+            raise ValueError("Integrity finding requires id, asset_id, finding_type, timestamp.")
+        with self._connect() as db:
+            db.execute("""INSERT INTO device_integrity_finding
+                (id,asset_id,finding_type,confidence,reason,observation_a_id,observation_b_id,
+                 snapshot_a_id,snapshot_b_id,hash_before,hash_after,timestamp)
+                VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET
+                confidence=excluded.confidence, reason=excluded.reason,
+                observation_a_id=excluded.observation_a_id, observation_b_id=excluded.observation_b_id,
+                snapshot_a_id=excluded.snapshot_a_id, snapshot_b_id=excluded.snapshot_b_id,
+                hash_before=excluded.hash_before, hash_after=excluded.hash_after, timestamp=excluded.timestamp""",
+                (str(finding["id"]), str(finding["asset_id"]), str(finding["finding_type"]),
+                 str(finding.get("confidence", "unknown")), str(finding.get("reason", "")),
+                 finding.get("observation_a_id"), finding.get("observation_b_id"),
+                 finding.get("snapshot_a_id"), finding.get("snapshot_b_id"),
+                 finding.get("hash_before"), finding.get("hash_after"), float(finding["timestamp"])))
+        return dict(finding)
+
+    def integrity_findings(self, *, asset_id: str | None = None, limit: int = 1000) -> list[dict[str, Any]]:
+        query = "SELECT * FROM device_integrity_finding"
+        params: list[Any] = []
+        if asset_id is not None:
+            query += " WHERE asset_id=?"
+            params.append(asset_id)
+        query += " ORDER BY timestamp DESC, id DESC LIMIT ?"
+        params.append(max(1, min(int(limit), 10000)))
+        with self._connect() as db:
+            rows = db.execute(query, params).fetchall()
+        return [dict(row) for row in rows]
+
+    def save_risk_assessment(self, assessment: dict[str, Any]) -> dict[str, Any]:
+        if not assessment.get("finding_id"):
+            raise ValueError("Risk assessment requires finding_id.")
+        assessment = dict(assessment)
+        assessment.setdefault("id", str(uuid.uuid4()))
+        assessment.setdefault("timestamp", __import__("time").time())
+        with self._connect() as db:
+            db.execute("""INSERT INTO risk_assessment
+                (id,finding_id,risk_level,confidence,reasoning,unobserved_scope,depends_on_findings,timestamp)
+                VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(finding_id) DO UPDATE SET
+                risk_level=excluded.risk_level, confidence=excluded.confidence, reasoning=excluded.reasoning,
+                unobserved_scope=excluded.unobserved_scope, depends_on_findings=excluded.depends_on_findings,
+                timestamp=excluded.timestamp""",
+                (str(assessment["id"]), str(assessment["finding_id"]), str(assessment.get("risk_level", "unknown")),
+                 str(assessment.get("confidence", "unknown")), str(assessment.get("reasoning", "")),
+                 assessment.get("unobserved_scope"),
+                 json.dumps(assessment.get("depends_on_findings", []), ensure_ascii=False),
+                 float(assessment["timestamp"])))
+        return assessment
+
+    def risk_assessments(self, *, limit: int = 1000) -> list[dict[str, Any]]:
+        with self._connect() as db:
+            rows = db.execute("SELECT * FROM risk_assessment ORDER BY timestamp DESC, id DESC LIMIT ?",
+                              (max(1, min(int(limit), 10000)),)).fetchall()
+        result = []
+        for row in rows:
+            item = dict(row)
+            try:
+                item["depends_on_findings"] = json.loads(item.get("depends_on_findings") or "[]")
+            except (TypeError, json.JSONDecodeError):
+                item["depends_on_findings"] = []
+            result.append(item)
+        return result
+
+    def save_device_events(self, events: list[dict[str, Any]]) -> int:
+        """Persist bounded OS event evidence without asserting file content or cause."""
+        saved = 0
+        with self._connect() as db:
+            for event in events:
+                path = str(event.get("path") or "")
+                event_type = str(event.get("event_type") or "filesystem_event")
+                if not path:
+                    continue
+                event_id = str(event.get("id") or uuid.uuid4())
+                db.execute("""INSERT OR IGNORE INTO device_event(id,timestamp,path,event_type,source)
+                    VALUES(?,?,?,?,?)""",
+                    (event_id, float(event.get("timestamp") or __import__("time").time()),
+                     path, event_type, str(event.get("source") or "unknown")))
+                saved += 1
+        return saved
+
+    def device_events(self, *, limit: int = 1000, path: str | None = None) -> list[dict[str, Any]]:
+        query = "SELECT * FROM device_event"
+        params: list[Any] = []
+        if path is not None:
+            query += " WHERE path=?"
+            params.append(path)
+        query += " ORDER BY timestamp DESC, id DESC LIMIT ?"
+        params.append(max(1, min(int(limit), 10000)))
+        with self._connect() as db:
+            rows = db.execute(query, params).fetchall()
+        return [dict(row) for row in rows]
+
+    def save_alert(self, alert: dict[str, Any]) -> dict[str, Any]:
+        if not alert.get("finding_id"):
+            raise ValueError("Alert requires finding_id.")
+        alert = dict(alert)
+        alert.setdefault("id", str(uuid.uuid4()))
+        alert.setdefault("timestamp", __import__("time").time())
+        with self._connect() as db:
+            db.execute("""INSERT INTO device_alert(id,finding_id,severity,reason,timestamp)
+                VALUES(?,?,?,?,?) ON CONFLICT(finding_id) DO NOTHING""",
+                (str(alert["id"]), str(alert["finding_id"]), str(alert.get("severity", "info")),
+                 str(alert.get("reason", "")), float(alert["timestamp"])))
+        return alert
+
+    def alerts(self, *, limit: int = 1000) -> list[dict[str, Any]]:
+        with self._connect() as db:
+            rows = db.execute("SELECT * FROM device_alert ORDER BY timestamp DESC, id DESC LIMIT ?",
+                              (max(1, min(int(limit), 10000)),)).fetchall()
+        return [dict(row) for row in rows]
+
+    def update_monitoring_runtime(self, *, status: str, paths: list[str], interval_seconds: float,
+                                  event_monitor_active: bool = False, event_monitor_type: str | None = None,
+                                  event_monitor_errors: list[str] | None = None, pid: int | None = None) -> None:
+        import time
+        with self._connect() as db:
+            db.execute("""INSERT INTO monitoring_runtime
+                (id,pid,status,paths,interval_seconds,event_monitor_active,event_monitor_type,event_monitor_errors,updated_at)
+                VALUES(1,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET
+                pid=excluded.pid,status=excluded.status,paths=excluded.paths,
+                interval_seconds=excluded.interval_seconds,event_monitor_active=excluded.event_monitor_active,
+                event_monitor_type=excluded.event_monitor_type,event_monitor_errors=excluded.event_monitor_errors,
+                updated_at=excluded.updated_at""",
+                (pid, status, json.dumps(paths), float(interval_seconds), int(event_monitor_active),
+                 event_monitor_type, json.dumps(event_monitor_errors or []), time.time()))
+
+    def monitoring_runtime(self) -> dict[str, Any] | None:
+        with self._connect() as db:
+            row = db.execute("SELECT * FROM monitoring_runtime WHERE id=1").fetchone()
+        if not row:
+            return None
+        item = dict(row)
+        for key in ("paths", "event_monitor_errors"):
+            try:
+                item[key] = json.loads(item.get(key) or "[]")
+            except (TypeError, json.JSONDecodeError):
+                item[key] = []
+        item["event_monitor_active"] = bool(item.get("event_monitor_active"))
+        return item
 
     @staticmethod
     def _observation(row: sqlite3.Row) -> dict[str, Any]:
