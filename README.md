@@ -4,6 +4,10 @@ Mnemos-RLI is an offline-first engineer's tool for recording scoped binary inven
 
 Its identity is **evidence before conclusions**: a changed hash is a comparison result, not by itself proof of malicious tampering. Conclusions must retain their baseline, scan scope, and limitations.
 
+## Work across the RLI project ecosystem
+
+[Mnemos-RLI](https://github.com/rllibo833-sudo/mnemos-RLI) is part of an independent open-source portfolio with [Steadfast](https://github.com/rllibo833-sudo/Steadfast) for repository/work governance and [PusingCuk](https://github.com/rllibo833-sudo/pusingcuk) for language/runtime development and conformance testing. These remain separate projects; automatic cross-repository orchestration and evidence transfer are not claimed. See the [ecosystem map](https://github.com/rllibo833-sudo/Steadfast/blob/main/ECOSYSTEM.md).
+
 ## Current capabilities
 
 - **Scoped device mapping:** inspect explicitly selected files/directories and collect bounded static metadata for recognized binaries and executable files.
