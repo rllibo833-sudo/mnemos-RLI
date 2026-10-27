@@ -48,5 +48,8 @@
     "never_store_secrets": true,
     "never_execute_imported_files": true,
     "never_scan_entire_device_implicitly": true
-  }
+  },
+  "source_of_truth": "this_branch",
+  "sync_mode": "supabase_is_cache",
+  "workspace_name": "Steadfast Living Shared"
 }
