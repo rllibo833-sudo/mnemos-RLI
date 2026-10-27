@@ -1,6 +1,7 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
+async function main() {
 const root = "knowledge";
 const nodesDir = join(root, "nodes");
 const edgesDir = join(root, "edges");
@@ -23,3 +24,6 @@ const reposAnalyzed = new Set(nodes.filter((n: any) => n.kind === "repository_au
 const manifest = { schema_version: 1, source_of_truth: "mnemos-RLI:Knowledge", generated_at: new Date().toISOString(), nodes_count: nodes.length, edges_count: edges.length, repos_analyzed: reposAnalyzed, node_files: await jsonFiles(nodesDir), edge_files: (await readdir(edgesDir)).filter((f) => f.endsWith(".links.json")).sort(), workspaces: ["steadfast-living-shared"] };
 await writeFile(join(root, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n", "utf8");
 console.log(JSON.stringify({ ok: true, nodes: nodes.length, edges: edges.length, manifest: "knowledge/manifest.json" }));
+
+}
+main().catch(error => { console.error(error); process.exitCode = 1; });
