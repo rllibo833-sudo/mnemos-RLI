@@ -17,7 +17,10 @@ jobs:
         with:
           node-version: 22
       - run: npm install --no-save @supabase/supabase-js tsx
-      - run: npx tsx scripts/sync-supabase-to-knowledge.ts && npx tsx scripts/generate-manifest.ts
+      - run: |
+          npx tsx scripts/sync-supabase-to-knowledge.ts
+          npx tsx scripts/generate-manifest.ts
+          node -e 'const m=require("./knowledge/manifest.json"); if(m.nodes_count>0 && m.edges_count===0) { console.error("Refusing to commit graph with nodes but zero real relations"); process.exit(1); } console.log("Validated graph manifest:",m.nodes_count,"nodes,",m.edges_count,"edges,",m.repos_analyzed,"repos");'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
