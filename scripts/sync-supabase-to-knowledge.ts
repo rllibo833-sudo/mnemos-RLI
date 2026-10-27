@@ -10,7 +10,9 @@ const [nr, er] = await Promise.all([
 ]);
 if (nr.error || er.error) throw new Error(nr.error?.message || er.error?.message);
 const nodes = nr.data || [], links = er.data || [], ids = new Set(nodes.map(n => n.id));
-if (links.some(e => !ids.has(e.source_node_id) || !ids.has(e.target_node_id))) throw new Error("Supabase contains dangling graph edges");
+const sourceOf = (e: any) => e.source_id ?? e.source_node_id;
+const targetOf = (e: any) => e.target_id ?? e.target_node_id;
+if (links.some(e => !ids.has(sourceOf(e)) || !ids.has(targetOf(e)))) throw new Error("Supabase contains dangling graph edges");
 const nd = "knowledge/nodes", ed = "knowledge/edges";
 await mkdir(nd, { recursive: true }); await mkdir(ed, { recursive: true });
 for (const f of await readdir(nd)) if (f.endsWith(".json")) await rm(join(nd, f));
@@ -23,11 +25,11 @@ for (const n of nodes) {
 }
 const grouped = new Map<string, any[]>();
 for (const e of links) {
-  const node = nodes.find(n => n.id === e.source_node_id);
+  const node = nodes.find(n => n.id === sourceOf(e));
   const repo = node?.source?.repository_url;
   const key = repo ? safe(new URL(repo).pathname.split("/").filter(Boolean).join("-").toLowerCase()) : "shared-knowledge";
   const arr = grouped.get(key) || [];
-  arr.push({ source: e.source_node_id, target: e.target_node_id, relation: e.relation, created_at: e.created_at, metadata: e.metadata || {} });
+  arr.push({ source: sourceOf(e), target: targetOf(e), relation: e.relation, created_at: e.created_at, metadata: { ...(e.metadata || {}), provenance: e.provenance || null, confidence: e.confidence ?? null } });
   grouped.set(key, arr);
 }
 for (const [name, rows] of grouped) await writeFile(join(ed, name + ".links.json"), JSON.stringify(rows, null, 2) + "\n");
