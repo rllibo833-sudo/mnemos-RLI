@@ -1,0 +1,29 @@
+name: Sync Supabase cache to Knowledge source of truth
+on:
+  repository_dispatch:
+    types: [sync-supabase-to-knowledge]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Knowledge
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-save @supabase/supabase-js tsx
+      - run: npx tsx scripts/sync-supabase-to-knowledge.ts && npx tsx scripts/generate-manifest.ts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MNEMOS_WORKSPACE_ID: ${{ secrets.MNEMOS_WORKSPACE_ID }}
+      - run: |
+          git config user.name "knowledge-sync[bot]"
+          git config user.email "knowledge-sync[bot]@users.noreply.github.com"
+          git add knowledge/nodes knowledge/edges knowledge/manifest.json
+          git diff --cached --quiet || (git commit -m "sync: refresh canonical knowledge graph" && git push origin Knowledge)
