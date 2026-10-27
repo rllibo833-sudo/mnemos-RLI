@@ -1,0 +1,36 @@
+[
+  {
+    "source": "sf-a35d5aea-e139-442b-981c-b2bebd9041fe",
+    "target": "sf-c182d9c3-bc31-4b3a-994e-ec8233a51c6f",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "chatgpt"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-a35d5aea-e139-442b-981c-b2bebd9041fe",
+    "target": "sf-eb3e2c1e-3f72-461b-ac45-32628aa01fb1",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  }
+]

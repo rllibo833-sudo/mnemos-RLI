@@ -1,0 +1,23 @@
+{
+  "owner_id": "3995de94-8608-400d-af0a-2b26f2e813da",
+  "workspace_id": "f9a3cb1a-7eef-4d9c-86dd-e74414344bca",
+  "id": "sf-8edcf62f-6db6-4456-b016-d9caaac3a4a3",
+  "kind": "audit_finding",
+  "title": "Dependency manifests found without a recognized lockfile",
+  "content": "Severity: medium\nSkill: dependency-hygiene\nEvidence: Manifests: android-studio/app/build.gradle, android-studio/build.gradle, editors/vscode/package.json, pyproject.toml\nRecommendation: Commit the ecosystem's lockfile and use deterministic dependency installation.\nRepository: https://github.com/rllibo833-sudo/pusingcuk",
+  "source": {
+    "type": "steadfast-native-skills",
+    "task_id": "fcaa0f20-de71-43a0-a5dd-bcd56e74bf4b",
+    "repository_url": "https://github.com/rllibo833-sudo/pusingcuk"
+  },
+  "metadata": {
+    "generated_by": "steadfast-native-skills",
+    "relation_hint": "dependency-hygiene"
+  },
+  "media": {},
+  "content_sha256": "88ed093b99aec03f8d31a7069eafc2a523ed494fc379fceafb883ac1b30cdec9",
+  "schema_version": 1,
+  "created_at": "2026-10-27T10:39:58.32918+00:00",
+  "updated_at": "2026-10-27T10:39:58.32918+00:00",
+  "deleted_at": null
+}

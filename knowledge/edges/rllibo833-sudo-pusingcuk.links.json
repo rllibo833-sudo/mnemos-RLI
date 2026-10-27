@@ -1,0 +1,1601 @@
+[
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-8edcf62f-6db6-4456-b016-d9caaac3a4a3",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-8edcf62f-6db6-4456-b016-d9caaac3a4a3",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-6abaa995-138e-429a-9d59-56098ff87e17",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-6abaa995-138e-429a-9d59-56098ff87e17",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-67793d38-ceb5-4aea-8ca2-b7e10d26f473",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-67793d38-ceb5-4aea-8ca2-b7e10d26f473",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-9b434818-fb5d-4a65-9bcf-1f8ca7b2fc5b",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-9b434818-fb5d-4a65-9bcf-1f8ca7b2fc5b",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-61e0d5dd-f620-4db3-bc45-210c7f795659",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-61e0d5dd-f620-4db3-bc45-210c7f795659",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-3a046d8b-7549-44fd-ac0a-7cfef07c730c",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-3a046d8b-7549-44fd-ac0a-7cfef07c730c",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-eb3e2c1e-3f72-461b-ac45-32628aa01fb1",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-eb3e2c1e-3f72-461b-ac45-32628aa01fb1",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-27e94cd4-9a69-4d30-a604-1529a8dafdfd",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-27e94cd4-9a69-4d30-a604-1529a8dafdfd",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-619f52ce-e893-4370-9183-fd43d5858ffd",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-619f52ce-e893-4370-9183-fd43d5858ffd",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-6955c996-9753-4f7e-82f8-1a3a61aef56a",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-6955c996-9753-4f7e-82f8-1a3a61aef56a",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-65173992-c212-4057-bd88-a110d69ee277",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-65173992-c212-4057-bd88-a110d69ee277",
+    "relation": "HAS_FINDING",
+    "created_at": "2026-10-27T13:29:13.614982+00:00",
+    "metadata": {
+      "provenance": {},
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-27e94cd4-9a69-4d30-a604-1529a8dafdfd",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "external",
+        "found",
+        "github",
+        "https",
+        "low",
+        "no",
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-3a046d8b-7549-44fd-ac0a-7cfef07c730c",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "medium",
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-3d00ff20-bfea-4121-830a-9212c147b27d",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "ai",
+        "api",
+        "audit",
+        "audited_at",
+        "checks",
+        "com",
+        "critical",
+        "default_branch",
+        "dependency_manifests",
+        "description",
+        "evidence",
+        "evidence_files",
+        "external",
+        "false",
+        "files",
+        "finding_count",
+        "found",
+        "full_name",
+        "github",
+        "high",
+        "https",
+        "inspected",
+        "llm",
+        "lockfiles",
+        "low",
+        "main",
+        "medium",
+        "native",
+        "no",
+        "paid",
+        "private",
+        "repository",
+        "repository_files",
+        "review",
+        "signals",
+        "stars",
+        "steadfast",
+        "summary",
+        "tree_truncated",
+        "url",
+        "used",
+        "workflow_files"
+      ],
+      "matched_sentences": [
+        "\",\"repository\":{\"url\":\"https://github",
+        "no external llm or paid ai api was used"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "critical",
+        "evidence",
+        "found",
+        "github",
+        "https",
+        "low",
+        "no",
+        "pusingcuk",
+        "repository",
+        "review",
+        "rllibo833-sudo"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-619f52ce-e893-4370-9183-fd43d5858ffd",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "critical",
+        "evidence",
+        "found",
+        "github",
+        "https",
+        "low",
+        "no",
+        "repository",
+        "review"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-61e0d5dd-f620-4db3-bc45-210c7f795659",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "medium",
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-65173992-c212-4057-bd88-a110d69ee277",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "critical",
+        "evidence",
+        "found",
+        "github",
+        "https",
+        "low",
+        "no",
+        "pusingcuk",
+        "repository",
+        "review",
+        "rllibo833-sudo"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-67793d38-ceb5-4aea-8ca2-b7e10d26f473",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "medium",
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-6955c996-9753-4f7e-82f8-1a3a61aef56a",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "found",
+        "github",
+        "https",
+        "medium",
+        "pusingcuk",
+        "repository",
+        "rllibo833-sudo"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-6abaa995-138e-429a-9d59-56098ff87e17",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "medium",
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "16",
+        "24",
+        "522",
+        "ai",
+        "api",
+        "applications",
+        "audit",
+        "audited_at",
+        "builds",
+        "bytecode",
+        "checks",
+        "com",
+        "compiler",
+        "conformance-tested",
+        "critical",
+        "default_branch",
+        "dependency_manifests",
+        "description",
+        "evidence",
+        "evidence_files",
+        "experimental",
+        "external",
+        "false",
+        "featuring",
+        "files",
+        "finding_count",
+        "focused",
+        "found",
+        "full_name",
+        "github",
+        "high",
+        "https",
+        "indonesian-keyword",
+        "inspected",
+        "interoperability",
+        "ir",
+        "language",
+        "llm",
+        "lockfiles",
+        "low",
+        "main",
+        "medium",
+        "native",
+        "no",
+        "paid",
+        "portable",
+        "practical",
+        "private",
+        "programming",
+        "pusingcuk",
+        "repository",
+        "repository_files",
+        "reproducible",
+        "review",
+        "rllibo833-sudo",
+        "runtime",
+        "signals",
+        "stars",
+        "steadfast",
+        "summary",
+        "targets",
+        "terminal",
+        "toolkit",
+        "tree_truncated",
+        "url",
+        "used",
+        "workflow_files"
+      ],
+      "matched_sentences": [
+        "\",\"repository\":{\"url\":\"https://github",
+        "{\"summary\":\"steadfast native audit inspected 522 repository files and 24 evidence files",
+        "com/rllibo833-sudo/pusingcuk\",\"full_name\":\"rllibo833-sudo/pusingcuk\",\"description\":\"an experimental indonesian-keyword programming language and compiler toolkit featuring a native c runtime, portable ir and bytecode, and conformance-tested compiler targets",
+        "focused on practical terminal applications, compiler interoperability, and reproducible builds",
+        "found 2 review signals (0 critical, 0 high, 1 medium, 1 low)",
+        "no external llm or paid ai api was used",
+        "rllibo833-sudo/pusingcuk — steadfast audit"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-8edcf62f-6db6-4456-b016-d9caaac3a4a3",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "found",
+        "github",
+        "https",
+        "medium",
+        "pusingcuk",
+        "repository",
+        "rllibo833-sudo"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-9b434818-fb5d-4a65-9bcf-1f8ca7b2fc5b",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "medium",
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-a35d5aea-e139-442b-981c-b2bebd9041fe",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "repository",
+        "url"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522",
+    "target": "sf-eb3e2c1e-3f72-461b-ac45-32628aa01fb1",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "medium",
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "target": "sf-619f52ce-e893-4370-9183-fd43d5858ffd",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "changes",
+        "code",
+        "codeowners",
+        "com",
+        "critical",
+        "define",
+        "detected",
+        "evidence",
+        "file",
+        "found",
+        "github",
+        "https",
+        "if",
+        "low",
+        "maintainership",
+        "no",
+        "ownership",
+        "recommendation",
+        "repository",
+        "repository-health",
+        "requires",
+        "review",
+        "root",
+        "severity",
+        "skill",
+        "workflow"
+      ],
+      "matched_sentences": [
+        "evidence: no root or",
+        "github/codeowners file found",
+        "no codeowners file detected",
+        "recommendation: define review ownership for critical code and workflow changes if maintainership requires it",
+        "repository: https://github",
+        "skill: repository-health"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "target": "sf-61e0d5dd-f620-4db3-bc45-210c7f795659",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill"
+      ],
+      "matched_sentences": [
+        "repository: https://github"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "target": "sf-65173992-c212-4057-bd88-a110d69ee277",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "changes",
+        "code",
+        "codeowners",
+        "com",
+        "critical",
+        "define",
+        "detected",
+        "evidence",
+        "file",
+        "found",
+        "github",
+        "https",
+        "if",
+        "low",
+        "maintainership",
+        "no",
+        "ownership",
+        "pusingcuk",
+        "recommendation",
+        "repository",
+        "repository-health",
+        "requires",
+        "review",
+        "rllibo833-sudo",
+        "root",
+        "severity",
+        "skill",
+        "workflow"
+      ],
+      "matched_sentences": [
+        "com/rllibo833-sudo/pusingcuk",
+        "evidence: no root or",
+        "github/codeowners file found",
+        "no codeowners file detected",
+        "recommendation: define review ownership for critical code and workflow changes if maintainership requires it",
+        "repository: https://github",
+        "skill: repository-health"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "target": "sf-67793d38-ceb5-4aea-8ca2-b7e10d26f473",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill"
+      ],
+      "matched_sentences": [
+        "repository: https://github"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "target": "sf-6955c996-9753-4f7e-82f8-1a3a61aef56a",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "found",
+        "github",
+        "https",
+        "pusingcuk",
+        "recommendation",
+        "repository",
+        "rllibo833-sudo",
+        "severity",
+        "skill"
+      ],
+      "matched_sentences": [
+        "com/rllibo833-sudo/pusingcuk",
+        "repository: https://github"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "target": "sf-6abaa995-138e-429a-9d59-56098ff87e17",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill"
+      ],
+      "matched_sentences": [
+        "repository: https://github"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "target": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "critical",
+        "evidence",
+        "found",
+        "github",
+        "https",
+        "low",
+        "no",
+        "pusingcuk",
+        "repository",
+        "review",
+        "rllibo833-sudo"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "target": "sf-8edcf62f-6db6-4456-b016-d9caaac3a4a3",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "found",
+        "github",
+        "https",
+        "pusingcuk",
+        "recommendation",
+        "repository",
+        "rllibo833-sudo",
+        "severity",
+        "skill"
+      ],
+      "matched_sentences": [
+        "com/rllibo833-sudo/pusingcuk",
+        "repository: https://github"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "target": "sf-9b434818-fb5d-4a65-9bcf-1f8ca7b2fc5b",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill"
+      ],
+      "matched_sentences": [
+        "repository: https://github"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "target": "sf-a35d5aea-e139-442b-981c-b2bebd9041fe",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+    "target": "sf-eb3e2c1e-3f72-461b-ac45-32628aa01fb1",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill"
+      ],
+      "matched_sentences": [
+        "repository: https://github"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-65173992-c212-4057-bd88-a110d69ee277",
+    "target": "sf-8edcf62f-6db6-4456-b016-d9caaac3a4a3",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "found",
+        "github",
+        "https",
+        "pusingcuk",
+        "recommendation",
+        "repository",
+        "rllibo833-sudo",
+        "severity",
+        "skill"
+      ],
+      "matched_sentences": [
+        "com/rllibo833-sudo/pusingcuk",
+        "repository: https://github"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-65173992-c212-4057-bd88-a110d69ee277",
+    "target": "sf-67793d38-ceb5-4aea-8ca2-b7e10d26f473",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill"
+      ],
+      "matched_sentences": [
+        "repository: https://github"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-65173992-c212-4057-bd88-a110d69ee277",
+    "target": "sf-6955c996-9753-4f7e-82f8-1a3a61aef56a",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "found",
+        "github",
+        "https",
+        "pusingcuk",
+        "recommendation",
+        "repository",
+        "rllibo833-sudo",
+        "severity",
+        "skill"
+      ],
+      "matched_sentences": [
+        "com/rllibo833-sudo/pusingcuk",
+        "repository: https://github"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-65173992-c212-4057-bd88-a110d69ee277",
+    "target": "sf-6abaa995-138e-429a-9d59-56098ff87e17",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill"
+      ],
+      "matched_sentences": [
+        "repository: https://github"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-65173992-c212-4057-bd88-a110d69ee277",
+    "target": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "critical",
+        "evidence",
+        "found",
+        "github",
+        "https",
+        "low",
+        "no",
+        "pusingcuk",
+        "repository",
+        "review",
+        "rllibo833-sudo"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-65173992-c212-4057-bd88-a110d69ee277",
+    "target": "sf-9b434818-fb5d-4a65-9bcf-1f8ca7b2fc5b",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill"
+      ],
+      "matched_sentences": [
+        "repository: https://github"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-65173992-c212-4057-bd88-a110d69ee277",
+    "target": "sf-a35d5aea-e139-442b-981c-b2bebd9041fe",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-65173992-c212-4057-bd88-a110d69ee277",
+    "target": "sf-eb3e2c1e-3f72-461b-ac45-32628aa01fb1",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill"
+      ],
+      "matched_sentences": [
+        "repository: https://github"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-6955c996-9753-4f7e-82f8-1a3a61aef56a",
+    "target": "sf-6abaa995-138e-429a-9d59-56098ff87e17",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "commit",
+        "evidence",
+        "github",
+        "https",
+        "medium",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill",
+        "use"
+      ],
+      "matched_sentences": [
+        "repository: https://github",
+        "severity: medium"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-6955c996-9753-4f7e-82f8-1a3a61aef56a",
+    "target": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "found",
+        "github",
+        "https",
+        "medium",
+        "pusingcuk",
+        "repository",
+        "rllibo833-sudo"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-6955c996-9753-4f7e-82f8-1a3a61aef56a",
+    "target": "sf-8edcf62f-6db6-4456-b016-d9caaac3a4a3",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "android-studio",
+        "app",
+        "build",
+        "com",
+        "commit",
+        "dependency",
+        "dependency-hygiene",
+        "deterministic",
+        "ecosystem",
+        "editors",
+        "evidence",
+        "found",
+        "github",
+        "gradle",
+        "https",
+        "installation",
+        "json",
+        "lockfile",
+        "manifests",
+        "medium",
+        "package",
+        "pusingcuk",
+        "pyproject",
+        "recognized",
+        "recommendation",
+        "repository",
+        "rllibo833-sudo",
+        "severity",
+        "skill",
+        "toml",
+        "use",
+        "vscode",
+        "without"
+      ],
+      "matched_sentences": [
+        "com/rllibo833-sudo/pusingcuk",
+        "dependency manifests found without a recognized lockfile",
+        "evidence: manifests: android-studio/app/build",
+        "gradle, android-studio/build",
+        "gradle, editors/vscode/package",
+        "recommendation: commit the ecosystem's lockfile and use deterministic dependency installation",
+        "repository: https://github",
+        "severity: medium",
+        "skill: dependency-hygiene"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-6955c996-9753-4f7e-82f8-1a3a61aef56a",
+    "target": "sf-9b434818-fb5d-4a65-9bcf-1f8ca7b2fc5b",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "commit",
+        "evidence",
+        "github",
+        "https",
+        "medium",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill",
+        "use"
+      ],
+      "matched_sentences": [
+        "repository: https://github",
+        "severity: medium"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-6955c996-9753-4f7e-82f8-1a3a61aef56a",
+    "target": "sf-a35d5aea-e139-442b-981c-b2bebd9041fe",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-6955c996-9753-4f7e-82f8-1a3a61aef56a",
+    "target": "sf-eb3e2c1e-3f72-461b-ac45-32628aa01fb1",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "commit",
+        "evidence",
+        "github",
+        "https",
+        "medium",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill",
+        "use"
+      ],
+      "matched_sentences": [
+        "repository: https://github",
+        "severity: medium"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-8edcf62f-6db6-4456-b016-d9caaac3a4a3",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "found",
+        "github",
+        "https",
+        "medium",
+        "pusingcuk",
+        "repository",
+        "rllibo833-sudo"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-9b434818-fb5d-4a65-9bcf-1f8ca7b2fc5b",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "medium",
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-a35d5aea-e139-442b-981c-b2bebd9041fe",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "repository",
+        "url"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+    "target": "sf-eb3e2c1e-3f72-461b-ac45-32628aa01fb1",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "evidence",
+        "github",
+        "https",
+        "medium",
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-8edcf62f-6db6-4456-b016-d9caaac3a4a3",
+    "target": "sf-9b434818-fb5d-4a65-9bcf-1f8ca7b2fc5b",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "commit",
+        "evidence",
+        "github",
+        "https",
+        "medium",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill",
+        "use"
+      ],
+      "matched_sentences": [
+        "repository: https://github",
+        "severity: medium"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "sf-8edcf62f-6db6-4456-b016-d9caaac3a4a3",
+    "target": "sf-a35d5aea-e139-442b-981c-b2bebd9041fe",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "repository"
+      ],
+      "matched_sentences": [],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 0.8
+    }
+  },
+  {
+    "source": "sf-8edcf62f-6db6-4456-b016-d9caaac3a4a3",
+    "target": "sf-eb3e2c1e-3f72-461b-ac45-32628aa01fb1",
+    "relation": "auto_match",
+    "created_at": "2026-10-27T13:56:13.721704+00:00",
+    "metadata": {
+      "matched_words": [
+        "com",
+        "commit",
+        "evidence",
+        "github",
+        "https",
+        "medium",
+        "recommendation",
+        "repository",
+        "severity",
+        "skill",
+        "use"
+      ],
+      "matched_sentences": [
+        "repository: https://github",
+        "severity: medium"
+      ],
+      "provenance": {
+        "type": "normalized_exact_match",
+        "algorithm": "backfill-token-sentence-v1"
+      },
+      "confidence": 1
+    }
+  }
+]

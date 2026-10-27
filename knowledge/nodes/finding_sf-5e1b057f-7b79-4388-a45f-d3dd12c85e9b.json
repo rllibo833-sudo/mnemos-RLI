@@ -1,0 +1,23 @@
+{
+  "owner_id": "3995de94-8608-400d-af0a-2b26f2e813da",
+  "workspace_id": "f9a3cb1a-7eef-4d9c-86dd-e74414344bca",
+  "id": "sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b",
+  "kind": "audit_finding",
+  "title": "No CODEOWNERS file detected",
+  "content": "Severity: low\nSkill: repository-health\nEvidence: No root or .github/CODEOWNERS file found.\nRecommendation: Define review ownership for critical code and workflow changes if maintainership requires it.\nRepository: https://github.com/rllibo833-sudo/pusingcuk",
+  "source": {
+    "type": "steadfast-native-skills",
+    "task_id": "fcaa0f20-de71-43a0-a5dd-bcd56e74bf4b",
+    "repository_url": "https://github.com/rllibo833-sudo/pusingcuk"
+  },
+  "metadata": {
+    "generated_by": "steadfast-native-skills",
+    "relation_hint": "repository-health"
+  },
+  "media": {},
+  "content_sha256": "c6cfd3335d99bb78f5f3e53e1ecbb227f212c89452538beb104b558feabd07b0",
+  "schema_version": 1,
+  "created_at": "2026-10-27T10:39:58.534735+00:00",
+  "updated_at": "2026-10-27T10:39:58.534735+00:00",
+  "deleted_at": null
+}

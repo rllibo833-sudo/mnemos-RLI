@@ -1,0 +1,23 @@
+{
+  "owner_id": "3995de94-8608-400d-af0a-2b26f2e813da",
+  "workspace_id": "f9a3cb1a-7eef-4d9c-86dd-e74414344bca",
+  "id": "sf-67793d38-ceb5-4aea-8ca2-b7e10d26f473",
+  "kind": "audit_finding",
+  "title": "Third-party action is not pinned to a full commit SHA",
+  "content": "Severity: medium\nSkill: actions-supply-chain\nEvidence: Observed uses: oven-sh/setup-bun@v2.\nRecommendation: Pin action references to verified full commit SHAs and use Dependabot to manage updates.\nPath: .github/workflows/release.yml\nRepository: https://github.com/Najihh/EnQuota",
+  "source": {
+    "type": "steadfast-native-skills",
+    "task_id": "2bbfe55d-4817-4a77-8ce4-878e50d51662",
+    "repository_url": "https://github.com/Najihh/EnQuota"
+  },
+  "metadata": {
+    "generated_by": "steadfast-native-skills",
+    "relation_hint": "actions-supply-chain"
+  },
+  "media": {},
+  "content_sha256": "8d037c6b393aaaf20342b9bdd7603525d5b9edd1ff8560715a3a1f8889390d83",
+  "schema_version": 1,
+  "created_at": "2026-10-27T11:45:28.704586+00:00",
+  "updated_at": "2026-10-27T11:45:28.704586+00:00",
+  "deleted_at": null
+}

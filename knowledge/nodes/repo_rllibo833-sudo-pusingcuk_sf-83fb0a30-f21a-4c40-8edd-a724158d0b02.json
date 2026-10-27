@@ -1,0 +1,23 @@
+{
+  "owner_id": "3995de94-8608-400d-af0a-2b26f2e813da",
+  "workspace_id": "f9a3cb1a-7eef-4d9c-86dd-e74414344bca",
+  "id": "sf-83fb0a30-f21a-4c40-8edd-a724158d0b02",
+  "kind": "repository_audit",
+  "title": "rllibo833-sudo/pusingcuk — Steadfast audit",
+  "content": "{\"summary\":\"Steadfast native audit inspected 522 repository files and 24 evidence files. Found 2 review signals (0 critical, 0 high, 1 medium, 1 low). No external LLM or paid AI API was used.\",\"repository\":{\"url\":\"https://github.com/rllibo833-sudo/pusingcuk\",\"full_name\":\"rllibo833-sudo/pusingcuk\",\"description\":\"An experimental Indonesian-keyword programming language and compiler toolkit featuring a native C runtime, portable IR and bytecode, and conformance-tested compiler targets. Focused on practical terminal applications, compiler interoperability, and reproducible builds.\",\"default_branch\":\"main\",\"stars\":0,\"private\":false},\"checks\":{\"repository_files\":522,\"evidence_files\":24,\"workflow_files\":16,\"dependency_manifests\":4,\"lockfiles\":0,\"tree_truncated\":false},\"finding_count\":2,\"audited_at\":\"2026-10-27T13:00:25.234Z\"}",
+  "source": {
+    "type": "steadfast-native-skills",
+    "task_id": "0f7dd765-a2e1-4ebc-99cc-81e56da8045c",
+    "repository_url": "https://github.com/rllibo833-sudo/pusingcuk"
+  },
+  "metadata": {
+    "generated_by": "steadfast-native-skills",
+    "relation_hint": "audit_summary"
+  },
+  "media": {},
+  "content_sha256": "fbc2d6c345ef03a98674aa5df86bbce9cbfc2e7f5d6442cb3026ce13b636a3ff",
+  "schema_version": 1,
+  "created_at": "2026-10-27T13:00:25.738907+00:00",
+  "updated_at": "2026-10-27T13:00:25.738907+00:00",
+  "deleted_at": null
+}

@@ -1,0 +1,22 @@
+{
+  "owner_id": "3995de94-8608-400d-af0a-2b26f2e813da",
+  "workspace_id": "f9a3cb1a-7eef-4d9c-86dd-e74414344bca",
+  "id": "sf-c182d9c3-bc31-4b3a-994e-ec8233a51c6f",
+  "kind": "human_note",
+  "title": "Chatgpt hilang arah",
+  "content": "Sangat sulit dikasih tau",
+  "source": {
+    "type": "user_saved",
+    "user_id": "3995de94-8608-400d-af0a-2b26f2e813da"
+  },
+  "metadata": {
+    "origin": "steadfast-agent-cloud",
+    "created_by_agent": false
+  },
+  "media": {},
+  "content_sha256": "056b81ea9a475af43e3b8e97a5606b1d7e0606702a350a022b001f5e736abc62",
+  "schema_version": 1,
+  "created_at": "2026-10-27T01:38:57.327166+00:00",
+  "updated_at": "2026-10-27T01:38:57.327166+00:00",
+  "deleted_at": null
+}

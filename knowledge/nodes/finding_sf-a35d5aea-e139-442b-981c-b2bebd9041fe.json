@@ -1,0 +1,25 @@
+{
+  "owner_id": "3995de94-8608-400d-af0a-2b26f2e813da",
+  "workspace_id": "f9a3cb1a-7eef-4d9c-86dd-e74414344bca",
+  "id": "sf-a35d5aea-e139-442b-981c-b2bebd9041fe",
+  "kind": "idea",
+  "title": "Bagaimana mengatur chatgpt",
+  "content": "Yang lu minta berarti:\n- Tambah pengetahuan: catatan, insight, ide, keputusan, dan sumber lain—tanpa harus memasukkan URL repository.\n- Identitas dan riwayat: setiap node mencatat siapa pembuatnya, kapan dibuat, dan siapa yang menghubungkannya.\n- Relasi nyata: pengguna bisa menghubungkan dua node dengan jenis relasi seperti supports, depends_on, related_to, atau contradicts.\n- Graf yang tetap hidup di website: node saling terhubung secara visual, bisa diklik untuk melihat detail, pembuat, sumber, dan relasinya.\n- Supabase tetap ringan: simpan metadata, teks seperlunya, ID node, dan relasi—bukan salinan seluruh repository atau semua data mentah. Konten besar bisa tetap berada di sumber asal.",
+  "source": {
+    "type": "user_saved",
+    "user_id": "3995de94-8608-400d-af0a-2b26f2e813da",
+    "created_by": "fadlibo833@gmail.com"
+  },
+  "metadata": {
+    "origin": "steadfast-agent-cloud",
+    "created_by_agent": false,
+    "created_by_email": "fadlibo833@gmail.com",
+    "created_by_label": "fadlibo833@gmail.com"
+  },
+  "media": {},
+  "content_sha256": "1106404191e07b1f4b25704053ca23a6bf4aa61f4e792eb0e379d96362a7f910",
+  "schema_version": 1,
+  "created_at": "2026-10-27T10:54:01.186108+00:00",
+  "updated_at": "2026-10-27T10:54:01.186108+00:00",
+  "deleted_at": null
+}
