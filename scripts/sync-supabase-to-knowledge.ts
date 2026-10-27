@@ -21,7 +21,7 @@ for (const f of await readdir(ed)) if (f.endsWith(".links.json")) await rm(join(
 const safe = (s: string) => s.replace(/[^a-z0-9._-]/gi, "-").slice(0, 160);
 for (const n of nodes) {
   const repo = n.kind === "repository_audit" && n.source?.repository_url;
-  const name = repo ? "repo_" + safe(new URL(n.source.repository_url).pathname.split("/").filter(Boolean).join("-").toLowerCase()) : "finding_" + safe(n.id);
+  const name = repo ? "repo_" + safe(new URL(n.source.repository_url).pathname.split("/").filter(Boolean).join("-").toLowerCase()) + "_" + safe(n.id) : "finding_" + safe(n.id);
   await writeFile(join(nd, name + ".json"), JSON.stringify(n, null, 2) + "\n");
 }
 const grouped = new Map<string, any[]>();
