@@ -3,6 +3,8 @@ on:
   repository_dispatch:
     types: [sync-supabase-to-knowledge]
   workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
   push:
     branches: [Knowledge]
     paths:
