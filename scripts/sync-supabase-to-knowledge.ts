@@ -1,8 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-const url = process.env.SUPABASE_URL!, key = process.env.SUPABASE_SERVICE_ROLE_KEY!, workspace = process.env.MNEMOS_WORKSPACE_ID!;
-if (!url || !key || !workspace) throw new Error("Missing Supabase sync secrets");
+async function main() {
+const url = process.env.SUPABASE_URL!, key = process.env.SUPABASE_SERVICE_ROLE_KEY!, workspace = process.env.MNEMOS_WORKSPACE_ID || "f9a3cb1a-7eef-4d9c-86dd-e74414344bca";
+if (!url || !key) throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
 const db = createClient(url, key, { auth: { persistSession: false } });
 const [nr, er] = await Promise.all([
   db.from("knowledge_nodes").select("*").eq("workspace_id", workspace).is("deleted_at", null),
@@ -37,3 +38,6 @@ const reposAnalyzed = new Set(nodes.filter(n => n.kind === "repository_audit").m
 const manifest = { schema_version: 1, source_of_truth: "mnemos-RLI:Knowledge", generated_at: new Date().toISOString(), nodes_count: nodes.length, edges_count: links.length, repos_analyzed: reposAnalyzed, workspace_id: workspace };
 await writeFile("knowledge/manifest.json", JSON.stringify(manifest, null, 2) + "\n");
 console.log(JSON.stringify({ nodes: nodes.length, edges: links.length }));
+
+}
+main().catch(error => { console.error(error); process.exitCode = 1; });
