@@ -3,6 +3,12 @@ on:
   repository_dispatch:
     types: [sync-supabase-to-knowledge]
   workflow_dispatch:
+  push:
+    branches: [Knowledge]
+    paths:
+      - .github/workflows/sync-supabase-to-knowledge.yml
+      - scripts/sync-supabase-to-knowledge.ts
+      - scripts/generate-manifest.ts
 permissions:
   contents: write
 jobs:
