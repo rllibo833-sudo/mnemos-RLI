@@ -179,7 +179,7 @@ def _load_release_manifest(path: str) -> dict:
         if not isinstance(path_value, str) or not path_value:
             raise ValueError(f"manifest artifact at index {index} has no path.")
         relative = PurePosixPath(path_value)
-        if relative.is_absolute() or any(part in ("", ".", "..") for part in relative.parts):
+        if relative.is_absolute() or "\\" in path_value or any(part in ("", ".", "..") for part in relative.parts):
             raise ValueError(f"manifest artifact path is not a safe relative path: {path_value}")
         path_value = relative.as_posix()
         if path_value in seen:
