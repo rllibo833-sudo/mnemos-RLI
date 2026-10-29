@@ -414,7 +414,20 @@ class ScanOrchestrator:
                     f"macOS event monitoring unavailable: {type(exc).__name__}: {exc}; polling remains active."
                 )
         elif sys.platform == "win32":
-            self.event_monitor_errors.append("ETW backend is not implemented in this build; polling remains active.")
+            try:
+                # Watchdog selects ReadDirectoryChangesW on Windows; polling remains
+                # enabled because native event streams can overflow or lose watches.
+                from .daemon import WatchdogEventBackend
+                self.event_monitor = WatchdogEventBackend(
+                    self.paths, prefer_fsevents=False, polling_timeout=min(1.0, self.interval)
+                )
+                self.event_monitor_active = True
+                self.event_monitor_type = self.event_monitor.event_monitor_type
+                self.event_monitor_errors.extend(self.event_monitor.errors)
+            except (ImportError, OSError, RuntimeError, ValueError) as exc:
+                self.event_monitor_errors.append(
+                    f"Windows event monitoring unavailable: {type(exc).__name__}: {exc}; polling remains active."
+                )
         else:
             self.event_monitor_errors.append(f"No supported event backend for platform {sys.platform!r}; polling remains active.")
 

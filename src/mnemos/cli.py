@@ -8,6 +8,7 @@ import json
 import re
 import shutil
 import sqlite3
+import subprocess
 import sys
 import time
 from pathlib import Path, PurePosixPath
@@ -442,6 +443,17 @@ def _parser() -> argparse.ArgumentParser:
     mapping = commands.add_parser("map-device", help="Inventory this device offline; scan only explicitly supplied paths.")
     mapping.add_argument("--path", action="append", default=[], help="File or directory to inspect for binary artifacts; repeatable.")
     mapping.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected across selected directories.")
+    mapping.add_argument("--war-mode", action="store_true", help="Hash every regular file in scope, bypass cache, and record war-mode coverage.")
+    mapping.add_argument("--full-rehash", action="store_true", help="Recompute full hashes for recognized binaries without using the hash cache.")
+    sign = commands.add_parser("sign-release", help="Sign a release manifest with cosign/Sigstore and emit a verification bundle.")
+    sign.add_argument("--manifest", required=True, help="Manifest JSON to sign.")
+    sign.add_argument("--bundle", required=True, help="Output Sigstore bundle path.")
+    verify_sig = commands.add_parser("verify-release-signature", help="Verify a manifest Sigstore bundle against an expected signer identity.")
+    verify_sig.add_argument("--manifest", required=True, help="Signed manifest JSON.")
+    verify_sig.add_argument("--bundle", required=True, help="Sigstore bundle emitted by sign-release.")
+    verify_sig.add_argument("--certificate-identity", required=True, help="Expected signer identity (email/workflow URI).")
+    verify_sig.add_argument("--certificate-oidc-issuer", required=True, help="Expected OIDC issuer, e.g. https://github.com/login/oauth.")
+    ledger_verify = commands.add_parser("verify-ledger", help="Verify the local append-only hash-chain and Ed25519 signatures.")
     manifest = commands.add_parser("release-manifest", help="Create an offline expected-artifact manifest from a complete snapshot.")
     manifest.add_argument("--snapshot-id", required=True, help="Source device snapshot ID returned by map-device.")
     manifest.add_argument("--release-id", required=True, help="Human-readable trusted release identifier.")
@@ -464,6 +476,8 @@ def _parser() -> argparse.ArgumentParser:
     daemon = commands.add_parser("daemon", help="Continuously refresh an offline device map for explicitly selected paths.")
     daemon.add_argument("--path", action="append", default=[], help="File or directory to scan; repeatable.")
     daemon.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected per scan.")
+    daemon.add_argument("--war-mode", action="store_true", help="Hash all regular files and bypass the hash cache on every daemon scan.")
+    daemon.add_argument("--full-rehash", action="store_true", help="Recompute full hashes for recognized binaries on every daemon scan.")
     daemon.add_argument("--interval", type=float, default=300, help="Seconds between full scans (default: 300).")
     daemon.add_argument("--once", action="store_true", help="Run one scan and exit.")
     daemon.add_argument("--enable-service", action="store_true", help="Register this exact daemon command as a user-level service and enable it.")
@@ -486,6 +500,39 @@ def main(argv: list[str] | None = None) -> int:
         store = MemoryStore(args.db)
         if args.command == "init":
             print(f"Mnemos database ready: {store.path}")
+        elif args.command == "sign-release":
+            try:
+                result = subprocess.run(
+                    ["cosign", "sign-blob", "--yes", "--bundle", args.bundle, args.manifest],
+                    check=False, capture_output=True, text=True,
+                )
+            except FileNotFoundError as exc:
+                raise RuntimeError("cosign is required for Sigstore signing; install cosign and authenticate with a supported OIDC identity.") from exc
+            if result.returncode:
+                raise RuntimeError(f"cosign sign-blob failed: {result.stderr.strip()}")
+            print(json.dumps({"status": "signed", "manifest": str(Path(args.manifest).resolve()),
+                              "bundle": str(Path(args.bundle).resolve()), "tool": "cosign"}, indent=2))
+        elif args.command == "verify-release-signature":
+            try:
+                result = subprocess.run(
+                    ["cosign", "verify-blob", "--bundle", args.bundle,
+                     "--certificate-identity", args.certificate_identity,
+                     "--certificate-oidc-issuer", args.certificate_oidc_issuer, args.manifest],
+                    check=False, capture_output=True, text=True,
+                )
+            except FileNotFoundError as exc:
+                raise RuntimeError("cosign is required for Sigstore verification.") from exc
+            if result.returncode:
+                print(json.dumps({"status": "invalid", "stderr": result.stderr.strip()}, indent=2))
+                return 1
+            print(json.dumps({"status": "verified", "manifest": str(Path(args.manifest).resolve()),
+                              "bundle": str(Path(args.bundle).resolve()), "identity": args.certificate_identity,
+                              "oidc_issuer": args.certificate_oidc_issuer}, indent=2))
+        elif args.command == "verify-ledger":
+            from .evidence_ledger import verify_ledger
+            report = verify_ledger()
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0 if report["ok"] else 1
         elif args.command == "release-manifest":
             manifest = _build_release_manifest(store, args.snapshot_id, args.release_id)
             output = Path(args.output)
@@ -568,6 +615,10 @@ def main(argv: list[str] | None = None) -> int:
                     for path in args.path:
                         sys.argv.extend(["--path", path])
                     sys.argv.extend(["--max-files", str(args.max_files), "--interval", str(args.interval)])
+                    if args.war_mode:
+                        sys.argv.append("--war-mode")
+                    if args.full_rehash:
+                        sys.argv.append("--full-rehash")
                     service = enable_service_registration()
                 finally:
                     sys.argv = original_argv
@@ -577,6 +628,10 @@ def main(argv: list[str] | None = None) -> int:
             for path in args.path:
                 scan_args.extend(["--path", path])
             scan_args.extend(["--max-files", str(args.max_files)])
+            if args.war_mode:
+                scan_args.append("--war-mode")
+            if args.full_rehash:
+                scan_args.append("--full-rehash")
             def scan() -> int:
                 with contextlib.redirect_stdout(io.StringIO()):
                     return main(scan_args)
@@ -627,7 +682,7 @@ def main(argv: list[str] | None = None) -> int:
                 )
             if args.max_files < 1:
                 raise ValueError("--max-files must be a positive integer.")
-            report = collect_device_map(args.path, max_files=args.max_files)
+            report = collect_device_map(args.path, max_files=args.max_files, war_mode=args.war_mode, full_rehash=args.full_rehash)
             if report.get("scan", {}).get("scope_missing") or not report.get("scan", {}).get("scope"):
                 raise ValueError("device map has no valid scan scope; no snapshot was saved.")
             # Bind each snapshot identity to this database and its observed host
@@ -704,6 +759,11 @@ def main(argv: list[str] | None = None) -> int:
                 )
             observation = Observation.from_scan(report, paths=report["scope_path"], max_files=args.max_files)
             store.save_observation(observation.to_dict(), snapshot_id=snapshot["id"])
+            from .evidence_ledger import append_observation
+            ledger_entry = append_observation(
+                observation.to_dict(), snapshot_id=snapshot["id"], war_mode=bool(args.war_mode),
+                snapshot_fingerprint=fingerprint, artifacts=report.get("artifacts", []),
+            )
             artifact_ids = []
             existing_artifact_ids = {}
             for existing in store.list_all(kind="binary_artifact"):
@@ -802,6 +862,7 @@ def main(argv: list[str] | None = None) -> int:
             dependency_record_ids = {link["target_id"] for link in scan_dependency_links}
             print(json.dumps({
                 "snapshot_id": snapshot["id"],
+                "evidence_ledger": ledger_entry,
                 "graph_evolution": evolution_report,
                 "artifact_records": len(artifact_ids),
                 "artifact_records_created": artifact_records_created,

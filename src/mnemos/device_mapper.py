@@ -775,9 +775,13 @@ def _sample_sha256(path: Path, file_size: int) -> str | None:
     return digest.hexdigest()
 
 
-def _cached_sha256(path: Path, info: os.stat_result) -> str | None:
+def _cached_sha256(path: Path, info: os.stat_result, *, full_rehash: bool = False) -> str | None:
     """Reuse a hash only when file identity, size, mtime, and ctime all match."""
-    if info.st_size > MAX_HASH_BYTES or not stat.S_ISREG(info.st_mode):
+    if not stat.S_ISREG(info.st_mode):
+        return None
+    if full_rehash:
+        return _sha256(path)
+    if info.st_size > MAX_HASH_BYTES:
         return None
     try:
         key = str(path.resolve())
@@ -805,7 +809,7 @@ def _cached_sha256(path: Path, info: os.stat_result) -> str | None:
         return _sha256(path)
 
 
-def _artifact(path: Path, scan_status: dict[str, Any] | None = None) -> dict[str, Any] | None:
+def _artifact(path: Path, scan_status: dict[str, Any] | None = None, *, include_all_files: bool = False, full_rehash: bool = False) -> dict[str, Any] | None:
     try:
         info = path.stat(follow_symlinks=False)
         if not stat.S_ISREG(info.st_mode) or path.is_symlink():
@@ -813,11 +817,13 @@ def _artifact(path: Path, scan_status: dict[str, Any] | None = None) -> dict[str
         with path.open("rb") as stream:
             header = stream.read(4096)
         fmt = classify_binary(header)
-        if not fmt:
+        if not fmt and not include_all_files:
             return None
-        digest = _cached_sha256(path, info)
-        sample_digest = _sample_sha256(path, info.st_size) if digest is None else None
-        details = inspect_binary(path, fmt)
+        digest = _cached_sha256(path, info, full_rehash=full_rehash)
+        sample_digest = _sample_sha256(path, info.st_size) if digest is None and not full_rehash else None
+        details = inspect_binary(path, fmt) if fmt else {
+            "status": "not_binary", "format": "unknown", "static_inspection": True,
+        }
         after = path.stat(follow_symlinks=False)
         changed_during_inspection = (
             info.st_dev != after.st_dev
@@ -831,6 +837,15 @@ def _artifact(path: Path, scan_status: dict[str, Any] | None = None) -> dict[str
             digest = None
             sample_digest = None
             details = {"status": "file_changed_during_inspection", "format": fmt}
+            if scan_status is not None:
+                scan_status.setdefault("file_errors", []).append({
+                    "path": str(path), "error": "FileChangedDuringInspection",
+                })
+        elif full_rehash and digest is None:
+            if scan_status is not None:
+                scan_status.setdefault("file_errors", []).append({
+                    "path": str(path), "error": "FullHashUnavailable",
+                })
         ctime_ns = getattr(info, "st_ctime_ns", int(info.st_ctime * 1_000_000_000))
         file_type = (
             "regular_file" if stat.S_ISREG(info.st_mode) else
@@ -857,7 +872,7 @@ def _artifact(path: Path, scan_status: dict[str, Any] | None = None) -> dict[str
         }
         return {
             "evidence": {
-                "schema": "mnemos-binary-evidence-v1",
+                "schema": "mnemos-binary-evidence-v1" if fmt else "mnemos-file-evidence-v1",
                 "method": "static-file-metadata",
                 "source_path": str(path),
                 "sha256": digest,
@@ -868,12 +883,15 @@ def _artifact(path: Path, scan_status: dict[str, Any] | None = None) -> dict[str
                 "observed_mtime_ns": info.st_mtime_ns,
                 "file_metadata": portable_stat,
                 "parser": "mnemos-device-mapper",
+                "hash_mode": "full_rehash" if full_rehash else "cached_bounded",
+                "artifact_class": "binary" if fmt else "file",
                 "execution_performed": False,
                 "network_used": False,
             },
             "path": str(path),
             "name": path.name,
-            "format": fmt,
+            "format": fmt or "unknown",
+            "artifact_class": "binary" if fmt else "file",
             "size_bytes": info.st_size,
             "mtime_ns": info.st_mtime_ns,
             "ctime_ns": ctime_ns,
@@ -893,6 +911,8 @@ def _artifact(path: Path, scan_status: dict[str, Any] | None = None) -> dict[str
             "hash_skipped_reason": (
                 "file changed during inspection"
                 if changed_during_inspection else
+                "full SHA-256 unavailable"
+                if full_rehash and digest is None else
                 "file exceeds 256 MiB limit or could not be read"
                 if digest is None else None
             ),
@@ -908,7 +928,8 @@ def _artifact(path: Path, scan_status: dict[str, Any] | None = None) -> dict[str
 
 def discover_artifacts(
     paths: Iterable[str | Path] = (), *, max_files: int = 2000,
-    scan_status: dict[str, Any] | None = None,
+    scan_status: dict[str, Any] | None = None, include_all_files: bool = False,
+    full_rehash: bool = False,
 ) -> list[dict[str, Any]]:
     """Inspect only user-selected files/directories; bound work and do not follow symlinks."""
     if max_files < 1:
@@ -951,7 +972,7 @@ def discover_artifacts(
                         "error": type(error).__name__,
                     })
                 for current, dirs, files in os.walk(root, followlinks=False, onerror=record_walk_error):
-                    dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not (Path(current) / d).is_symlink())
+                    dirs[:] = sorted(d for d in dirs if (include_all_files or d not in SKIP_DIRS) and not (Path(current) / d).is_symlink())
                     depth = len(Path(current).relative_to(root).parts)
                     if depth >= 12:
                         if dirs:
@@ -969,7 +990,7 @@ def discover_artifacts(
         for candidate in candidates:
             if root.is_file():
                 examined += 1
-            item = _artifact(candidate, scan_status=status)
+            item = _artifact(candidate, scan_status=status, include_all_files=include_all_files, full_rehash=full_rehash)
             if item is not None:
                 found.append(item)
             if examined >= max_files:
@@ -994,14 +1015,17 @@ def discover_artifacts(
     return found
 
 
-def collect_device_map(paths: Iterable[str | Path] = (), *, max_files: int = 2000) -> dict[str, Any]:
-    """Collect an offline OS/runtime/tool inventory and optional binary metadata."""
+def collect_device_map(paths: Iterable[str | Path] = (), *, max_files: int = 2000,
+                       war_mode: bool = False, full_rehash: bool = False) -> dict[str, Any]:
+    """Collect an offline inventory. War mode hashes every regular file in scope."""
+
     paths = tuple(paths)
     uname = platform.uname()
     tools = {name: shutil.which(name) for name in TOOL_NAMES}
     prefix = os.environ.get("PREFIX", "")
     scan_status: dict[str, Any] = {}
-    artifacts = discover_artifacts(paths, max_files=max_files, scan_status=scan_status)
+    artifacts = discover_artifacts(paths, max_files=max_files, scan_status=scan_status,
+                                   include_all_files=war_mode, full_rehash=(full_rehash or war_mode))
     return {
         "schema": "mnemos-device-map-v1",
         "captured_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -1044,6 +1068,9 @@ def collect_device_map(paths: Iterable[str | Path] = (), *, max_files: int = 200
             "file_errors": scan_status["file_errors"],
             "network_used": False,
             "executed_scanned_files": False,
+            "war_mode": bool(war_mode),
+            "hash_mode": "full_rehash_no_cache" if (full_rehash or war_mode) else "cached_bounded",
+            "hash_cache_used": not (full_rehash or war_mode),
         },
         "artifacts": artifacts,
     }
