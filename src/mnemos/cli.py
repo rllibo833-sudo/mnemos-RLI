@@ -208,6 +208,72 @@ def _load_release_manifest(path: str) -> dict:
     return {**payload, "artifacts": sorted(normalized, key=lambda item: item["path"])}
 
 
+
+def _verify_release_manifest_disk(manifest: dict, root_path: str) -> dict:
+    """Hash manifest paths on disk without following symlinks or escaping root."""
+    from .device_mapper import _sha256
+
+    root = Path(root_path).expanduser().resolve(strict=True)
+    if not root.is_dir():
+        raise ValueError(f"verification root is not a directory: {root}")
+    results = []
+    expected_paths = {item["path"] for item in manifest["artifacts"]}
+    for item in manifest["artifacts"]:
+        relative = PurePosixPath(item["path"])
+        candidate = root.joinpath(*relative.parts)
+        # Reject symlinks in every component; do not let a release manifest
+        # redirect verification to another location, even within the root.
+        cursor = root
+        has_symlink = False
+        for part in relative.parts:
+            cursor = cursor / part
+            if cursor.is_symlink():
+                has_symlink = True
+                break
+        if has_symlink:
+            status, observed = "unsafe_symlink", None
+        elif not candidate.exists():
+            status, observed = "missing", None
+        elif not candidate.is_file():
+            status, observed = "not_regular_file", None
+        else:
+            try:
+                resolved = candidate.resolve(strict=True)
+                if not resolved.is_relative_to(root):
+                    status, observed = "unsafe_path", None
+                else:
+                    observed = _sha256(resolved, allow_large=True)
+                    status = "match" if observed == item["sha256"] else ("unknown" if observed is None else "different")
+            except (OSError, RuntimeError):
+                status, observed = "unknown", None
+        results.append({"path": item["path"], "status": status,
+                        "expected_sha256": item["sha256"], "observed_sha256": observed})
+    statuses = {item["status"] for item in results}
+    unexpected = []
+    for path_item in sorted(root.rglob("*")):
+        try:
+            if path_item.is_symlink() or not path_item.is_file():
+                continue
+            rel = path_item.relative_to(root).as_posix()
+            if rel not in expected_paths:
+                unexpected.append({"path": rel, "status": "unexpected"})
+        except (OSError, ValueError):
+            continue
+    overall = ("different" if statuses.intersection({"different", "missing", "unsafe_symlink", "unsafe_path", "not_regular_file"}) or unexpected
+               else "unknown" if "unknown" in statuses else "match")
+    return {"schema": "mnemos-release-disk-verification-v1",
+            "release_id": manifest["release_id"], "root": str(root), "status": overall,
+            "counts": {"expected": len(results),
+                       "match": sum(x["status"] == "match" for x in results),
+                       "different": sum(x["status"] == "different" for x in results),
+                       "missing": sum(x["status"] == "missing" for x in results),
+                       "unknown": sum(x["status"] == "unknown" for x in results),
+                       "unsafe": sum(x["status"] in {"unsafe_symlink", "unsafe_path", "not_regular_file"} for x in results),
+                       "unexpected": len(unexpected)},
+            "artifacts": results, "unexpected_artifacts": unexpected,
+            "limitations": ["This verifies current file bytes under the supplied root; it does not authenticate the manifest signer.",
+                            "Unexpected-file discovery is best-effort and does not follow symlink directories."]}
+
 def _verify_release_manifest(store: MemoryStore, manifest: dict, snapshot_id: str) -> dict:
     snapshot = _find_release_snapshot(store, snapshot_id)
     metadata = snapshot.get("metadata") or {}
@@ -461,6 +527,9 @@ def _parser() -> argparse.ArgumentParser:
     verify = commands.add_parser("verify-release", help="Compare a snapshot against an expected-artifact manifest.")
     verify.add_argument("--manifest", required=True, help="Path to a mnemos-release-manifest-v1 JSON file.")
     verify.add_argument("--snapshot-id", required=True, help="Snapshot ID returned by map-device to verify.")
+    verify_disk = commands.add_parser("verify-release-disk", help="Hash actual files under an explicit root against a release manifest.")
+    verify_disk.add_argument("--manifest", required=True, help="Path to a release manifest JSON file.")
+    verify_disk.add_argument("--root", required=True, help="Explicit root directory to verify; symlink paths are rejected.")
     evolution = commands.add_parser("evolve", help="Reconcile artifact history and validate binary graph invariants.")
     analyze = commands.add_parser("analyze", help="Aggregate graph evidence into deterministic, traceable conclusions.")
     analyze.add_argument("--path", action="append", default=[], help="Restrict analysis to snapshots with this exact scan scope; repeatable.")
@@ -544,6 +613,12 @@ def main(argv: list[str] | None = None) -> int:
                 "artifact_count": manifest["artifact_count"],
                 "source_snapshot_id": manifest["source_snapshot_id"],
             }, ensure_ascii=False, indent=2))
+        elif args.command == "verify-release-disk":
+            manifest = _load_release_manifest(args.manifest)
+            report = _verify_release_manifest_disk(manifest, args.root)
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            if report["status"] != "match":
+                return 1
         elif args.command == "verify-release":
             manifest = _load_release_manifest(args.manifest)
             report = _verify_release_manifest(store, manifest, args.snapshot_id)
