@@ -872,7 +872,7 @@ def _artifact(path: Path, scan_status: dict[str, Any] | None = None, *, include_
         }
         return {
             "evidence": {
-                "schema": "mnemos-binary-evidence-v1",
+                "schema": "mnemos-binary-evidence-v1" if fmt else "mnemos-file-evidence-v1",
                 "method": "static-file-metadata",
                 "source_path": str(path),
                 "sha256": digest,
@@ -911,6 +911,8 @@ def _artifact(path: Path, scan_status: dict[str, Any] | None = None, *, include_
             "hash_skipped_reason": (
                 "file changed during inspection"
                 if changed_during_inspection else
+                "full SHA-256 unavailable"
+                if full_rehash and digest is None else
                 "file exceeds 256 MiB limit or could not be read"
                 if digest is None else None
             ),
