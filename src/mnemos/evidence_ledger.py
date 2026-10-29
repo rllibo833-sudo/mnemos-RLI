@@ -173,3 +173,80 @@ def verify_ledger() -> dict[str, Any]:
             errors.append(f"Entry {expected_sequence}: Ed25519 signature invalid.")
         previous = str(entry.get("entry_hash") or "")
     return {"ok": not errors, "entries": len(entries), "head": previous, "errors": errors}
+
+
+def export_anchor(output_path: str | Path) -> dict[str, Any]:
+    """Export a portable ledger-head checkpoint; copy it to independently trusted storage."""
+    import platform
+    import time
+    from datetime import datetime, timezone
+
+    entries = _ledger_entries()
+    head = str(entries[-1].get("entry_hash") or "") if entries else GENESIS
+    if entries and not re_full_sha256(head):
+        raise ValueError("Cannot anchor ledger: final entry has no valid SHA-256 hash.")
+    anchor = {
+        "head_hash": head,
+        "ledger_length": len(entries),
+        "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "device_id": os.environ.get("MNEMOS_DEVICE_ID") or platform.node() or "unknown",
+    }
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temp = output.with_name(output.name + ".tmp")
+    try:
+        fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            json.dump(anchor, stream, ensure_ascii=False, indent=2)
+            stream.write("\\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temp, output)
+        try:
+            os.chmod(output, 0o600)
+        except OSError:
+            pass
+    finally:
+        try:
+            temp.unlink()
+        except FileNotFoundError:
+            pass
+    return {"ok": True, "anchor": str(output), **anchor}
+
+
+def re_full_sha256(value: Any) -> bool:
+    return isinstance(value, str) and len(value) == 64 and all(ch in "0123456789abcdef" for ch in value)
+
+
+def verify_anchor(anchor_path: str | Path) -> dict[str, Any]:
+    """Compare current ledger head and length with a separately stored checkpoint."""
+    try:
+        anchor = json.loads(Path(anchor_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return {"ok": False, "status": "unknown", "errors": [f"Cannot read anchor: {exc}"]}
+    if not isinstance(anchor, dict):
+        return {"ok": False, "status": "unknown", "errors": ["Anchor must be a JSON object."]}
+    head = anchor.get("head_hash")
+    length = anchor.get("ledger_length")
+    if not re_full_sha256(head) or not isinstance(length, int) or isinstance(length, bool) or length < 0:
+        return {"ok": False, "status": "unknown", "errors": ["Anchor head_hash or ledger_length is invalid."]}
+    try:
+        entries = _ledger_entries()
+    except (OSError, ValueError) as exc:
+        return {"ok": False, "status": "unknown", "errors": [f"Cannot read ledger: {exc}"]}
+    current_head = str(entries[-1].get("entry_hash") or "") if entries else GENESIS
+    errors = []
+    if len(entries) != length:
+        errors.append(f"Ledger length mismatch: anchor={length}, current={len(entries)}.")
+    if current_head != head:
+        errors.append("Ledger head hash does not match the anchor.")
+    return {
+        "ok": not errors,
+        "status": "match" if not errors else "mismatch",
+        "anchor_length": length,
+        "current_length": len(entries),
+        "anchor_head_hash": head,
+        "current_head_hash": current_head,
+        "errors": errors,
+        "limitations": ["A local anchor can be replaced by an attacker controlling this host; store a copy independently."],
+    }
