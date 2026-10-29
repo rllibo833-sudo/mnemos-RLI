@@ -113,8 +113,14 @@ class WatchdogEventBackend:
                         pass
                     self._observer = None
         if self._observer is None:
-            from watchdog.observers.polling import PollingObserver
-            observer = PollingObserver(timeout=max(0.1, float(polling_timeout)))
+            if __import__("os").name == "nt":
+                # watchdog's default Observer selects ReadDirectoryChangesW on Windows.
+                from watchdog.observers import Observer
+                observer = Observer()
+                self.event_monitor_type = "windows-read-directory-changes"
+            else:
+                from watchdog.observers.polling import PollingObserver
+                observer = PollingObserver(timeout=max(0.1, float(polling_timeout)))
             scheduled = 0
             for path in paths:
                 try:
