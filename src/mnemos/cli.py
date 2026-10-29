@@ -8,6 +8,7 @@ import json
 import re
 import shutil
 import sqlite3
+import subprocess
 import sys
 import time
 from pathlib import Path, PurePosixPath
@@ -444,6 +445,15 @@ def _parser() -> argparse.ArgumentParser:
     mapping.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected across selected directories.")
     mapping.add_argument("--war-mode", action="store_true", help="Hash every regular file in scope, bypass cache, and record war-mode coverage.")
     mapping.add_argument("--full-rehash", action="store_true", help="Recompute full hashes for recognized binaries without using the hash cache.")
+    sign = commands.add_parser("sign-release", help="Sign a release manifest with cosign/Sigstore and emit a verification bundle.")
+    sign.add_argument("--manifest", required=True, help="Manifest JSON to sign.")
+    sign.add_argument("--bundle", required=True, help="Output Sigstore bundle path.")
+    verify_sig = commands.add_parser("verify-release-signature", help="Verify a manifest Sigstore bundle against an expected signer identity.")
+    verify_sig.add_argument("--manifest", required=True, help="Signed manifest JSON.")
+    verify_sig.add_argument("--bundle", required=True, help="Sigstore bundle emitted by sign-release.")
+    verify_sig.add_argument("--certificate-identity", required=True, help="Expected signer identity (email/workflow URI).")
+    verify_sig.add_argument("--certificate-oidc-issuer", required=True, help="Expected OIDC issuer, e.g. https://github.com/login/oauth.")
+    ledger_verify = commands.add_parser("verify-ledger", help="Verify the local append-only hash-chain and Ed25519 signatures.")
     manifest = commands.add_parser("release-manifest", help="Create an offline expected-artifact manifest from a complete snapshot.")
     manifest.add_argument("--snapshot-id", required=True, help="Source device snapshot ID returned by map-device.")
     manifest.add_argument("--release-id", required=True, help="Human-readable trusted release identifier.")
@@ -488,6 +498,39 @@ def main(argv: list[str] | None = None) -> int:
         store = MemoryStore(args.db)
         if args.command == "init":
             print(f"Mnemos database ready: {store.path}")
+        elif args.command == "sign-release":
+            try:
+                result = subprocess.run(
+                    ["cosign", "sign-blob", "--yes", "--bundle", args.bundle, args.manifest],
+                    check=False, capture_output=True, text=True,
+                )
+            except FileNotFoundError as exc:
+                raise RuntimeError("cosign is required for Sigstore signing; install cosign and authenticate with a supported OIDC identity.") from exc
+            if result.returncode:
+                raise RuntimeError(f"cosign sign-blob failed: {result.stderr.strip()}")
+            print(json.dumps({"status": "signed", "manifest": str(Path(args.manifest).resolve()),
+                              "bundle": str(Path(args.bundle).resolve()), "tool": "cosign"}, indent=2))
+        elif args.command == "verify-release-signature":
+            try:
+                result = subprocess.run(
+                    ["cosign", "verify-blob", "--bundle", args.bundle,
+                     "--certificate-identity", args.certificate_identity,
+                     "--certificate-oidc-issuer", args.certificate_oidc_issuer, args.manifest],
+                    check=False, capture_output=True, text=True,
+                )
+            except FileNotFoundError as exc:
+                raise RuntimeError("cosign is required for Sigstore verification.") from exc
+            if result.returncode:
+                print(json.dumps({"status": "invalid", "stderr": result.stderr.strip()}, indent=2))
+                return 1
+            print(json.dumps({"status": "verified", "manifest": str(Path(args.manifest).resolve()),
+                              "bundle": str(Path(args.bundle).resolve()), "identity": args.certificate_identity,
+                              "oidc_issuer": args.certificate_oidc_issuer}, indent=2))
+        elif args.command == "verify-ledger":
+            from .evidence_ledger import verify_ledger
+            report = verify_ledger()
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0 if report["ok"] else 1
         elif args.command == "release-manifest":
             manifest = _build_release_manifest(store, args.snapshot_id, args.release_id)
             output = Path(args.output)
@@ -706,6 +749,10 @@ def main(argv: list[str] | None = None) -> int:
                 )
             observation = Observation.from_scan(report, paths=report["scope_path"], max_files=args.max_files)
             store.save_observation(observation.to_dict(), snapshot_id=snapshot["id"])
+            from .evidence_ledger import append_observation
+            ledger_entry = append_observation(
+                observation.to_dict(), snapshot_id=snapshot["id"], war_mode=bool(args.war_mode)
+            )
             artifact_ids = []
             existing_artifact_ids = {}
             for existing in store.list_all(kind="binary_artifact"):
@@ -804,6 +851,7 @@ def main(argv: list[str] | None = None) -> int:
             dependency_record_ids = {link["target_id"] for link in scan_dependency_links}
             print(json.dumps({
                 "snapshot_id": snapshot["id"],
+                "evidence_ledger": ledger_entry,
                 "graph_evolution": evolution_report,
                 "artifact_records": len(artifact_ids),
                 "artifact_records_created": artifact_records_created,
