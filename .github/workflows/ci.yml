@@ -24,6 +24,8 @@ jobs:
       - name: Install optional macOS event backend
         if: runner.os == 'macOS'
         run: python -m pip install 'watchdog>=4.0' 'pyobjc-framework-CoreServices>=10.0'
+      - name: Install signing and Windows event dependencies
+        run: python -m pip install 'cryptography>=42' 'watchdog>=4.0'
       - name: Run unit tests
         env:
           PYTHONPATH: src
