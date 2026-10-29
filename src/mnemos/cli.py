@@ -761,7 +761,8 @@ def main(argv: list[str] | None = None) -> int:
             store.save_observation(observation.to_dict(), snapshot_id=snapshot["id"])
             from .evidence_ledger import append_observation
             ledger_entry = append_observation(
-                observation.to_dict(), snapshot_id=snapshot["id"], war_mode=bool(args.war_mode)
+                observation.to_dict(), snapshot_id=snapshot["id"], war_mode=bool(args.war_mode),
+                snapshot_fingerprint=fingerprint, artifacts=report.get("artifacts", []),
             )
             artifact_ids = []
             existing_artifact_ids = {}
