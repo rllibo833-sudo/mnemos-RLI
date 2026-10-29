@@ -84,7 +84,9 @@ def _ledger_entries() -> list[dict[str, Any]]:
     return entries
 
 
-def append_observation(observation: dict[str, Any], *, snapshot_id: str, war_mode: bool) -> dict[str, Any]:
+def append_observation(observation: dict[str, Any], *, snapshot_id: str, war_mode: bool,
+                       snapshot_fingerprint: str | None = None,
+                       artifacts: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     """Append and sign one observation; reject a ledger whose existing chain is broken."""
     report = verify_ledger()
     if not report["ok"]:
@@ -98,6 +100,17 @@ def append_observation(observation: dict[str, Any], *, snapshot_id: str, war_mod
         "snapshot_id": snapshot_id,
         "war_mode": bool(war_mode),
         "observation": observation,
+        "snapshot_fingerprint": snapshot_fingerprint,
+        "artifacts": sorted([
+            {
+                "path": str(item.get("path") or ""),
+                "sha256": item.get("sha256"),
+                "sample_sha256": item.get("sample_sha256"),
+                "size_bytes": item.get("size_bytes"),
+                "artifact_class": item.get("artifact_class", "binary"),
+            }
+            for item in (artifacts or [])
+        ], key=lambda item: item["path"]),
     }
     entry_hash = hashlib.sha256(_canonical(payload)).hexdigest()
     key = _load_or_create_key()
@@ -142,7 +155,8 @@ def verify_ledger() -> dict[str, Any]:
     previous = GENESIS
     for expected_sequence, entry in enumerate(entries, 1):
         payload = {key: entry.get(key) for key in (
-            "schema", "sequence", "previous_hash", "snapshot_id", "war_mode", "observation"
+            "schema", "sequence", "previous_hash", "snapshot_id", "war_mode",
+            "observation", "snapshot_fingerprint", "artifacts"
         )}
         digest = hashlib.sha256(_canonical(payload)).hexdigest()
         if entry.get("sequence") != expected_sequence:
