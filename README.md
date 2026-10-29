@@ -80,6 +80,52 @@ mnemos verify-release --manifest release-manifest.json --snapshot-id CURRENT_SNA
 
 A release manifest's hash list does not authenticate who created it; protect the manifest through a separate trusted distribution or signing process. Command names and options are discoverable with `mnemos --help` and `mnemos COMMAND --help`.
 
+## War mode and signed evidence
+
+War mode expands inventory coverage from recognized binary formats to every regular file
+under the explicitly supplied scan roots. It recomputes full SHA-256 hashes without the
+metadata-keyed hash cache. The configured `--max-files` and traversal depth limits still
+apply; an incomplete scan must not be treated as a clean baseline.
+
+```sh
+mnemos --db evidence.sqlite3 map-device --path ./critical-config --war-mode
+mnemos --db evidence.sqlite3 map-device --path ./critical-config --full-rehash
+mnemos verify-ledger
+```
+
+Each persisted scan observation is also appended to a separate JSONL evidence ledger,
+linked by SHA-256 and signed with Ed25519. The default ledger is
+`~/.mnemos/evidence-ledger.jsonl`; the private key is created at
+`~/.mnemos/keys/observations-ed25519.pem` with restrictive permissions. Set
+`MNEMOS_EVIDENCE_LEDGER` and `MNEMOS_EVIDENCE_SIGNING_KEY` to choose explicit paths.
+Install `cryptography` (included in the package dependencies) for signatures.
+
+**Trust boundary:** a local hash chain and a key stored on the same host cannot guarantee
+tamper resistance against an attacker who has root/administrator access to that host.
+Export the public key and anchor ledger-head hashes in an independently controlled system
+to make rewriting detectable. SQLite remains the application database for compatibility;
+the signed ledger is the forensic append-only record, not a claim that SQLite itself is
+immutable.
+
+For release manifests, create a manifest from a complete snapshot, then use cosign/Sigstore
+to sign it and retain the bundle separately:
+
+```sh
+mnemos --db evidence.sqlite3 release-manifest --snapshot-id SNAPSHOT_ID --release-id RELEASE_ID --output manifest.json
+mnemos --db evidence.sqlite3 sign-release --manifest manifest.json --bundle manifest.sigstore.json
+mnemos --db evidence.sqlite3 verify-release-signature --manifest manifest.json --bundle manifest.sigstore.json --certificate-identity EXPECTED_IDENTITY --certificate-oidc-issuer https://github.com/login/oauth
+```
+
+The cosign binary and a supported signing identity are required for signing. Verification
+requires the expected certificate identity and OIDC issuer; a valid signature from an
+unexpected identity must not be trusted. Keep the manifest and bundle in separately
+controlled storage when defending against a compromised host.
+
+Windows event monitoring uses watchdog's native `ReadDirectoryChangesW` observer when
+the `windows-events` extra is installed. Periodic scans remain enabled because native event
+queues can overflow or lose watches; event monitoring is not a guarantee that every transient
+change will be observed.
+
 ## Evidence semantics
 
 - **MATCH:** the full SHA-256 matches the selected comparison baseline.
