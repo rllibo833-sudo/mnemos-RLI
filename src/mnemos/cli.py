@@ -442,6 +442,8 @@ def _parser() -> argparse.ArgumentParser:
     mapping = commands.add_parser("map-device", help="Inventory this device offline; scan only explicitly supplied paths.")
     mapping.add_argument("--path", action="append", default=[], help="File or directory to inspect for binary artifacts; repeatable.")
     mapping.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected across selected directories.")
+    mapping.add_argument("--war-mode", action="store_true", help="Hash every regular file in scope, bypass cache, and record war-mode coverage.")
+    mapping.add_argument("--full-rehash", action="store_true", help="Recompute full hashes for recognized binaries without using the hash cache.")
     manifest = commands.add_parser("release-manifest", help="Create an offline expected-artifact manifest from a complete snapshot.")
     manifest.add_argument("--snapshot-id", required=True, help="Source device snapshot ID returned by map-device.")
     manifest.add_argument("--release-id", required=True, help="Human-readable trusted release identifier.")
@@ -627,7 +629,7 @@ def main(argv: list[str] | None = None) -> int:
                 )
             if args.max_files < 1:
                 raise ValueError("--max-files must be a positive integer.")
-            report = collect_device_map(args.path, max_files=args.max_files)
+            report = collect_device_map(args.path, max_files=args.max_files, war_mode=args.war_mode, full_rehash=args.full_rehash)
             if report.get("scan", {}).get("scope_missing") or not report.get("scan", {}).get("scope"):
                 raise ValueError("device map has no valid scan scope; no snapshot was saved.")
             # Bind each snapshot identity to this database and its observed host
