@@ -837,6 +837,15 @@ def _artifact(path: Path, scan_status: dict[str, Any] | None = None, *, include_
             digest = None
             sample_digest = None
             details = {"status": "file_changed_during_inspection", "format": fmt}
+            if scan_status is not None:
+                scan_status.setdefault("file_errors", []).append({
+                    "path": str(path), "error": "FileChangedDuringInspection",
+                })
+        elif full_rehash and digest is None:
+            if scan_status is not None:
+                scan_status.setdefault("file_errors", []).append({
+                    "path": str(path), "error": "FullHashUnavailable",
+                })
         ctime_ns = getattr(info, "st_ctime_ns", int(info.st_ctime * 1_000_000_000))
         file_type = (
             "regular_file" if stat.S_ISREG(info.st_mode) else
@@ -961,7 +970,7 @@ def discover_artifacts(
                         "error": type(error).__name__,
                     })
                 for current, dirs, files in os.walk(root, followlinks=False, onerror=record_walk_error):
-                    dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not (Path(current) / d).is_symlink())
+                    dirs[:] = sorted(d for d in dirs if (include_all_files or d not in SKIP_DIRS) and not (Path(current) / d).is_symlink())
                     depth = len(Path(current).relative_to(root).parts)
                     if depth >= 12:
                         if dirs:
