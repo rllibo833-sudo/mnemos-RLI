@@ -476,6 +476,8 @@ def _parser() -> argparse.ArgumentParser:
     daemon = commands.add_parser("daemon", help="Continuously refresh an offline device map for explicitly selected paths.")
     daemon.add_argument("--path", action="append", default=[], help="File or directory to scan; repeatable.")
     daemon.add_argument("--max-files", type=int, default=2000, help="Maximum files inspected per scan.")
+    daemon.add_argument("--war-mode", action="store_true", help="Hash all regular files and bypass the hash cache on every daemon scan.")
+    daemon.add_argument("--full-rehash", action="store_true", help="Recompute full hashes for recognized binaries on every daemon scan.")
     daemon.add_argument("--interval", type=float, default=300, help="Seconds between full scans (default: 300).")
     daemon.add_argument("--once", action="store_true", help="Run one scan and exit.")
     daemon.add_argument("--enable-service", action="store_true", help="Register this exact daemon command as a user-level service and enable it.")
@@ -613,6 +615,10 @@ def main(argv: list[str] | None = None) -> int:
                     for path in args.path:
                         sys.argv.extend(["--path", path])
                     sys.argv.extend(["--max-files", str(args.max_files), "--interval", str(args.interval)])
+                    if args.war_mode:
+                        sys.argv.append("--war-mode")
+                    if args.full_rehash:
+                        sys.argv.append("--full-rehash")
                     service = enable_service_registration()
                 finally:
                     sys.argv = original_argv
@@ -622,6 +628,10 @@ def main(argv: list[str] | None = None) -> int:
             for path in args.path:
                 scan_args.extend(["--path", path])
             scan_args.extend(["--max-files", str(args.max_files)])
+            if args.war_mode:
+                scan_args.append("--war-mode")
+            if args.full_rehash:
+                scan_args.append("--full-rehash")
             def scan() -> int:
                 with contextlib.redirect_stdout(io.StringIO()):
                     return main(scan_args)
