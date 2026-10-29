@@ -26,6 +26,18 @@ class WarModeTests(unittest.TestCase):
             self.assertFalse(report["scan"]["hash_cache_used"])
             self.assertTrue(report["scan"]["complete"])
 
+    def test_war_mode_hashes_files_above_normal_size_limit(self):
+        import hashlib
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            large_file = root / "large-settings.bin"
+            payload = b"0123456789abcdef" * 16
+            large_file.write_bytes(payload)
+            with patch("mnemos.device_mapper.MAX_HASH_BYTES", 64):
+                report = collect_device_map([root], war_mode=True)
+            artifacts = {Path(item["path"]).name: item for item in report["artifacts"]}
+            self.assertEqual(artifacts["large-settings.bin"]["sha256"], hashlib.sha256(payload).hexdigest())
+            self.assertTrue(report["scan"]["complete"])
     def test_signed_ledger_detects_tampered_payload(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
