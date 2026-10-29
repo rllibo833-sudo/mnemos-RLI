@@ -726,12 +726,17 @@ def inspect_binary(path: str | Path, fmt: str | None = None) -> dict[str, Any]:
     return {"status": "unsupported_or_unknown"}
 
 
-def _sha256(path: Path) -> str | None:
-    """Hash a stable regular-file observation; refuse files changed mid-read."""
+def _sha256(path: Path, *, allow_large: bool = False) -> str | None:
+    """Hash a stable regular-file observation; refuse files changed mid-read.
+
+    The normal inventory path is size-bounded. Explicit full re-hash and war
+    mode may opt into hashing larger regular files because their contract is a
+    complete content digest rather than a bounded best-effort fingerprint.
+    """
     try:
         with path.open("rb") as stream:
             before = os.fstat(stream.fileno())
-            if not stat.S_ISREG(before.st_mode) or before.st_size > MAX_HASH_BYTES:
+            if not stat.S_ISREG(before.st_mode) or (not allow_large and before.st_size > MAX_HASH_BYTES):
                 return None
             digest = hashlib.sha256()
             for chunk in iter(lambda: stream.read(1024 * 1024), b""):
@@ -789,7 +794,7 @@ def _cached_sha256(path: Path, info: os.stat_result, *, full_rehash: bool = Fals
     if not stat.S_ISREG(info.st_mode):
         return None
     if full_rehash:
-        return _sha256(path)
+        return _sha256(path, allow_large=True)
     if info.st_size > MAX_HASH_BYTES:
         return None
     try:
