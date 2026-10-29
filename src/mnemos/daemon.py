@@ -132,7 +132,8 @@ class WatchdogEventBackend:
                 raise OSError("No requested paths could be watched. " + "; ".join(observer_errors))
             observer.start()
             self._observer = observer
-            self.event_monitor_type = "watchdog-polling"
+            if self.event_monitor_type is None:
+                self.event_monitor_type = "watchdog-polling"
             observer_errors.append(
                 "Native FSEvents unavailable; watchdog PollingObserver is active and has higher latency."
                 if prefer_fsevents else
