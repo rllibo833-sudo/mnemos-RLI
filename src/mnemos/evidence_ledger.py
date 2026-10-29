@@ -94,7 +94,7 @@ def append_observation(observation: dict[str, Any], *, snapshot_id: str, war_mod
     entries = _ledger_entries()
     previous = entries[-1]["entry_hash"] if entries else GENESIS
     payload = {
-        "schema": "mnemos-signed-observation-v1",
+        "schema": "mnemos-signed-observation-v2",
         "sequence": len(entries) + 1,
         "previous_hash": previous,
         "snapshot_id": snapshot_id,
@@ -154,10 +154,12 @@ def verify_ledger() -> dict[str, Any]:
     errors = []
     previous = GENESIS
     for expected_sequence, entry in enumerate(entries, 1):
-        payload = {key: entry.get(key) for key in (
-            "schema", "sequence", "previous_hash", "snapshot_id", "war_mode",
-            "observation", "snapshot_fingerprint", "artifacts"
-        )}
+        payload_keys = [
+            "schema", "sequence", "previous_hash", "snapshot_id", "war_mode", "observation"
+        ]
+        if entry.get("schema") == "mnemos-signed-observation-v2":
+            payload_keys.extend(["snapshot_fingerprint", "artifacts"])
+        payload = {key: entry.get(key) for key in payload_keys}
         digest = hashlib.sha256(_canonical(payload)).hexdigest()
         if entry.get("sequence") != expected_sequence:
             errors.append(f"Entry {expected_sequence}: sequence mismatch.")
