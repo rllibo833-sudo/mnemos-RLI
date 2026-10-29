@@ -520,6 +520,10 @@ def _parser() -> argparse.ArgumentParser:
     verify_sig.add_argument("--certificate-identity", required=True, help="Expected signer identity (email/workflow URI).")
     verify_sig.add_argument("--certificate-oidc-issuer", required=True, help="Expected OIDC issuer, e.g. https://github.com/login/oauth.")
     ledger_verify = commands.add_parser("verify-ledger", help="Verify the local append-only hash-chain and Ed25519 signatures.")
+    export_anchor_cmd = commands.add_parser("export-anchor", help="Export the current ledger head to a portable checkpoint.")
+    export_anchor_cmd.add_argument("--out", default="mnemos-ledger-anchor.json", help="Anchor output path.")
+    verify_anchor_cmd = commands.add_parser("verify-anchor", help="Compare the current ledger head with a saved checkpoint.")
+    verify_anchor_cmd.add_argument("--anchor", required=True, help="Anchor JSON exported earlier; keep a copy outside this host.")
     manifest = commands.add_parser("release-manifest", help="Create an offline expected-artifact manifest from a complete snapshot.")
     manifest.add_argument("--snapshot-id", required=True, help="Source device snapshot ID returned by map-device.")
     manifest.add_argument("--release-id", required=True, help="Human-readable trusted release identifier.")
@@ -600,6 +604,16 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "verify-ledger":
             from .evidence_ledger import verify_ledger
             report = verify_ledger()
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0 if report["ok"] else 1
+        elif args.command == "export-anchor":
+            from .evidence_ledger import export_anchor
+            report = export_anchor(args.out)
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            return 0 if report["ok"] else 1
+        elif args.command == "verify-anchor":
+            from .evidence_ledger import verify_anchor
+            report = verify_anchor(args.anchor)
             print(json.dumps(report, ensure_ascii=False, indent=2))
             return 0 if report["ok"] else 1
         elif args.command == "release-manifest":
