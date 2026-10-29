@@ -23,6 +23,21 @@ def resolve_db(path: str | Path | None = None) -> Path:
     return Path(path).expanduser() if path is not None else DEFAULT_DB
 
 
+class _ClosingConnection(sqlite3.Connection):
+    """Close SQLite handles when used as a context manager.
+
+    sqlite3.Connection.__exit__ commits or rolls back but does not close the
+    handle. Explicitly closing here is important on Windows, where open handles
+    prevent temporary database files from being removed.
+    """
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        try:
+            return super().__exit__(exc_type, exc_value, traceback)
+        finally:
+            self.close()
+
+
 class MemoryStore(GraphStore):
     """A small local memory database. No network access or third-party packages."""
 
@@ -47,7 +62,7 @@ class MemoryStore(GraphStore):
                 pass
 
     def _connect(self) -> sqlite3.Connection:
-        connection = sqlite3.connect(self.path, timeout=30.0)
+        connection = sqlite3.connect(self.path, timeout=30.0, factory=_ClosingConnection)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA busy_timeout = 30000")
         connection.execute("PRAGMA foreign_keys = ON")
