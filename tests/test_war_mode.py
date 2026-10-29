@@ -38,6 +38,37 @@ class WarModeTests(unittest.TestCase):
             artifacts = {Path(item["path"]).name: item for item in report["artifacts"]}
             self.assertEqual(artifacts["large-settings.bin"]["sha256"], hashlib.sha256(payload).hexdigest())
             self.assertTrue(report["scan"]["complete"])
+    def test_ledger_truncation_is_detected_and_blocks_append(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            ledger_path = root / "ledger.jsonl"
+            with patch.object(evidence_ledger, "LEDGER_PATH", ledger_path), patch.object(
+                evidence_ledger, "KEY_PATH", root / "keys" / "signing.pem"
+            ):
+                evidence_ledger.append_observation({"n": 1}, snapshot_id="s1", war_mode=True)
+                with ledger_path.open("ab") as stream:
+                    stream.write(b'{"sequence":2,"truncated":')
+                report = evidence_ledger.verify_ledger()
+                self.assertFalse(report["ok"])
+                self.assertTrue(any("invalid JSON" in error for error in report["errors"]))
+                with self.assertRaisesRegex(ValueError, "Refusing to append"):
+                    evidence_ledger.append_observation({"n": 2}, snapshot_id="s2", war_mode=True)
+
+    def test_missing_public_key_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            ledger_path = root / "ledger.jsonl"
+            key_path = root / "keys" / "signing.pem"
+            with patch.object(evidence_ledger, "LEDGER_PATH", ledger_path), patch.object(
+                evidence_ledger, "KEY_PATH", key_path
+            ):
+                evidence_ledger.append_observation({"n": 1}, snapshot_id="s1", war_mode=True)
+                key_path.with_suffix(".pub.pem").unlink()
+                report = evidence_ledger.verify_ledger()
+                self.assertFalse(report["ok"])
+                self.assertIn("Evidence public key is missing.", report["errors"])
+                with self.assertRaisesRegex(ValueError, "Refusing to append"):
+                    evidence_ledger.append_observation({"n": 2}, snapshot_id="s2", war_mode=True)
     def test_signed_ledger_detects_tampered_payload(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
