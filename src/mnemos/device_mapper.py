@@ -738,8 +738,17 @@ def _sha256(path: Path) -> str | None:
                 digest.update(chunk)
             after = os.fstat(stream.fileno())
         current = path.stat(follow_symlinks=False)
-        identity = _stat_identity(before)
-        if (_stat_identity(after) != identity or _stat_identity(current) != identity
+        # Windows exposes st_ctime as creation time, not metadata-change time;
+        # some Windows filesystem/runtime combinations report it inconsistently
+        # across handle/path stat calls. Compare stable content identity fields
+        # there, while retaining ctime checks on POSIX.
+        def stable_identity(info: os.stat_result) -> tuple[int, ...]:
+            fields = (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns)
+            if os.name != "nt":
+                return fields + (getattr(info, "st_ctime_ns", int(info.st_ctime * 1_000_000_000)),)
+            return fields
+        identity = stable_identity(before)
+        if (stable_identity(after) != identity or stable_identity(current) != identity
                 or not stat.S_ISREG(current.st_mode)):
             return None
         return digest.hexdigest()
@@ -830,8 +839,9 @@ def _artifact(path: Path, scan_status: dict[str, Any] | None = None, *, include_
             or info.st_ino != after.st_ino
             or info.st_size != after.st_size
             or info.st_mtime_ns != after.st_mtime_ns
-            or getattr(info, "st_ctime_ns", int(info.st_ctime * 1_000_000_000))
-               != getattr(after, "st_ctime_ns", int(after.st_ctime * 1_000_000_000))
+            or (os.name != "nt" and
+                getattr(info, "st_ctime_ns", int(info.st_ctime * 1_000_000_000))
+                != getattr(after, "st_ctime_ns", int(after.st_ctime * 1_000_000_000)))
         )
         if changed_during_inspection:
             digest = None
