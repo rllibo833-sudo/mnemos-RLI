@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
+async function main() {
+
 const base = process.env.SUPABASE_URL?.replace(/\/$/, "");
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!base || !key) throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required");
@@ -46,3 +48,7 @@ for (const event of events) {
 }
 await writeFile(".mnemos-outbox-acks.json", JSON.stringify(acknowledgements, null, 2) + "\n");
 console.log(JSON.stringify({ pending_events: events.length, imported_nodes: events.reduce((n: number, e: any) => n + e.payload.nodes.length, 0), imported_edges: events.reduce((n: number, e: any) => n + e.payload.edges.length, 0) }));
+
+}
+
+main().catch(error => { console.error(error); process.exitCode = 1; });
