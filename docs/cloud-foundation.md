@@ -16,7 +16,7 @@ Steadfast and other authorized producers enqueue graph events in `public.mnemos_
 6. The workflow commits and pushes the graph to branch `Knowledge`.
 7. Only after the Git push step succeeds does the workflow acknowledge the exact outbox event IDs and payload checksums in Supabase.
 
-If validation, commit, push, or acknowledgement fails, the event remains pending and the next scheduled run retries it. Replaying an event is safe: node filenames are derived from stable node IDs and relation files from stable event IDs. The acknowledgement is guarded by both event ID and payload checksum.
+If validation, commit, push, or acknowledgement fails, the event remains pending and the next scheduled run retries it. A malformed event is recorded in `last_error` and does not block later valid events in the same batch. Replaying an event is safe: node filenames are derived from stable node IDs and relation files from stable event IDs. The acknowledgement is guarded by both event ID and payload checksum.
 
 ## Supabase boundary
 
