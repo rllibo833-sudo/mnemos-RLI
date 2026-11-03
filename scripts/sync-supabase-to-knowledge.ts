@@ -8,7 +8,7 @@ const base = process.env.SUPABASE_URL?.replace(/\/$/, "");
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!base || !key) throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required");
 const headers = { apikey: key, Authorization: "Bearer " + key, Accept: "application/json" };
-const response = await fetch(base + "/rest/v1/mnemos_outbox?select=id,workspace_id,event_type,payload,payload_sha256,created_at&delivered_at=is.null&order=created_at.asc,id.asc&limit=100", { headers });
+const response = await fetch(base + "/rest/v1/mnemos_outbox?select=id,workspace_id,event_type,payload,payload_sha256,created_at,attempts&delivered_at=is.null&order=created_at.asc,id.asc&limit=100", { headers });
 if (!response.ok) throw new Error("Outbox read failed HTTP " + response.status + ": " + (await response.text()).slice(0, 500));
 const events = await response.json();
 const canonical = (v: any): string => v === null || typeof v !== "object" ? JSON.stringify(v) : Array.isArray(v) ? "[" + v.map(canonical).join(",") + "]" : "{" + Object.keys(v).sort().map(k => JSON.stringify(k) + ":" + canonical(v[k])).join(",") + "}";
