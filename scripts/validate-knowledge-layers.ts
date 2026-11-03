@@ -64,6 +64,21 @@ export function validateKnowledgeLayers(nodes: JsonObject[], edges: JsonObject[]
       if (!spec.outcome_status.includes(knowledge.outcome_status)) {
         fail("node " + node.id + ": invalid experimental outcome_status");
       }
+      const results = stringArray(knowledge.results);
+      const failures = stringArray(knowledge.failure_modes);
+      const rawDataRefs = stringArray(knowledge.raw_data_refs);
+      if (knowledge.outcome_status === "supported" && (!results.length || (!rawDataRefs.length && !hasSources(knowledge)))) {
+        fail("node " + node.id + ": supported experiments require results and raw_data_refs or sources");
+      }
+      if (knowledge.outcome_status === "replicated" && (!results.length || !nonEmpty(knowledge.replication_of))) {
+        fail("node " + node.id + ": replicated experiments require results and replication_of");
+      }
+      if (["not_supported", "inconclusive"].includes(knowledge.outcome_status) && !results.length && !failures.length) {
+        fail("node " + node.id + ": not_supported and inconclusive experiments require results or failure_modes");
+      }
+      if (knowledge.outcome_status === "failed" && !failures.length && !results.length) {
+        fail("node " + node.id + ": failed experiments require failure_modes or results");
+      }
     }
   }
 
