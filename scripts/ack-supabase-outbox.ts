@@ -7,7 +7,7 @@ for (const item of acknowledgements) {
   const response = await fetch(base + "/rest/v1/mnemos_outbox?id=eq." + encodeURIComponent(item.id) + "&payload_sha256=eq." + encodeURIComponent(item.payload_sha256) + "&delivered_at=is.null", {
     method: "PATCH",
     headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json", Prefer: "return=representation" },
-    body: JSON.stringify({ delivered_at: new Date().toISOString(), delivery_commit: process.env.GITHUB_SHA || "verified-by-workflow", attempts: 1, last_error: null })
+    body: JSON.stringify({ delivered_at: new Date().toISOString(), delivery_commit: process.env.GITHUB_SHA || "verified-by-workflow", last_error: null })
   });
   if (!response.ok) throw new Error("Outbox acknowledgement failed for " + item.id + ": HTTP " + response.status + " " + (await response.text()).slice(0, 300));
   const rows = await response.json();
