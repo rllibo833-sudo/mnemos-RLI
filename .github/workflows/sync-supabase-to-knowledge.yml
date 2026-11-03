@@ -35,16 +35,19 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          KNOWLEDGE_COMMIT_SHA: ${{ steps.commit.outputs.commit_sha }}
       - name: Validate canonical graph
         run: |
           npx tsx scripts/generate-manifest.ts
           node -e 'const m=require("./knowledge/manifest.json"); console.log("Validated Knowledge graph:",m.nodes_count,"nodes,",m.edges_count,"edges");'
       - name: Commit Knowledge snapshot
+        id: commit
         run: |
           git config user.name "knowledge-sync[bot]"
           git config user.email "knowledge-sync[bot]@users.noreply.github.com"
           git add knowledge/nodes knowledge/edges knowledge/manifest.json
           git diff --cached --quiet || (git commit -m "sync: deliver transport events to Knowledge" && git push origin Knowledge)
+          echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Acknowledge only after commit is present on origin
         run: npx tsx scripts/ack-supabase-outbox.ts
         env:
