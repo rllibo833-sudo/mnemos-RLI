@@ -44,7 +44,7 @@ Layer classification is additive metadata on the existing graph node:
 
 The example is a shape demonstration, not a factual claim. Replace the illustrative source before creating a real record.
 
-Edges retain the existing `source`, `target`, and `relation` shape. Layer-aware edges add `metadata.knowledge_layer`, `provenance`, and optional numeric `confidence` between 0 and 1. The canonical relation vocabulary is in `manifest.json`.
+Edges retain the existing `source`, `target`, and `relation` shape. Layer-aware edges add `metadata.knowledge_layer`, `metadata.provenance`, and optional numeric `metadata.confidence` between 0 and 1. The canonical relation vocabulary is in `manifest.json`.
 
 ## Validation rules
 
