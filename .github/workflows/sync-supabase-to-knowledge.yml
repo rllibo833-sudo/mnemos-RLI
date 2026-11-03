@@ -26,7 +26,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install --no-save @supabase/supabase-js tsx
+      - run: npm install --no-save tsx
       - name: Import pending outbox events
         run: npx tsx scripts/sync-supabase-to-knowledge.ts
         env:
