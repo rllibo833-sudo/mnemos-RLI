@@ -3,6 +3,10 @@ on:
   repository_dispatch:
     types: [sync-supabase-to-knowledge]
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/sync-supabase-to-knowledge.yml
   schedule:
     - cron: "*/10 * * * *"
 permissions:
