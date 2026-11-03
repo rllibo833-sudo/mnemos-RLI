@@ -269,7 +269,7 @@ async function push(bundlePath) {
     nodes: bundle.nodes.map(node => ({ ...node, workspace_id: workspaceId })),
     edges: bundle.links.map(link => ({
       source: link.source_id, target: link.target_id, relation: link.relation,
-      created_at: link.created_at || new Date().toISOString(),
+      created_at: link.created_at || "1970-01-01T00:00:00.000Z",
       metadata: { ...(link.metadata || {}), provenance: link.provenance || null, confidence: link.confidence ?? null }
     }))
   };
