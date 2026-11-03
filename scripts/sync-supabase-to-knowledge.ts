@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const base = process.env.SUPABASE_URL?.replace(/\/$/, "");
@@ -15,6 +15,10 @@ const safe = (v: string) => v.replace(/[^a-z0-9._-]/gi, "-").slice(0, 180);
 const nodeDir = "knowledge/nodes", edgeDir = "knowledge/edges";
 await mkdir(nodeDir, { recursive: true }); await mkdir(edgeDir, { recursive: true });
 const acknowledgements: { id: string; payload_sha256: string }[] = [];
+const knownIds = new Set<string>();
+for (const file of (await readdir(nodeDir)).filter(f => f.endsWith(".json"))) {
+  try { const old = JSON.parse(await readFile(join(nodeDir, file), "utf8")); if (old.id) knownIds.add(String(old.id)); } catch { throw new Error("Invalid existing Knowledge node file: " + file); }
+}
 for (const event of events) {
   if (!event.id || !event.payload || sha(event.payload) !== event.payload_sha256) throw new Error("Outbox event checksum mismatch: " + event.id);
   if (event.event_type !== "knowledge.graph.upsert.v1") throw new Error("Unsupported outbox event type: " + event.event_type);
@@ -23,7 +27,8 @@ for (const event of events) {
   if (!Array.isArray(nodes) || !Array.isArray(edges) || (nodes.length === 0 && edges.length === 0)) throw new Error("Malformed graph event: " + event.id);
   const ids = new Set(nodes.map((n: any) => n.id));
   if (ids.size !== nodes.length || nodes.some((n: any) => !n.id || !n.kind || typeof n.content !== "string")) throw new Error("Invalid/duplicate nodes in event " + event.id);
-  for (const edge of edges) if (!edge.source || !edge.target || !edge.relation || (!ids.has(edge.source) && !edge.external_source) || (!ids.has(edge.target) && !edge.external_target)) throw new Error("Malformed edge in event " + event.id);
+  for (const id of ids) knownIds.add(String(id));
+  for (const edge of edges) if (!edge.source || !edge.target || !edge.relation || !knownIds.has(String(edge.source)) || !knownIds.has(String(edge.target))) throw new Error("Edge endpoint missing from canonical Knowledge files in event " + event.id + ": " + edge.source + " -> " + edge.target);
   for (const node of nodes) {
     const path = join(nodeDir, safe(String(node.id)) + ".json");
     let existing: any = null;
