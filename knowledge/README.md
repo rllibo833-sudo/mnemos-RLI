@@ -58,3 +58,16 @@ Supported source categories: images, documents, video, audio, code, and generic 
 ## PusingCuk boundary
 
 PusingCuk's versioned IR and bytecode contracts are useful models for deterministic interchange, not media compression. `pusingcuk-loader/loader.cuk` is a language-side envelope example; Supabase HTTP is handled by the JavaScript adapter until a stable PusingCuk host I/O contract exists.
+
+
+## Beyond-Light research import
+
+The Beyond-Light research archive has been imported into [`sources/beyond-light/`](sources/beyond-light/README.md) from source commit `8fac43391796e3c61b2faa9ae42eb29415190c1f`.
+
+- 10 source files are preserved verbatim.
+- 207 source records are indexed across eight collection-level graph nodes.
+- The graph nodes preserve source links, evidence status, limitations, and record indexes.
+- Synthetic fixtures, computational benchmarks, model runs, published-report summaries, and source-linked NASA/NIST records remain explicitly distinguished.
+- Beyond-Light's original repository files were not removed or modified by this import.
+
+The import manifest is [`sources/beyond-light/IMPORT_MANIFEST.json`](sources/beyond-light/IMPORT_MANIFEST.json).
