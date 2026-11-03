@@ -21,33 +21,58 @@ const knownIds = new Set<string>();
 for (const file of (await readdir(nodeDir)).filter(f => f.endsWith(".json"))) {
   try { const old = JSON.parse(await readFile(join(nodeDir, file), "utf8")); if (old.id) knownIds.add(String(old.id)); } catch { throw new Error("Invalid existing Knowledge node file: " + file); }
 }
+let importedNodes = 0, importedEdges = 0;
+const failures: { id: string; error: string }[] = [];
 for (const event of events) {
-  if (!event.id || !event.payload || sha(event.payload) !== event.payload_sha256) throw new Error("Outbox event checksum mismatch: " + event.id);
-  if (event.event_type !== "knowledge.graph.upsert.v1") throw new Error("Unsupported outbox event type: " + event.event_type);
-  const nodes = event.payload.nodes;
-  const edges = event.payload.edges;
-  if (!Array.isArray(nodes) || !Array.isArray(edges) || (nodes.length === 0 && edges.length === 0)) throw new Error("Malformed graph event: " + event.id);
-  const ids = new Set(nodes.map((n: any) => n.id));
-  if (ids.size !== nodes.length || nodes.some((n: any) => !n.id || !n.kind || typeof n.content !== "string")) throw new Error("Invalid/duplicate nodes in event " + event.id);
-  for (const id of ids) knownIds.add(String(id));
-  for (const edge of edges) if (!edge.source || !edge.target || !edge.relation || !knownIds.has(String(edge.source)) || !knownIds.has(String(edge.target))) throw new Error("Edge endpoint missing from canonical Knowledge files in event " + event.id + ": " + edge.source + " -> " + edge.target);
-  for (const node of nodes) {
-    const path = join(nodeDir, safe(String(node.id)) + ".json");
-    let existing: any = null;
-    try { existing = JSON.parse(await readFile(path, "utf8")); } catch {}
-    const merged = { ...(existing || {}), ...node, workspace_id: event.workspace_id, source: { ...(existing?.source || {}), ...(node.source || {}), transport_event_id: event.id } };
-    await writeFile(path, JSON.stringify(merged, null, 2) + "\n");
+  try {
+    if (!event.id || !event.payload || sha(event.payload) !== event.payload_sha256) throw new Error("payload checksum mismatch");
+    if (event.event_type !== "knowledge.graph.upsert.v1") throw new Error("unsupported event type: " + event.event_type);
+    const nodes = event.payload.nodes;
+    const edges = event.payload.edges;
+    if (!Array.isArray(nodes) || !Array.isArray(edges) || (nodes.length === 0 && edges.length === 0)) throw new Error("malformed graph event");
+    const eventIds = new Set(nodes.map((n: any) => String(n.id)));
+    if (eventIds.size !== nodes.length || nodes.some((n: any) => !n.id || !n.kind || typeof n.content !== "string")) throw new Error("invalid or duplicate nodes");
+    for (const edge of edges) {
+      if (!edge.source || !edge.target || !edge.relation ||
+          (!knownIds.has(String(edge.source)) && !eventIds.has(String(edge.source))) ||
+          (!knownIds.has(String(edge.target)) && !eventIds.has(String(edge.target)))) {
+        throw new Error("edge endpoint missing from canonical Knowledge files: " + edge.source + " -> " + edge.target);
+      }
+    }
+    for (const node of nodes) {
+      const path = join(nodeDir, safe(String(node.id)) + ".json");
+      let existing: any = null;
+      try { existing = JSON.parse(await readFile(path, "utf8")); } catch {}
+      const merged = { ...(existing || {}), ...node, workspace_id: event.workspace_id, source: { ...(existing?.source || {}), ...(node.source || {}), transport_event_id: event.id } };
+      await writeFile(path, JSON.stringify(merged, null, 2) + "\n");
+    }
+    for (const id of eventIds) knownIds.add(id);
+    if (edges.length) {
+      const filename = "transport-" + safe(event.id) + ".links.json";
+      await writeFile(join(edgeDir, filename), JSON.stringify(edges, null, 2) + "\n");
+    }
+    const attempt = await fetch(base + "/rest/v1/mnemos_outbox?id=eq." + encodeURIComponent(event.id) + "&delivered_at=is.null", {
+      method: "PATCH", headers: { ...headers, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify({ attempts: Number(event.attempts || 0) + 1, last_error: null })
+    });
+    if (!attempt.ok) throw new Error("could not record delivery attempt: HTTP " + attempt.status);
+    acknowledgements.push({ id: event.id, payload_sha256: event.payload_sha256 });
+    importedNodes += nodes.length;
+    importedEdges += edges.length;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    failures.push({ id: String(event.id ?? "unknown"), error: message });
+    if (event.id) {
+      const attempt = await fetch(base + "/rest/v1/mnemos_outbox?id=eq." + encodeURIComponent(event.id) + "&delivered_at=is.null", {
+        method: "PATCH", headers: { ...headers, "Content-Type": "application/json", Prefer: "return=minimal" },
+        body: JSON.stringify({ attempts: Number(event.attempts || 0) + 1, last_error: message.slice(0, 2000) })
+      });
+      if (!attempt.ok) console.error("Could not record failed attempt for", event.id, "HTTP", attempt.status);
+    }
   }
-  if (edges.length) {
-    const filename = "transport-" + safe(event.id) + ".links.json";
-    await writeFile(join(edgeDir, filename), JSON.stringify(edges, null, 2) + "\n");
-  }
-  const attempt = await fetch(base + "/rest/v1/mnemos_outbox?id=eq." + encodeURIComponent(event.id) + "&delivered_at=is.null", { method: "PATCH", headers: { ...headers, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify({ attempts: Number(event.attempts || 0) + 1, last_error: null }) });
-  if (!attempt.ok) throw new Error("Could not record outbox attempt for " + event.id);
-  acknowledgements.push({ id: event.id, payload_sha256: event.payload_sha256 });
 }
 await writeFile(".mnemos-outbox-acks.json", JSON.stringify(acknowledgements, null, 2) + "\n");
-console.log(JSON.stringify({ pending_events: events.length, imported_nodes: events.reduce((n: number, e: any) => n + e.payload.nodes.length, 0), imported_edges: events.reduce((n: number, e: any) => n + e.payload.edges.length, 0) }));
+console.log(JSON.stringify({ pending_events: events.length, imported_nodes: importedNodes, imported_edges: importedEdges, failed_events: failures }));
 
 }
 
