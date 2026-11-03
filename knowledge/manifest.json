@@ -4,6 +4,7 @@
   "generated_at": "2026-11-03T19:31:35.212Z",
   "nodes_count": 20,
   "edges_count": 160,
+  "knowledge_layers": ["historical", "philosophical", "scientific", "cross-disciplinary", "experimental"],
   "repos_analyzed": 2,
   "node_files": [
     "finding_sf-27e94cd4-9a69-4d30-a604-1529a8dafdfd.json",
