@@ -1,3 +1,4 @@
+# The runner lives on main; it checks out Knowledge for canonical graph data.
 name: Deliver Supabase transport outbox to Mnemos Knowledge
 on:
   repository_dispatch:
