@@ -1,0 +1,35 @@
+[
+  {
+    "source": "bl-experiments-v1",
+    "target": "bl-datasets-v1",
+    "relation": "tests",
+    "created_at": "2026-11-04T00:00:00Z",
+    "metadata": {
+      "knowledge_layer": "experimental",
+      "provenance": "Beyond-Light source import",
+      "note": "The cross-source predictive screen consumes the two imported RL10 dataset records."
+    }
+  },
+  {
+    "source": "bl-research-runs-v1",
+    "target": "bl-datasets-v1",
+    "relation": "tests",
+    "created_at": "2026-11-04T00:00:00Z",
+    "metadata": {
+      "knowledge_layer": "experimental",
+      "provenance": "Beyond-Light source import",
+      "note": "Research runs reference supplied datasets; synthetic fixtures remain distinguished from source-linked data."
+    }
+  },
+  {
+    "source": "bl-material-curves-v1",
+    "target": "bl-materials-v1",
+    "relation": "derived_from",
+    "created_at": "2026-11-04T00:00:00Z",
+    "metadata": {
+      "knowledge_layer": "scientific",
+      "provenance": "Beyond-Light source import",
+      "note": "Material curve records are linked to their material reference records."
+    }
+  }
+]
