@@ -78,11 +78,11 @@ export function validateKnowledgeLayers(nodes: JsonObject[], edges: JsonObject[]
     if (!allowed.includes(edge.relation)) {
       fail("edge relation '" + String(edge.relation) + "' is not valid for layer '" + layer + "'");
     }
-    if (edge.confidence !== undefined && edge.confidence !== null &&
-        (typeof edge.confidence !== "number" || !Number.isFinite(edge.confidence) || edge.confidence < 0 || edge.confidence > 1)) {
+    if (metadata.confidence !== undefined && metadata.confidence !== null &&
+        (typeof metadata.confidence !== "number" || !Number.isFinite(metadata.confidence) || metadata.confidence < 0 || metadata.confidence > 1)) {
       fail("edge confidence must be a number from 0 to 1");
     }
-    if (edge.provenance !== undefined && !isObject(edge.provenance)) fail("edge provenance must be an object");
+    if (metadata.provenance !== undefined && !isObject(metadata.provenance)) fail("edge metadata.provenance must be an object");
   }
 
   return { ok: true, layers: [...layerIds], typed_nodes: typedNodes, typed_edges: typedEdges, legacy_records_preserved: true };
