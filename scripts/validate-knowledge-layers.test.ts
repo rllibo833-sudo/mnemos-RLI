@@ -12,7 +12,7 @@ const nodes = [
   node("philosophy", "philosophical", { assumptions: ["A model has a boundary."] }),
   node("science", "scientific", { claim_type: "research_run", evidence_status: "unknown", sources: source }),
   node("bridge", "cross-disciplinary", { disciplines: ["physics", "materials"], mapping_rationale: "Material properties constrain a physical model." }),
-  node("experiment", "experimental", { hypothesis: "H", method: "Controlled comparison", outcome_status: "inconclusive" })
+  node("experiment", "experimental", { hypothesis: "H", method: "Controlled comparison", outcome_status: "inconclusive", results: ["Simulation did not distinguish candidates."] })
 ];
 const edges = [
   { source: "history", target: "science", relation: "influenced_by", metadata: { knowledge_layer: "historical", provenance: { request_id: "test" } } },
