@@ -17,18 +17,10 @@
       "hypothesis": "A fitted pattern can predict RL10 specific impulse across the two imported source datasets better than a constant baseline.",
       "method": "Cross-source predictive screen using two distinct NASA RL10 report datasets; not a matched-condition physical replication.",
       "outcome_status": "not_supported",
-      "results": {
-        "record_count": 1,
-        "record_index": [
-          {
-            "id": "rl10-of-isp-cross-source-2026-11-03",
-            "title": "RL10 mixture ratio versus specific impulse — cross-source predictive screen",
-            "type": "INDEPENDENT_EXPERIMENT",
-            "status": "NO_PATTERN_OUTPERFORMS_BASELINE",
-            "source": ""
-          }
-        ]
-      },
+      "results": [
+        "No candidate pattern outperformed the constant baseline on the internal cross-validation screen.",
+        "The cross-source screen was not replicated on the second source dataset."
+      ],
       "raw_data_refs": [
         "knowledge/sources/beyond-light/experiments.jsonl"
       ],
