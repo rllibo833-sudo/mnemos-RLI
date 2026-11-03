@@ -8,6 +8,7 @@ const edgesDir = join(root, "edges");
 const jsonFiles = async (dir: string) => (await readdir(dir)).filter((f) => f.endsWith(".json")).sort();
 const nodes = [];
 for (const file of await jsonFiles(nodesDir)) nodes.push(JSON.parse(await readFile(join(nodesDir, file), "utf8")));
+if (nodes.length === 0) throw new Error("Refusing to publish an empty Knowledge graph");
 const ids = new Set(nodes.map((n: any) => n.id));
 if (ids.size !== nodes.length) throw new Error("Duplicate node IDs");
 const edges = [];
