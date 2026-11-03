@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "id": "bl-datasets-v1",
+  "kind": "research_dataset_registry",
+  "title": "Beyond-Light Research Datasets",
+  "content": "Five dataset records: three unverified fixtures and two NASA-linked RL10 source transcriptions. Raw data and source notes are preserved verbatim.",
+  "source": {
+    "type": "github_source_snapshot",
+    "uri": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/data/datasets.jsonl",
+    "filename": "datasets.jsonl",
+    "extraction_method": "verbatim source-file import; record index generated without altering source records",
+    "observed_at": "2026-11-04T00:00:00Z"
+  },
+  "metadata": {
+    "knowledge_layer": "scientific",
+    "knowledge": {
+      "claim_type": "mixed_provenance_dataset_registry",
+      "evidence_status": "unknown",
+      "sources": [
+        {
+          "type": "source",
+          "ref": "Existing local build fixture",
+          "title": "fixture.csv",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "synthetic integration check",
+          "title": "power-thrust-screen.csv",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "deliberately adverse integration check",
+          "title": "power-thrust-bad-screen.csv",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NASA CR-183200 / Pratt & Whitney FR-19435-1, RL10A-3-3B High Mixture Ratio Qualification Program, Table V-7, Engine XR403-2. https://ntrs.nasa.gov/citations/19910004173",
+          "title": "rl10a_3_3b_1987_nasa_cr_183200.csv",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NASA CR-179595 / Pratt & Whitney FR-19625, Design, Fabrication, and Test of the RL10 Derivative II Chamber/Primary Nozzle. Actual Isp values transcribed from NASA 2024 JANNAF Table 17, which cites CR-179595 as source [14]. https://ntrs.nasa.gov/citations/19890014148 ; https://ntrs.nasa.gov/api/citations/20240003814/downloads/9654_COOPER_May2024JANNAF.pdf",
+          "title": "rl10_derivative_ii_1989_nasa_cr_179595.csv",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        }
+      ],
+      "limitations": [
+        "Registry includes three synthetic or user-imported fixtures and two source-linked NASA transcriptions.",
+        "Synthetic fixtures must never be presented as official scientific measurements."
+      ],
+      "record_count": 5,
+      "record_index": [
+        {
+          "id": "bed10160-13e8-4644-b872-8b7bc600cc55",
+          "title": "fixture.csv",
+          "type": "",
+          "status": "UNVERIFIED — IMPORTED USER DATA",
+          "source": "Existing local build fixture"
+        },
+        {
+          "id": "e2a281b2-ffe5-4786-b97a-c5d817820858",
+          "title": "power-thrust-screen.csv",
+          "type": "",
+          "status": "UNVERIFIED — IMPORTED USER DATA",
+          "source": "synthetic integration check"
+        },
+        {
+          "id": "1e246658-4322-4837-bfee-275f2e27ed19",
+          "title": "power-thrust-bad-screen.csv",
+          "type": "",
+          "status": "UNVERIFIED — IMPORTED USER DATA",
+          "source": "deliberately adverse integration check"
+        },
+        {
+          "id": "a7f5b9a0-6f6a-4e8d-9b72-1987a3b3b001",
+          "title": "rl10a_3_3b_1987_nasa_cr_183200.csv",
+          "type": "",
+          "status": "SOURCE-VERIFIED TRANSCRIPTION — NOT INDEPENDENTLY REANALYZED",
+          "source": "NASA CR-183200 / Pratt & Whitney FR-19435-1, RL10A-3-3B High Mixture Ratio Qualification Program, Table V-7, Engine XR403-2. https://ntrs.nasa.gov/citations/19910004173"
+        },
+        {
+          "id": "b8e6c0b1-7a7b-4f9e-ac83-1989d4c4c002",
+          "title": "rl10_derivative_ii_1989_nasa_cr_179595.csv",
+          "type": "",
+          "status": "SOURCE-VERIFIED TRANSCRIPTION — SECONDARY TABLE TRANSCRIPTION",
+          "source": "NASA CR-179595 / Pratt & Whitney FR-19625, Design, Fabrication, and Test of the RL10 Derivative II Chamber/Primary Nozzle. Actual Isp values transcribed from NASA 2024 JANNAF Table 17, which cites CR-179595 as source [14]. https://ntrs.nasa.gov/citations/19890014148 ; https://ntrs.nasa.gov/api/citations/20240003814/downloads/9654_COOPER_May2024JANNAF.pdf"
+        }
+      ]
+    },
+    "provenance": {
+      "repository": "rllibo833-sudo/Beyond-Light",
+      "branch": "main",
+      "source_commit": "8fac43391796e3c61b2faa9ae42eb29415190c1f",
+      "original_path": "beyond-light-source/beyond-light/data/datasets.jsonl",
+      "archive_path": "knowledge/sources/beyond-light/datasets.jsonl"
+    },
+    "record_count": 5,
+    "record_index": [
+      {
+        "id": "bed10160-13e8-4644-b872-8b7bc600cc55",
+        "title": "fixture.csv",
+        "type": "",
+        "status": "UNVERIFIED — IMPORTED USER DATA",
+        "source": "Existing local build fixture"
+      },
+      {
+        "id": "e2a281b2-ffe5-4786-b97a-c5d817820858",
+        "title": "power-thrust-screen.csv",
+        "type": "",
+        "status": "UNVERIFIED — IMPORTED USER DATA",
+        "source": "synthetic integration check"
+      },
+      {
+        "id": "1e246658-4322-4837-bfee-275f2e27ed19",
+        "title": "power-thrust-bad-screen.csv",
+        "type": "",
+        "status": "UNVERIFIED — IMPORTED USER DATA",
+        "source": "deliberately adverse integration check"
+      },
+      {
+        "id": "a7f5b9a0-6f6a-4e8d-9b72-1987a3b3b001",
+        "title": "rl10a_3_3b_1987_nasa_cr_183200.csv",
+        "type": "",
+        "status": "SOURCE-VERIFIED TRANSCRIPTION — NOT INDEPENDENTLY REANALYZED",
+        "source": "NASA CR-183200 / Pratt & Whitney FR-19435-1, RL10A-3-3B High Mixture Ratio Qualification Program, Table V-7, Engine XR403-2. https://ntrs.nasa.gov/citations/19910004173"
+      },
+      {
+        "id": "b8e6c0b1-7a7b-4f9e-ac83-1989d4c4c002",
+        "title": "rl10_derivative_ii_1989_nasa_cr_179595.csv",
+        "type": "",
+        "status": "SOURCE-VERIFIED TRANSCRIPTION — SECONDARY TABLE TRANSCRIPTION",
+        "source": "NASA CR-179595 / Pratt & Whitney FR-19625, Design, Fabrication, and Test of the RL10 Derivative II Chamber/Primary Nozzle. Actual Isp values transcribed from NASA 2024 JANNAF Table 17, which cites CR-179595 as source [14]. https://ntrs.nasa.gov/citations/19890014148 ; https://ntrs.nasa.gov/api/citations/20240003814/downloads/9654_COOPER_May2024JANNAF.pdf"
+      }
+    ]
+  },
+  "created_at": "2026-11-04T00:00:00Z",
+  "updated_at": "2026-11-04T00:00:00Z",
+  "deleted_at": null
+}
