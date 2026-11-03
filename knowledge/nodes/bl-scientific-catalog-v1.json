@@ -1,0 +1,652 @@
+{
+  "schema_version": 1,
+  "id": "bl-scientific-catalog-v1",
+  "kind": "scientific_reference_catalog",
+  "title": "Beyond-Light Scientific Constants and Equations",
+  "content": "Scientific catalog of constants, equations, units, uncertainty notes, source links, and equation limitations.",
+  "source": {
+    "type": "github_source_snapshot",
+    "uri": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/docs/data/scientific-catalog.json",
+    "filename": "scientific-catalog.json",
+    "extraction_method": "verbatim source-file import; record index generated without altering source records",
+    "observed_at": "2026-11-04T00:00:00Z"
+  },
+  "metadata": {
+    "knowledge_layer": "scientific",
+    "knowledge": {
+      "claim_type": "scientific_constants_and_equation_reference_catalog",
+      "evidence_status": "supported",
+      "sources": [
+        {
+          "type": "source",
+          "ref": "https://www.bipm.org/en/publications/si-brochure",
+          "title": "Speed of light in vacuum",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://www.bipm.org/en/publications/si-brochure",
+          "title": "Planck constant",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://www.bipm.org/en/publications/si-brochure",
+          "title": "Boltzmann constant",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://www.bipm.org/en/publications/si-brochure",
+          "title": "Elementary charge",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://www.bipm.org/en/publications/si-brochure",
+          "title": "Avogadro constant",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://physics.nist.gov/cuu/Constants/index.html",
+          "title": "Newtonian constant of gravitation",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://physics.nist.gov/cuu/Constants/index.html",
+          "title": "Electron mass",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://physics.nist.gov/cuu/Constants/index.html",
+          "title": "Proton mass",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://physics.nist.gov/cuu/Constants/index.html",
+          "title": "Neutron mass",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://physics.nist.gov/cuu/Constants/index.html",
+          "title": "Vacuum electric permittivity",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://physics.nist.gov/cuu/Constants/index.html",
+          "title": "Vacuum magnetic permeability",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://physics.nist.gov/cuu/Constants/index.html",
+          "title": "Stefan–Boltzmann constant",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://physics.nist.gov/cuu/Constants/index.html",
+          "title": "Standard gravity",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://www.iau.org/static/resolutions/IAU2012_English.pdf",
+          "title": "Astronomical unit",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/",
+          "title": "Ideal rocket equation",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/thrust-equation/",
+          "title": "Photon thrust",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/books/university-physics-volume-1/pages/5-4-newtons-second-law",
+          "title": "Newton's second law",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/books/university-physics-volume-1/pages/7-2-kinetic-energy",
+          "title": "Kinetic energy",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/books/university-physics-volume-2/pages/3-4-the-first-law-of-thermodynamics",
+          "title": "First law of thermodynamics",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/books/university-physics-volume-2/pages/1-6-mechanisms-of-heat-transfer",
+          "title": "Fourier heat conduction",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/books/university-physics-volume-2/pages/11-4-magnetic-force-on-a-current-carrying-conductor",
+          "title": "Lorentz force",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations",
+          "title": "Relativistic energy-momentum",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations",
+          "title": "Lorentz factor",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://doi.org/10.1002/andp.19163540702",
+          "title": "Einstein field equation",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://arxiv.org/abs/physics/9905030",
+          "title": "Schwarzschild exterior metric",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://doi.org/10.1088/0264-9381/11/5/001",
+          "title": "Alcubierre metric",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://doi.org/10.1119/1.15620",
+          "title": "Morris–Thorne wormhole metric",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3",
+          "title": "Composite Simpson integration",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3",
+          "title": "Classical fourth-order Runge–Kutta",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        }
+      ],
+      "limitations": [
+        "Values retain their source and uncertainty notes; not all constants are exact.",
+        "Equations retain source limitations and idealizations."
+      ],
+      "record_count": 29,
+      "record_index": [
+        {
+          "id": "c",
+          "title": "Speed of light in vacuum",
+          "type": "",
+          "status": "",
+          "source": "https://www.bipm.org/en/publications/si-brochure"
+        },
+        {
+          "id": "h",
+          "title": "Planck constant",
+          "type": "",
+          "status": "",
+          "source": "https://www.bipm.org/en/publications/si-brochure"
+        },
+        {
+          "id": "k_B",
+          "title": "Boltzmann constant",
+          "type": "",
+          "status": "",
+          "source": "https://www.bipm.org/en/publications/si-brochure"
+        },
+        {
+          "id": "e",
+          "title": "Elementary charge",
+          "type": "",
+          "status": "",
+          "source": "https://www.bipm.org/en/publications/si-brochure"
+        },
+        {
+          "id": "N_A",
+          "title": "Avogadro constant",
+          "type": "",
+          "status": "",
+          "source": "https://www.bipm.org/en/publications/si-brochure"
+        },
+        {
+          "id": "G",
+          "title": "Newtonian constant of gravitation",
+          "type": "",
+          "status": "",
+          "source": "https://physics.nist.gov/cuu/Constants/index.html"
+        },
+        {
+          "id": "m_e",
+          "title": "Electron mass",
+          "type": "",
+          "status": "",
+          "source": "https://physics.nist.gov/cuu/Constants/index.html"
+        },
+        {
+          "id": "m_p",
+          "title": "Proton mass",
+          "type": "",
+          "status": "",
+          "source": "https://physics.nist.gov/cuu/Constants/index.html"
+        },
+        {
+          "id": "m_n",
+          "title": "Neutron mass",
+          "type": "",
+          "status": "",
+          "source": "https://physics.nist.gov/cuu/Constants/index.html"
+        },
+        {
+          "id": "epsilon_0",
+          "title": "Vacuum electric permittivity",
+          "type": "",
+          "status": "",
+          "source": "https://physics.nist.gov/cuu/Constants/index.html"
+        },
+        {
+          "id": "mu_0",
+          "title": "Vacuum magnetic permeability",
+          "type": "",
+          "status": "",
+          "source": "https://physics.nist.gov/cuu/Constants/index.html"
+        },
+        {
+          "id": "sigma_SB",
+          "title": "Stefan–Boltzmann constant",
+          "type": "",
+          "status": "",
+          "source": "https://physics.nist.gov/cuu/Constants/index.html"
+        },
+        {
+          "id": "g0",
+          "title": "Standard gravity",
+          "type": "",
+          "status": "",
+          "source": "https://physics.nist.gov/cuu/Constants/index.html"
+        },
+        {
+          "id": "au",
+          "title": "Astronomical unit",
+          "type": "",
+          "status": "",
+          "source": "https://www.iau.org/static/resolutions/IAU2012_English.pdf"
+        },
+        {
+          "id": "Ideal rocket equation",
+          "title": "Ideal rocket equation",
+          "type": "Propulsion",
+          "status": "",
+          "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+        },
+        {
+          "id": "Photon thrust",
+          "title": "Photon thrust",
+          "type": "Propulsion",
+          "status": "",
+          "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/thrust-equation/"
+        },
+        {
+          "id": "Newton's second law",
+          "title": "Newton's second law",
+          "type": "Mechanics",
+          "status": "",
+          "source": "https://openstax.org/books/university-physics-volume-1/pages/5-4-newtons-second-law"
+        },
+        {
+          "id": "Kinetic energy",
+          "title": "Kinetic energy",
+          "type": "Mechanics",
+          "status": "",
+          "source": "https://openstax.org/books/university-physics-volume-1/pages/7-2-kinetic-energy"
+        },
+        {
+          "id": "First law of thermodynamics",
+          "title": "First law of thermodynamics",
+          "type": "Thermodynamics",
+          "status": "",
+          "source": "https://openstax.org/books/university-physics-volume-2/pages/3-4-the-first-law-of-thermodynamics"
+        },
+        {
+          "id": "Fourier heat conduction",
+          "title": "Fourier heat conduction",
+          "type": "Thermal physics",
+          "status": "",
+          "source": "https://openstax.org/books/university-physics-volume-2/pages/1-6-mechanisms-of-heat-transfer"
+        },
+        {
+          "id": "Lorentz force",
+          "title": "Lorentz force",
+          "type": "Electromagnetism",
+          "status": "",
+          "source": "https://openstax.org/books/university-physics-volume-2/pages/11-4-magnetic-force-on-a-current-carrying-conductor"
+        },
+        {
+          "id": "Relativistic energy-momentum",
+          "title": "Relativistic energy-momentum",
+          "type": "Special relativity",
+          "status": "",
+          "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+        },
+        {
+          "id": "Lorentz factor",
+          "title": "Lorentz factor",
+          "type": "Special relativity",
+          "status": "",
+          "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+        },
+        {
+          "id": "Einstein field equation",
+          "title": "Einstein field equation",
+          "type": "General relativity",
+          "status": "",
+          "source": "https://doi.org/10.1002/andp.19163540702"
+        },
+        {
+          "id": "Schwarzschild exterior metric",
+          "title": "Schwarzschild exterior metric",
+          "type": "General relativity",
+          "status": "",
+          "source": "https://arxiv.org/abs/physics/9905030"
+        },
+        {
+          "id": "Alcubierre metric",
+          "title": "Alcubierre metric",
+          "type": "General relativity",
+          "status": "",
+          "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+        },
+        {
+          "id": "Morris–Thorne wormhole metric",
+          "title": "Morris–Thorne wormhole metric",
+          "type": "General relativity",
+          "status": "",
+          "source": "https://doi.org/10.1119/1.15620"
+        },
+        {
+          "id": "Composite Simpson integration",
+          "title": "Composite Simpson integration",
+          "type": "Numerical methods",
+          "status": "",
+          "source": "https://dlmf.nist.gov/3"
+        },
+        {
+          "id": "Classical fourth-order Runge–Kutta",
+          "title": "Classical fourth-order Runge–Kutta",
+          "type": "Numerical methods",
+          "status": "",
+          "source": "https://dlmf.nist.gov/3"
+        }
+      ]
+    },
+    "provenance": {
+      "repository": "rllibo833-sudo/Beyond-Light",
+      "branch": "main",
+      "source_commit": "8fac43391796e3c61b2faa9ae42eb29415190c1f",
+      "original_path": "docs/data/scientific-catalog.json",
+      "archive_path": "knowledge/sources/beyond-light/scientific-catalog.json"
+    },
+    "record_count": 29,
+    "record_index": [
+      {
+        "id": "c",
+        "title": "Speed of light in vacuum",
+        "type": "",
+        "status": "",
+        "source": "https://www.bipm.org/en/publications/si-brochure"
+      },
+      {
+        "id": "h",
+        "title": "Planck constant",
+        "type": "",
+        "status": "",
+        "source": "https://www.bipm.org/en/publications/si-brochure"
+      },
+      {
+        "id": "k_B",
+        "title": "Boltzmann constant",
+        "type": "",
+        "status": "",
+        "source": "https://www.bipm.org/en/publications/si-brochure"
+      },
+      {
+        "id": "e",
+        "title": "Elementary charge",
+        "type": "",
+        "status": "",
+        "source": "https://www.bipm.org/en/publications/si-brochure"
+      },
+      {
+        "id": "N_A",
+        "title": "Avogadro constant",
+        "type": "",
+        "status": "",
+        "source": "https://www.bipm.org/en/publications/si-brochure"
+      },
+      {
+        "id": "G",
+        "title": "Newtonian constant of gravitation",
+        "type": "",
+        "status": "",
+        "source": "https://physics.nist.gov/cuu/Constants/index.html"
+      },
+      {
+        "id": "m_e",
+        "title": "Electron mass",
+        "type": "",
+        "status": "",
+        "source": "https://physics.nist.gov/cuu/Constants/index.html"
+      },
+      {
+        "id": "m_p",
+        "title": "Proton mass",
+        "type": "",
+        "status": "",
+        "source": "https://physics.nist.gov/cuu/Constants/index.html"
+      },
+      {
+        "id": "m_n",
+        "title": "Neutron mass",
+        "type": "",
+        "status": "",
+        "source": "https://physics.nist.gov/cuu/Constants/index.html"
+      },
+      {
+        "id": "epsilon_0",
+        "title": "Vacuum electric permittivity",
+        "type": "",
+        "status": "",
+        "source": "https://physics.nist.gov/cuu/Constants/index.html"
+      },
+      {
+        "id": "mu_0",
+        "title": "Vacuum magnetic permeability",
+        "type": "",
+        "status": "",
+        "source": "https://physics.nist.gov/cuu/Constants/index.html"
+      },
+      {
+        "id": "sigma_SB",
+        "title": "Stefan–Boltzmann constant",
+        "type": "",
+        "status": "",
+        "source": "https://physics.nist.gov/cuu/Constants/index.html"
+      },
+      {
+        "id": "g0",
+        "title": "Standard gravity",
+        "type": "",
+        "status": "",
+        "source": "https://physics.nist.gov/cuu/Constants/index.html"
+      },
+      {
+        "id": "au",
+        "title": "Astronomical unit",
+        "type": "",
+        "status": "",
+        "source": "https://www.iau.org/static/resolutions/IAU2012_English.pdf"
+      },
+      {
+        "id": "Ideal rocket equation",
+        "title": "Ideal rocket equation",
+        "type": "Propulsion",
+        "status": "",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+      },
+      {
+        "id": "Photon thrust",
+        "title": "Photon thrust",
+        "type": "Propulsion",
+        "status": "",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/thrust-equation/"
+      },
+      {
+        "id": "Newton's second law",
+        "title": "Newton's second law",
+        "type": "Mechanics",
+        "status": "",
+        "source": "https://openstax.org/books/university-physics-volume-1/pages/5-4-newtons-second-law"
+      },
+      {
+        "id": "Kinetic energy",
+        "title": "Kinetic energy",
+        "type": "Mechanics",
+        "status": "",
+        "source": "https://openstax.org/books/university-physics-volume-1/pages/7-2-kinetic-energy"
+      },
+      {
+        "id": "First law of thermodynamics",
+        "title": "First law of thermodynamics",
+        "type": "Thermodynamics",
+        "status": "",
+        "source": "https://openstax.org/books/university-physics-volume-2/pages/3-4-the-first-law-of-thermodynamics"
+      },
+      {
+        "id": "Fourier heat conduction",
+        "title": "Fourier heat conduction",
+        "type": "Thermal physics",
+        "status": "",
+        "source": "https://openstax.org/books/university-physics-volume-2/pages/1-6-mechanisms-of-heat-transfer"
+      },
+      {
+        "id": "Lorentz force",
+        "title": "Lorentz force",
+        "type": "Electromagnetism",
+        "status": "",
+        "source": "https://openstax.org/books/university-physics-volume-2/pages/11-4-magnetic-force-on-a-current-carrying-conductor"
+      },
+      {
+        "id": "Relativistic energy-momentum",
+        "title": "Relativistic energy-momentum",
+        "type": "Special relativity",
+        "status": "",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "Lorentz factor",
+        "title": "Lorentz factor",
+        "type": "Special relativity",
+        "status": "",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "Einstein field equation",
+        "title": "Einstein field equation",
+        "type": "General relativity",
+        "status": "",
+        "source": "https://doi.org/10.1002/andp.19163540702"
+      },
+      {
+        "id": "Schwarzschild exterior metric",
+        "title": "Schwarzschild exterior metric",
+        "type": "General relativity",
+        "status": "",
+        "source": "https://arxiv.org/abs/physics/9905030"
+      },
+      {
+        "id": "Alcubierre metric",
+        "title": "Alcubierre metric",
+        "type": "General relativity",
+        "status": "",
+        "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+      },
+      {
+        "id": "Morris–Thorne wormhole metric",
+        "title": "Morris–Thorne wormhole metric",
+        "type": "General relativity",
+        "status": "",
+        "source": "https://doi.org/10.1119/1.15620"
+      },
+      {
+        "id": "Composite Simpson integration",
+        "title": "Composite Simpson integration",
+        "type": "Numerical methods",
+        "status": "",
+        "source": "https://dlmf.nist.gov/3"
+      },
+      {
+        "id": "Classical fourth-order Runge–Kutta",
+        "title": "Classical fourth-order Runge–Kutta",
+        "type": "Numerical methods",
+        "status": "",
+        "source": "https://dlmf.nist.gov/3"
+      }
+    ]
+  },
+  "created_at": "2026-11-04T00:00:00Z",
+  "updated_at": "2026-11-04T00:00:00Z",
+  "deleted_at": null
+}
