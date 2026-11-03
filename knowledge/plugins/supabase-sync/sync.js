@@ -390,10 +390,16 @@ async function syncLocal(args) {
       console.log(JSON.stringify(report, null, 2));
       return;
     }
-    await push(bundlePath); await pull(null, remotePath);
-    const remote = JSON.parse(fs.readFileSync(remotePath, "utf8")); const back = bundleToExport(remote); fs.writeFileSync(importPath, JSON.stringify(back) + "\n", "utf8");
-    const imported = JSON.parse(runBridge(["import", "--input", importPath, ...dbArgs]));
-    console.log(JSON.stringify({ mode: "local-to-Knowledge", local_memories: bundle.nodes.length, local_links: bundle.links.length, knowledge_memories: back.memories.length, knowledge_links: back.links.length, imported, transport: "Supabase outbox", durable_source: "mnemos-RLI:Knowledge" }, null, 2));
+    await push(bundlePath);
+    console.log(JSON.stringify({
+      mode: "queued-local-to-Knowledge",
+      local_memories: bundle.nodes.length,
+      local_links: bundle.links.length,
+      transport: "Supabase outbox",
+      durable_source: "mnemos-RLI:Knowledge",
+      next_step: "The scheduled/event-driven Knowledge workflow will commit this event; run pull later to fetch the committed snapshot.",
+      local_import_performed: false
+    }, null, 2));
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }
 async function createWorkspace(name) {
