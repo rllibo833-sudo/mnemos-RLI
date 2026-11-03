@@ -1,0 +1,610 @@
+{
+  "schema_version": 1,
+  "id": "bl-material-curves-v1",
+  "kind": "material_property_curve_collection",
+  "title": "NIST Material Property Curves",
+  "content": "27 material-property curve records, including NIST polynomial and log-polynomial fits, with temperature ranges and fit error metadata.",
+  "source": {
+    "type": "github_source_snapshot",
+    "uri": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/data/material_curves.jsonl",
+    "filename": "material_curves.jsonl",
+    "extraction_method": "verbatim source-file import; record index generated without altering source records",
+    "observed_at": "2026-11-04T00:00:00Z"
+  },
+  "metadata": {
+    "knowledge_layer": "scientific",
+    "knowledge": {
+      "claim_type": "published_material_property_curve_fits",
+      "evidence_status": "supported",
+      "sources": [
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/6061%20Aluminum/6061_T6Aluminum_rev.htm",
+          "title": "nist-6061-t6-k",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/6061%20Aluminum/6061_T6Aluminum_rev.htm",
+          "title": "nist-6061-t6-cp",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/6061%20Aluminum/6061_T6Aluminum_rev.htm",
+          "title": "nist-6061-t6-young",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/6061%20Aluminum/6061_T6Aluminum_rev.htm",
+          "title": "nist-6061-t6-expansion",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm",
+          "title": "nist-304-k",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm",
+          "title": "nist-304-cp",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm",
+          "title": "nist-304-young-low",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm",
+          "title": "nist-304-young-high",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm",
+          "title": "nist-304-expansion",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm",
+          "title": "nist-g10-normal-k",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm",
+          "title": "nist-g10-warp-k",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm",
+          "title": "nist-g10-cp",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm",
+          "title": "nist-g10-normal-expansion",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm",
+          "title": "nist-g10-warp-expansion",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/Ti6Al4V/Ti6Al4V_rev.htm",
+          "title": "nist-ti64-k",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/Ti6Al4V/Ti6Al4V_rev.htm",
+          "title": "nist-ti64-expansion",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/1100%20Aluminum/1100%20Aluminum_rev.htm",
+          "title": "nist-al1100-k",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/3003F%20Aluminum/3003FAluminum_rev.htm",
+          "title": "nist-al3003f-k",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/3003F%20Aluminum/3003FAluminum_rev.htm",
+          "title": "nist-al3003f-cp",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/3003F%20Aluminum/3003FAluminum_rev.htm",
+          "title": "nist-al3003f-expansion",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/5083%20Aluminum/5083Aluminum_rev.htm",
+          "title": "nist-al5083o-k",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/5083%20Aluminum/5083Aluminum_rev.htm",
+          "title": "nist-al5083o-cp",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/5083%20Aluminum/5083Aluminum_rev.htm",
+          "title": "nist-al5083o-young",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/5083%20Aluminum/5083Aluminum_rev.htm",
+          "title": "nist-al5083o-expansion",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/6063_T5%20Alulminum/6063-T5Aluminum_rev.htm",
+          "title": "nist-al6063t5-k",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/Iconel%20718/Inconel718_rev.htm",
+          "title": "nist-in718-k",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/Iconel%20718/Inconel718_rev.htm",
+          "title": "nist-in718-expansion",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        }
+      ],
+      "limitations": [
+        "Curve fits are valid only over their declared data/equation ranges.",
+        "Do not extrapolate beyond the published range or treat curve-fit coefficients as independent measurements."
+      ],
+      "record_count": 27,
+      "record_index": [
+        {
+          "id": "nist-6061-t6-k",
+          "title": "nist-6061-t6-k",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/6061%20Aluminum/6061_T6Aluminum_rev.htm"
+        },
+        {
+          "id": "nist-6061-t6-cp",
+          "title": "nist-6061-t6-cp",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/6061%20Aluminum/6061_T6Aluminum_rev.htm"
+        },
+        {
+          "id": "nist-6061-t6-young",
+          "title": "nist-6061-t6-young",
+          "type": "NIST_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/6061%20Aluminum/6061_T6Aluminum_rev.htm"
+        },
+        {
+          "id": "nist-6061-t6-expansion",
+          "title": "nist-6061-t6-expansion",
+          "type": "NIST_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/6061%20Aluminum/6061_T6Aluminum_rev.htm"
+        },
+        {
+          "id": "nist-304-k",
+          "title": "nist-304-k",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm"
+        },
+        {
+          "id": "nist-304-cp",
+          "title": "nist-304-cp",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm"
+        },
+        {
+          "id": "nist-304-young-low",
+          "title": "nist-304-young-low",
+          "type": "NIST_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm"
+        },
+        {
+          "id": "nist-304-young-high",
+          "title": "nist-304-young-high",
+          "type": "NIST_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm"
+        },
+        {
+          "id": "nist-304-expansion",
+          "title": "nist-304-expansion",
+          "type": "NIST_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm"
+        },
+        {
+          "id": "nist-g10-normal-k",
+          "title": "nist-g10-normal-k",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm"
+        },
+        {
+          "id": "nist-g10-warp-k",
+          "title": "nist-g10-warp-k",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm"
+        },
+        {
+          "id": "nist-g10-cp",
+          "title": "nist-g10-cp",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm"
+        },
+        {
+          "id": "nist-g10-normal-expansion",
+          "title": "nist-g10-normal-expansion",
+          "type": "NIST_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm"
+        },
+        {
+          "id": "nist-g10-warp-expansion",
+          "title": "nist-g10-warp-expansion",
+          "type": "NIST_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm"
+        },
+        {
+          "id": "nist-ti64-k",
+          "title": "nist-ti64-k",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/Ti6Al4V/Ti6Al4V_rev.htm"
+        },
+        {
+          "id": "nist-ti64-expansion",
+          "title": "nist-ti64-expansion",
+          "type": "NIST_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/Ti6Al4V/Ti6Al4V_rev.htm"
+        },
+        {
+          "id": "nist-al1100-k",
+          "title": "nist-al1100-k",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/1100%20Aluminum/1100%20Aluminum_rev.htm"
+        },
+        {
+          "id": "nist-al3003f-k",
+          "title": "nist-al3003f-k",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/3003F%20Aluminum/3003FAluminum_rev.htm"
+        },
+        {
+          "id": "nist-al3003f-cp",
+          "title": "nist-al3003f-cp",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/3003F%20Aluminum/3003FAluminum_rev.htm"
+        },
+        {
+          "id": "nist-al3003f-expansion",
+          "title": "nist-al3003f-expansion",
+          "type": "NIST_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/3003F%20Aluminum/3003FAluminum_rev.htm"
+        },
+        {
+          "id": "nist-al5083o-k",
+          "title": "nist-al5083o-k",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/5083%20Aluminum/5083Aluminum_rev.htm"
+        },
+        {
+          "id": "nist-al5083o-cp",
+          "title": "nist-al5083o-cp",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/5083%20Aluminum/5083Aluminum_rev.htm"
+        },
+        {
+          "id": "nist-al5083o-young",
+          "title": "nist-al5083o-young",
+          "type": "NIST_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/5083%20Aluminum/5083Aluminum_rev.htm"
+        },
+        {
+          "id": "nist-al5083o-expansion",
+          "title": "nist-al5083o-expansion",
+          "type": "NIST_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/5083%20Aluminum/5083Aluminum_rev.htm"
+        },
+        {
+          "id": "nist-al6063t5-k",
+          "title": "nist-al6063t5-k",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/6063_T5%20Alulminum/6063-T5Aluminum_rev.htm"
+        },
+        {
+          "id": "nist-in718-k",
+          "title": "nist-in718-k",
+          "type": "NIST_LOG10_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/Iconel%20718/Inconel718_rev.htm"
+        },
+        {
+          "id": "nist-in718-expansion",
+          "title": "nist-in718-expansion",
+          "type": "NIST_POLYNOMIAL",
+          "status": "",
+          "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/Iconel%20718/Inconel718_rev.htm"
+        }
+      ]
+    },
+    "provenance": {
+      "repository": "rllibo833-sudo/Beyond-Light",
+      "branch": "main",
+      "source_commit": "8fac43391796e3c61b2faa9ae42eb29415190c1f",
+      "original_path": "beyond-light-source/beyond-light/data/material_curves.jsonl",
+      "archive_path": "knowledge/sources/beyond-light/material_curves.jsonl"
+    },
+    "record_count": 27,
+    "record_index": [
+      {
+        "id": "nist-6061-t6-k",
+        "title": "nist-6061-t6-k",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/6061%20Aluminum/6061_T6Aluminum_rev.htm"
+      },
+      {
+        "id": "nist-6061-t6-cp",
+        "title": "nist-6061-t6-cp",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/6061%20Aluminum/6061_T6Aluminum_rev.htm"
+      },
+      {
+        "id": "nist-6061-t6-young",
+        "title": "nist-6061-t6-young",
+        "type": "NIST_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/6061%20Aluminum/6061_T6Aluminum_rev.htm"
+      },
+      {
+        "id": "nist-6061-t6-expansion",
+        "title": "nist-6061-t6-expansion",
+        "type": "NIST_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/6061%20Aluminum/6061_T6Aluminum_rev.htm"
+      },
+      {
+        "id": "nist-304-k",
+        "title": "nist-304-k",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm"
+      },
+      {
+        "id": "nist-304-cp",
+        "title": "nist-304-cp",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm"
+      },
+      {
+        "id": "nist-304-young-low",
+        "title": "nist-304-young-low",
+        "type": "NIST_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm"
+      },
+      {
+        "id": "nist-304-young-high",
+        "title": "nist-304-young-high",
+        "type": "NIST_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm"
+      },
+      {
+        "id": "nist-304-expansion",
+        "title": "nist-304-expansion",
+        "type": "NIST_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/304Stainless/304Stainless_rev.htm"
+      },
+      {
+        "id": "nist-g10-normal-k",
+        "title": "nist-g10-normal-k",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm"
+      },
+      {
+        "id": "nist-g10-warp-k",
+        "title": "nist-g10-warp-k",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm"
+      },
+      {
+        "id": "nist-g10-cp",
+        "title": "nist-g10-cp",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm"
+      },
+      {
+        "id": "nist-g10-normal-expansion",
+        "title": "nist-g10-normal-expansion",
+        "type": "NIST_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm"
+      },
+      {
+        "id": "nist-g10-warp-expansion",
+        "title": "nist-g10-warp-expansion",
+        "type": "NIST_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/G-10%20CR%20Fiberglass%20Epoxy/G10CRFiberglassEpoxy_rev.htm"
+      },
+      {
+        "id": "nist-ti64-k",
+        "title": "nist-ti64-k",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/Ti6Al4V/Ti6Al4V_rev.htm"
+      },
+      {
+        "id": "nist-ti64-expansion",
+        "title": "nist-ti64-expansion",
+        "type": "NIST_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Materials Database; https://trc.nist.gov/cryogenics/materials/Ti6Al4V/Ti6Al4V_rev.htm"
+      },
+      {
+        "id": "nist-al1100-k",
+        "title": "nist-al1100-k",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/1100%20Aluminum/1100%20Aluminum_rev.htm"
+      },
+      {
+        "id": "nist-al3003f-k",
+        "title": "nist-al3003f-k",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/3003F%20Aluminum/3003FAluminum_rev.htm"
+      },
+      {
+        "id": "nist-al3003f-cp",
+        "title": "nist-al3003f-cp",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/3003F%20Aluminum/3003FAluminum_rev.htm"
+      },
+      {
+        "id": "nist-al3003f-expansion",
+        "title": "nist-al3003f-expansion",
+        "type": "NIST_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/3003F%20Aluminum/3003FAluminum_rev.htm"
+      },
+      {
+        "id": "nist-al5083o-k",
+        "title": "nist-al5083o-k",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/5083%20Aluminum/5083Aluminum_rev.htm"
+      },
+      {
+        "id": "nist-al5083o-cp",
+        "title": "nist-al5083o-cp",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/5083%20Aluminum/5083Aluminum_rev.htm"
+      },
+      {
+        "id": "nist-al5083o-young",
+        "title": "nist-al5083o-young",
+        "type": "NIST_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/5083%20Aluminum/5083Aluminum_rev.htm"
+      },
+      {
+        "id": "nist-al5083o-expansion",
+        "title": "nist-al5083o-expansion",
+        "type": "NIST_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/5083%20Aluminum/5083Aluminum_rev.htm"
+      },
+      {
+        "id": "nist-al6063t5-k",
+        "title": "nist-al6063t5-k",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/6063_T5%20Alulminum/6063-T5Aluminum_rev.htm"
+      },
+      {
+        "id": "nist-in718-k",
+        "title": "nist-in718-k",
+        "type": "NIST_LOG10_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/Iconel%20718/Inconel718_rev.htm"
+      },
+      {
+        "id": "nist-in718-expansion",
+        "title": "nist-in718-expansion",
+        "type": "NIST_POLYNOMIAL",
+        "status": "",
+        "source": "NIST Cryogenic Material Properties Database; https://trc.nist.gov/cryogenics/materials/Iconel%20718/Inconel718_rev.htm"
+      }
+    ]
+  },
+  "created_at": "2026-11-04T00:00:00Z",
+  "updated_at": "2026-11-04T00:00:00Z",
+  "deleted_at": null
+}
