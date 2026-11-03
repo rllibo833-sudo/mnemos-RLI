@@ -1,12 +1,26 @@
 {
   "schema_version": 1,
   "source_of_truth": "mnemos-RLI:Knowledge",
-  "generated_at": "2026-11-03T19:31:35.212Z",
-  "nodes_count": 20,
-  "edges_count": 160,
-  "knowledge_layers": ["historical", "philosophical", "scientific", "cross-disciplinary", "experimental"],
+  "generated_at": "2026-11-04T00:00:00Z",
+  "nodes_count": 28,
+  "edges_count": 163,
+  "knowledge_layers": [
+    "historical",
+    "philosophical",
+    "scientific",
+    "cross-disciplinary",
+    "experimental"
+  ],
   "repos_analyzed": 2,
   "node_files": [
+    "bl-benchmarks-v1.json",
+    "bl-datasets-v1.json",
+    "bl-experiments-v1.json",
+    "bl-material-curves-v1.json",
+    "bl-materials-v1.json",
+    "bl-published-experiments-v1.json",
+    "bl-research-runs-v1.json",
+    "bl-scientific-catalog-v1.json",
     "finding_sf-27e94cd4-9a69-4d30-a604-1529a8dafdfd.json",
     "finding_sf-3a046d8b-7549-44fd-ac0a-7cfef07c730c.json",
     "finding_sf-5e1b057f-7b79-4388-a45f-d3dd12c85e9b.json",
@@ -29,6 +43,7 @@
     "sf-audit-fa73a47e-8049-4122-811f-2e8e1b845863-summary.json"
   ],
   "edge_files": [
+    "beyond-light-source-import.links.json",
     "legacy-knowledge-edges.links.json",
     "najihh-enquota.links.json",
     "rllibo833-sudo-pusingcuk.links.json",
