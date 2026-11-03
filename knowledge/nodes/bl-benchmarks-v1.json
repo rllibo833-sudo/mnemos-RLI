@@ -1,0 +1,1939 @@
+{
+  "schema_version": 1,
+  "id": "bl-benchmarks-v1",
+  "kind": "computational_benchmark_collection",
+  "title": "Beyond-Light Computational Benchmarks",
+  "content": "110 computational benchmark records: 89 PASS, 15 FAIL, and 6 THEORETICAL_ENGINEERING_ESTIMATE. Original records are preserved verbatim in the source archive.",
+  "source": {
+    "type": "github_source_snapshot",
+    "uri": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/data/benchmarks.jsonl",
+    "filename": "benchmarks.jsonl",
+    "extraction_method": "verbatim source-file import; record index generated without altering source records",
+    "observed_at": "2026-11-04T00:00:00Z"
+  },
+  "metadata": {
+    "knowledge_layer": "experimental",
+    "knowledge": {
+      "hypothesis": "The Beyond-Light computational engines reproduce declared reference values within stated tolerances.",
+      "method": "Deterministic software benchmark suite; computational checks only, not physical experiments.",
+      "outcome_status": "inconclusive",
+      "results": {
+        "record_count": 110,
+        "record_index": [
+          {
+            "id": "8e4a8897-4531-4d03-b9eb-b704d61a2685",
+            "title": "mechanics.projectile_range",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "a9fd0b5f-597f-4c94-b6a3-2b13cb0a7873",
+            "title": "mechanics.constant_acceleration",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "748d1194-5635-423f-be70-0e280e2f4094",
+            "title": "mechanics.projectile_range",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "90c6c2b9-1e1a-4fdb-9ca4-d158197d832e",
+            "title": "mechanics.elastic_collision",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "247fb8a0-db41-4653-9343-14acfe010a60",
+            "title": "mechanics.rotational_kinematics",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "f13c22bc-9b45-4dee-83ab-63827804e7a5",
+            "title": "thermo.ideal_gas",
+            "type": "Thermodynamics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "136ad3b8-b47f-43f8-9442-174123dc8ec4",
+            "title": "thermo.heat_capacity",
+            "type": "Thermodynamics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "70f93daf-827e-416a-83aa-79c09c667a18",
+            "title": "thermo.conduction",
+            "type": "Heat transfer",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "cab657c9-b67d-48b5-917f-99c567d9d381",
+            "title": "thermo.radiation",
+            "type": "Heat transfer",
+            "status": "PASS",
+            "source": "https://physics.nist.gov/cgi-bin/cuu/Value?sigma%7Csearch_for=stefan+boltzmann"
+          },
+          {
+            "id": "45cfdbb9-d105-4c99-b2b4-db692ae675bf",
+            "title": "electrical.ohm_law",
+            "type": "Electromagnetism",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "7e176de7-aa66-4771-8c7a-9acb6558091f",
+            "title": "electrical.power",
+            "type": "Electromagnetism",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "18657ee8-8bcb-4f75-8f1f-2846b906f157",
+            "title": "propulsion.rocket_delta_v",
+            "type": "Propulsion",
+            "status": "PASS",
+            "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+          },
+          {
+            "id": "6cc732b9-0c2e-4f19-a54a-5bfda98b6136",
+            "title": "propulsion.mass_flow_thrust",
+            "type": "Propulsion",
+            "status": "PASS",
+            "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/specific-impulse/"
+          },
+          {
+            "id": "0c4d6a83-73d5-4fe0-906c-99813e7d8a47",
+            "title": "propulsion.photon_momentum",
+            "type": "Propulsion",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/6-key-equations"
+          },
+          {
+            "id": "f69d87f9-28c7-42d8-bcc8-5329c83d73e4",
+            "title": "relativity.lorentz_factor",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+          },
+          {
+            "id": "538895b3-4def-4d0e-b99f-a6d032b30359",
+            "title": "relativity.time_dilation",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+          },
+          {
+            "id": "6f60d011-b813-4dd0-b8f4-75637bccd7a0",
+            "title": "relativity.length_contraction",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+          },
+          {
+            "id": "71afaa0a-331e-4698-9898-3898896dd1f4",
+            "title": "relativity.momentum",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+          },
+          {
+            "id": "43905a71-1c49-42f2-b308-d2e0f5b48701",
+            "title": "relativity.energy_momentum",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "OpenStax, University Physics Vol. 3, Chapter 5, Special Relativity"
+          },
+          {
+            "id": "e3ddbcd7-3cc1-46b8-96fb-3ab9c8e791e6",
+            "title": "numerics.derivative_central",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.4"
+          },
+          {
+            "id": "0881b08d-1c40-431a-99b0-d89252830d0d",
+            "title": "numerics.bisection_sqrt2",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.8"
+          },
+          {
+            "id": "1605143c-a267-496a-8da3-93dc78ea45d1",
+            "title": "numerics.simpson_sine",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.5"
+          },
+          {
+            "id": "80cd0130-33ea-40b2-9cfa-5465b2ecf437",
+            "title": "numerics.rk4_exponential",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.7"
+          },
+          {
+            "id": "d4401723-19c9-4d26-868f-f576cc17fc52",
+            "title": "metric.minkowski_flatness",
+            "type": "General relativity numerical check",
+            "status": "PASS",
+            "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+          },
+          {
+            "id": "d61c22cf-b915-4096-9d83-828e2c1e0b77",
+            "title": "metric.minkowski_determinant",
+            "type": "General relativity numerical check",
+            "status": "PASS",
+            "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+          },
+          {
+            "id": "2b64d2b7-59f4-4bcd-b490-9745a9048289",
+            "title": "metric.schwarzschild_vacuum",
+            "type": "General relativity numerical check",
+            "status": "PASS",
+            "source": "https://arxiv.org/abs/physics/9905030"
+          },
+          {
+            "id": "ea452ec4-b336-4575-b5d2-065e917ff560",
+            "title": "matrix.inverse_identity",
+            "type": "Numerical linear algebra",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3"
+          },
+          {
+            "id": "c92057a4-2d72-4799-a9ba-6c98f42027bf",
+            "title": "numerics.rk4_exponential",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.7"
+          },
+          {
+            "id": "eb914f9d-42fb-468e-8543-68546cee3295",
+            "title": "numerics.rk4_exponential",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.7"
+          },
+          {
+            "id": "579a1bd8-0788-4e0a-964c-33f2b1f84bef",
+            "title": "numerics.rk4_exponential",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.7"
+          },
+          {
+            "id": "450ab52a-c606-4814-aeb7-b223f3e1a50e",
+            "title": "numerics.rk4_exponential",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.7"
+          },
+          {
+            "id": "620c289b-7ab4-453d-af43-4d628a4d7e3b",
+            "title": "numerics.derivative_central",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.4"
+          },
+          {
+            "id": "fa91ec11-6b07-44c8-8639-15e6b3654b77",
+            "title": "numerics.derivative_central",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.4"
+          },
+          {
+            "id": "77afdb50-d2fe-4e8c-bd35-bae2f9ae5bba",
+            "title": "numerics.derivative_central",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.4"
+          },
+          {
+            "id": "f063fade-b676-4e9b-bc42-1748f1a0929a",
+            "title": "numerics.derivative_central",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.4"
+          },
+          {
+            "id": "c6f2349e-3c04-4711-bf01-de6ea45c0b97",
+            "title": "Idealized 1-AU rest-to-rest propulsion benchmark",
+            "type": "",
+            "status": "THEORETICAL_ENGINEERING_ESTIMATE",
+            "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+          },
+          {
+            "id": "117c2938-05c6-4f70-a34f-4c9456b92e47",
+            "title": "metric.schwarzschild_vacuum",
+            "type": "General relativity numerical check",
+            "status": "PASS",
+            "source": "https://arxiv.org/abs/physics/9905030"
+          },
+          {
+            "id": "3b8c97da-126c-474e-91a5-e5837d4daa35",
+            "title": "metric.schwarzschild_vacuum",
+            "type": "General relativity numerical check",
+            "status": "PASS",
+            "source": "https://arxiv.org/abs/physics/9905030"
+          },
+          {
+            "id": "fb8954ea-fbd4-4020-96bb-341ea1206079",
+            "title": "numerics.bisection_sqrt2",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.8"
+          },
+          {
+            "id": "b3f97850-d4fd-4f16-8ac2-2648287bd5f3",
+            "title": "mechanics.constant_acceleration",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "92fc9cd1-bd6f-4e97-b502-3d610a68947e",
+            "title": "mechanics.projectile_range",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "d4ff69e6-57af-48bd-aa46-5cb23c40435a",
+            "title": "mechanics.elastic_collision",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "cc75815a-ad77-44a1-a7d4-3dbebc548123",
+            "title": "mechanics.elastic_collision_energy",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-1/pages/9-4-types-of-collisions"
+          },
+          {
+            "id": "db5e61cc-4121-4315-bce3-89356e06de97",
+            "title": "mechanics.rotational_kinematics",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "c68cd3ca-16d7-42c9-b690-9e7acb8b3334",
+            "title": "thermo.ideal_gas",
+            "type": "Thermodynamics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "b919de78-074d-4b8b-8fac-c4f60502fa7c",
+            "title": "thermo.heat_capacity",
+            "type": "Thermodynamics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "f3b15ae4-f26a-40f8-89c6-889f1e7064ae",
+            "title": "thermo.conduction",
+            "type": "Heat transfer",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "985d6566-5d40-4cdf-866a-d4964fe42023",
+            "title": "thermo.radiation",
+            "type": "Heat transfer",
+            "status": "PASS",
+            "source": "https://physics.nist.gov/cgi-bin/cuu/Value?sigma%7Csearch_for=stefan+boltzmann"
+          },
+          {
+            "id": "7e41553a-6daf-4cab-b331-01be9576895a",
+            "title": "electrical.ohm_law",
+            "type": "Electromagnetism",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "0429fcb8-6c29-44d9-a651-aada2519e1e3",
+            "title": "electrical.power",
+            "type": "Electromagnetism",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "ea1e51d6-718e-41d7-8772-da6f642c6f75",
+            "title": "propulsion.rocket_delta_v",
+            "type": "Propulsion",
+            "status": "PASS",
+            "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+          },
+          {
+            "id": "72279a59-0fcb-4197-b217-4da690dcd70a",
+            "title": "propulsion.mass_flow_thrust",
+            "type": "Propulsion",
+            "status": "PASS",
+            "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/specific-impulse/"
+          },
+          {
+            "id": "2673ca2b-62b2-400d-a6c0-e265b79222d1",
+            "title": "propulsion.photon_momentum",
+            "type": "Propulsion",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/6-key-equations"
+          },
+          {
+            "id": "5eb3abc9-ea0c-4f98-b786-bf5fb90ca76b",
+            "title": "relativity.lorentz_factor",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+          },
+          {
+            "id": "2a269695-962a-40b5-b2dc-b56579787b9c",
+            "title": "relativity.time_dilation",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+          },
+          {
+            "id": "91e510a3-21ac-413f-8dd6-319471bb8383",
+            "title": "relativity.length_contraction",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+          },
+          {
+            "id": "506554cb-8184-4847-a897-5c8320051568",
+            "title": "relativity.momentum",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+          },
+          {
+            "id": "579f6575-15cf-41f2-9306-c2d7107de57c",
+            "title": "relativity.energy_momentum",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "OpenStax, University Physics Vol. 3, Chapter 5, Special Relativity"
+          },
+          {
+            "id": "7fdade90-03d0-4df1-a8cb-2671b29c6061",
+            "title": "numerics.derivative_central",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.4"
+          },
+          {
+            "id": "24143963-6942-49e0-a6f8-a06603f713b2",
+            "title": "numerics.bisection_sqrt2",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.8"
+          },
+          {
+            "id": "c8f4bfc7-e228-4c8f-93f8-eaab935538dd",
+            "title": "numerics.simpson_sine",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.5"
+          },
+          {
+            "id": "99bf7347-01ba-4844-bfff-ad1bf0c4373d",
+            "title": "numerics.rk4_exponential",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.7"
+          },
+          {
+            "id": "8b8a4bda-c255-46d1-bad8-441d2ea40c7d",
+            "title": "metric.minkowski_flatness",
+            "type": "General relativity numerical check",
+            "status": "PASS",
+            "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+          },
+          {
+            "id": "b9b3b88c-f33c-46bb-bb35-83ccdf9f836b",
+            "title": "metric.minkowski_determinant",
+            "type": "General relativity numerical check",
+            "status": "PASS",
+            "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+          },
+          {
+            "id": "3965b4c3-d42d-4c90-9db7-2d4a95195b44",
+            "title": "metric.schwarzschild_vacuum",
+            "type": "General relativity numerical check",
+            "status": "PASS",
+            "source": "https://arxiv.org/abs/physics/9905030"
+          },
+          {
+            "id": "941d4a26-ebe1-4543-b00a-3c9d2baca0bb",
+            "title": "matrix.inverse_identity",
+            "type": "Numerical linear algebra",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3"
+          },
+          {
+            "id": "c3c26020-6cc6-49ab-8c19-7cfde80ca144",
+            "title": "numerics.simpson_sine",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.5"
+          },
+          {
+            "id": "88e207e1-8d37-44fc-be69-5324029b32e3",
+            "title": "numerics.simpson_sine",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.5"
+          },
+          {
+            "id": "5d49ffe5-a834-445d-b0ec-dc5512d0d0e4",
+            "title": "numerics.simpson_sine",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.5"
+          },
+          {
+            "id": "ffe77b81-0702-480a-8b70-5bf15c87ea5d",
+            "title": "numerics.simpson_sine",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.5"
+          },
+          {
+            "id": "1aaababc-31ea-4c58-9159-9c207b182b6d",
+            "title": "numerics.rk4_exponential",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.7"
+          },
+          {
+            "id": "bc3c086c-a5a1-4b4d-8ecb-99d7a2c64fd3",
+            "title": "numerics.rk4_exponential",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.7"
+          },
+          {
+            "id": "88e111fb-8959-4280-9fbb-676766ad24f7",
+            "title": "numerics.rk4_exponential",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.7"
+          },
+          {
+            "id": "968ad96f-2c26-4c30-b28f-5cc016ae6612",
+            "title": "numerics.rk4_exponential",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.7"
+          },
+          {
+            "id": "a86096bf-b7dd-4bc1-8330-c622261b8bc1",
+            "title": "numerics.derivative_central",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.4"
+          },
+          {
+            "id": "846dbebb-3432-4294-a6d1-043329626015",
+            "title": "numerics.derivative_central",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.4"
+          },
+          {
+            "id": "35c9faf5-e6d7-49c6-865b-bf0367ed3a23",
+            "title": "numerics.derivative_central",
+            "type": "Numerical analysis",
+            "status": "FAIL",
+            "source": "https://dlmf.nist.gov/3.4"
+          },
+          {
+            "id": "7aff57e0-2b62-4035-8589-350f1cf3de4d",
+            "title": "numerics.derivative_central",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.4"
+          },
+          {
+            "id": "6266a158-0bd5-4361-917c-2be74c44c5bd",
+            "title": "Idealized 1-AU rest-to-rest propulsion benchmark",
+            "type": "",
+            "status": "THEORETICAL_ENGINEERING_ESTIMATE",
+            "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+          },
+          {
+            "id": "322ed863-3b8e-44bf-899f-a750cb8bfda1",
+            "title": "mechanics.constant_acceleration",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "5cf185bb-13d4-4c39-ba29-e9ab40e179fb",
+            "title": "mechanics.projectile_range",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "37c4e942-f106-4b65-98c8-b76df3a0465a",
+            "title": "mechanics.elastic_collision",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "24972e09-9977-436b-8d08-ba9290d21972",
+            "title": "mechanics.elastic_collision_energy",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-1/pages/9-4-types-of-collisions"
+          },
+          {
+            "id": "b487c9d8-3a91-4a67-a936-2dc35c10e818",
+            "title": "mechanics.rotational_kinematics",
+            "type": "Classical mechanics",
+            "status": "PASS",
+            "source": "https://openstax.org/details/books/university-physics-volume-1"
+          },
+          {
+            "id": "e84d21b2-c8b2-4312-a209-aea5c4dd782c",
+            "title": "thermo.ideal_gas",
+            "type": "Thermodynamics",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-2/pages/2-key-equations"
+          },
+          {
+            "id": "91d7427e-9438-48a4-bca0-2e342717908f",
+            "title": "thermo.heat_capacity",
+            "type": "Thermodynamics",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-2/pages/3-5-heat-capacities-of-an-ideal-gas"
+          },
+          {
+            "id": "6ee32851-46fa-4996-955e-cb1cc5d38d2a",
+            "title": "thermo.conduction",
+            "type": "Heat transfer",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-2/pages/1-summary"
+          },
+          {
+            "id": "64c82c6b-d033-4ab6-aa87-94c56a7d74f4",
+            "title": "thermo.radiation",
+            "type": "Heat transfer",
+            "status": "PASS",
+            "source": "https://physics.nist.gov/cgi-bin/cuu/Value?sigma%7Csearch_for=stefan+boltzmann"
+          },
+          {
+            "id": "05d65666-7075-42f9-afa7-3b2777dbd631",
+            "title": "electrical.ohm_law",
+            "type": "Electromagnetism",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-2/pages/9-4-ohms-law"
+          },
+          {
+            "id": "3e95fd7c-02b0-4b94-858f-003f9e960505",
+            "title": "electrical.power",
+            "type": "Electromagnetism",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-2/pages/9-5-electrical-energy-and-power"
+          },
+          {
+            "id": "d3f237f4-b273-4783-bedc-9b5255a94da1",
+            "title": "propulsion.rocket_delta_v",
+            "type": "Propulsion",
+            "status": "PASS",
+            "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+          },
+          {
+            "id": "cdf62e81-bd0a-4332-bd2f-2a2a444d5034",
+            "title": "propulsion.mass_flow_thrust",
+            "type": "Propulsion",
+            "status": "PASS",
+            "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/specific-impulse/"
+          },
+          {
+            "id": "5e1fe8ef-4fcc-4cd5-997e-4ea65ea5897b",
+            "title": "propulsion.photon_momentum",
+            "type": "Propulsion",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/6-key-equations"
+          },
+          {
+            "id": "57b095d7-f3be-4162-b9f4-8e35a14d8ffa",
+            "title": "relativity.lorentz_factor",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+          },
+          {
+            "id": "89bc598a-5632-4c99-ab30-ef0238d02554",
+            "title": "relativity.time_dilation",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+          },
+          {
+            "id": "80f8d8b5-9033-4698-93a6-6306e0042dd7",
+            "title": "relativity.length_contraction",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+          },
+          {
+            "id": "79c591eb-22b9-42a0-b2cc-29a58f7e3852",
+            "title": "relativity.momentum",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+          },
+          {
+            "id": "498e85ba-5d63-4a97-b712-04a7aebd8660",
+            "title": "relativity.energy_momentum",
+            "type": "Special relativity",
+            "status": "PASS",
+            "source": "OpenStax, University Physics Vol. 3, Chapter 5, Special Relativity"
+          },
+          {
+            "id": "5809d22e-8e93-432c-94c0-56bdcb042d21",
+            "title": "numerics.derivative_central",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.4"
+          },
+          {
+            "id": "6520b265-b61f-4327-b418-345eeafd1f75",
+            "title": "numerics.bisection_sqrt2",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.8"
+          },
+          {
+            "id": "9255d148-47db-4b63-b788-45b2a8607f90",
+            "title": "numerics.simpson_sine",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.5"
+          },
+          {
+            "id": "ad858d74-b9e2-4785-baf2-212961292626",
+            "title": "numerics.rk4_exponential",
+            "type": "Numerical analysis",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3.7"
+          },
+          {
+            "id": "171b8af1-a308-4d95-b752-a2b6af2e1e63",
+            "title": "metric.minkowski_flatness",
+            "type": "General relativity numerical check",
+            "status": "PASS",
+            "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+          },
+          {
+            "id": "8590cc73-0346-482a-92ad-bdb7c3b038ea",
+            "title": "metric.minkowski_determinant",
+            "type": "General relativity numerical check",
+            "status": "PASS",
+            "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+          },
+          {
+            "id": "6461303a-4439-4285-93ae-f2d7cbbc55e1",
+            "title": "metric.schwarzschild_vacuum",
+            "type": "General relativity numerical check",
+            "status": "PASS",
+            "source": "https://arxiv.org/abs/physics/9905030"
+          },
+          {
+            "id": "d77db989-f03c-4eaf-aee7-2ba2d84b008f",
+            "title": "matrix.inverse_identity",
+            "type": "Numerical linear algebra",
+            "status": "PASS",
+            "source": "https://dlmf.nist.gov/3"
+          },
+          {
+            "id": "894a77ab-7d67-4019-9bc8-6301b31e3aba",
+            "title": "Idealized 1-AU rest-to-rest propulsion benchmark",
+            "type": "",
+            "status": "THEORETICAL_ENGINEERING_ESTIMATE",
+            "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+          },
+          {
+            "id": "131332de-5089-47d5-96d7-1324787ae41b",
+            "title": "Idealized 1-AU rest-to-rest propulsion benchmark",
+            "type": "",
+            "status": "THEORETICAL_ENGINEERING_ESTIMATE",
+            "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+          },
+          {
+            "id": "80f447a9-22ec-4459-a4e3-31ad0a7f2b3a",
+            "title": "Idealized 1-AU rest-to-rest propulsion benchmark",
+            "type": "",
+            "status": "THEORETICAL_ENGINEERING_ESTIMATE",
+            "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+          },
+          {
+            "id": "1929acd9-2d40-4cf4-9805-f7fde5b766bd",
+            "title": "Idealized 1-AU rest-to-rest propulsion benchmark",
+            "type": "",
+            "status": "THEORETICAL_ENGINEERING_ESTIMATE",
+            "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+          }
+        ]
+      },
+      "raw_data_refs": [
+        "knowledge/sources/beyond-light/benchmarks.jsonl"
+      ],
+      "sources": [
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "mechanics.projectile_range",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "mechanics.constant_acceleration",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "mechanics.projectile_range",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "mechanics.elastic_collision",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "mechanics.rotational_kinematics",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "thermo.ideal_gas",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "thermo.heat_capacity",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "thermo.conduction",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://physics.nist.gov/cgi-bin/cuu/Value?sigma%7Csearch_for=stefan+boltzmann",
+          "title": "thermo.radiation",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "electrical.ohm_law",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "electrical.power",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/",
+          "title": "propulsion.rocket_delta_v",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/specific-impulse/",
+          "title": "propulsion.mass_flow_thrust",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/books/university-physics-volume-3/pages/6-key-equations",
+          "title": "propulsion.photon_momentum",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations",
+          "title": "relativity.lorentz_factor",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations",
+          "title": "relativity.time_dilation",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations",
+          "title": "relativity.length_contraction",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations",
+          "title": "relativity.momentum",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "OpenStax, University Physics Vol. 3, Chapter 5, Special Relativity",
+          "title": "relativity.energy_momentum",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3.4",
+          "title": "numerics.derivative_central",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3.8",
+          "title": "numerics.bisection_sqrt2",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3.5",
+          "title": "numerics.simpson_sine",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3.7",
+          "title": "numerics.rk4_exponential",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://doi.org/10.1088/0264-9381/11/5/001",
+          "title": "metric.minkowski_flatness",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://doi.org/10.1088/0264-9381/11/5/001",
+          "title": "metric.minkowski_determinant",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://arxiv.org/abs/physics/9905030",
+          "title": "metric.schwarzschild_vacuum",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3",
+          "title": "matrix.inverse_identity",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3.7",
+          "title": "numerics.rk4_exponential",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3.7",
+          "title": "numerics.rk4_exponential",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3.7",
+          "title": "numerics.rk4_exponential",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3.7",
+          "title": "numerics.rk4_exponential",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3.4",
+          "title": "numerics.derivative_central",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3.4",
+          "title": "numerics.derivative_central",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3.4",
+          "title": "numerics.derivative_central",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3.4",
+          "title": "numerics.derivative_central",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/",
+          "title": "Idealized 1-AU rest-to-rest propulsion benchmark",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://arxiv.org/abs/physics/9905030",
+          "title": "metric.schwarzschild_vacuum",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://arxiv.org/abs/physics/9905030",
+          "title": "metric.schwarzschild_vacuum",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://dlmf.nist.gov/3.8",
+          "title": "numerics.bisection_sqrt2",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "mechanics.constant_acceleration",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "mechanics.projectile_range",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "mechanics.elastic_collision",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/books/university-physics-volume-1/pages/9-4-types-of-collisions",
+          "title": "mechanics.elastic_collision_energy",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "mechanics.rotational_kinematics",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "thermo.ideal_gas",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "thermo.heat_capacity",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "thermo.conduction",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://physics.nist.gov/cgi-bin/cuu/Value?sigma%7Csearch_for=stefan+boltzmann",
+          "title": "thermo.radiation",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "electrical.ohm_law",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://openstax.org/details/books/university-physics-volume-1",
+          "title": "electrical.power",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        }
+      ],
+      "limitations": [
+        "Imported suite contains passing, failing, and engineering-estimate records; outcomes must remain individually visible.",
+        "A passing computational benchmark does not establish physical-world validity."
+      ]
+    },
+    "provenance": {
+      "repository": "rllibo833-sudo/Beyond-Light",
+      "branch": "main",
+      "source_commit": "8fac43391796e3c61b2faa9ae42eb29415190c1f",
+      "original_path": "beyond-light-source/beyond-light/data/benchmarks.jsonl",
+      "archive_path": "knowledge/sources/beyond-light/benchmarks.jsonl"
+    },
+    "record_count": 110,
+    "record_index": [
+      {
+        "id": "8e4a8897-4531-4d03-b9eb-b704d61a2685",
+        "title": "mechanics.projectile_range",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "a9fd0b5f-597f-4c94-b6a3-2b13cb0a7873",
+        "title": "mechanics.constant_acceleration",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "748d1194-5635-423f-be70-0e280e2f4094",
+        "title": "mechanics.projectile_range",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "90c6c2b9-1e1a-4fdb-9ca4-d158197d832e",
+        "title": "mechanics.elastic_collision",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "247fb8a0-db41-4653-9343-14acfe010a60",
+        "title": "mechanics.rotational_kinematics",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "f13c22bc-9b45-4dee-83ab-63827804e7a5",
+        "title": "thermo.ideal_gas",
+        "type": "Thermodynamics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "136ad3b8-b47f-43f8-9442-174123dc8ec4",
+        "title": "thermo.heat_capacity",
+        "type": "Thermodynamics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "70f93daf-827e-416a-83aa-79c09c667a18",
+        "title": "thermo.conduction",
+        "type": "Heat transfer",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "cab657c9-b67d-48b5-917f-99c567d9d381",
+        "title": "thermo.radiation",
+        "type": "Heat transfer",
+        "status": "PASS",
+        "source": "https://physics.nist.gov/cgi-bin/cuu/Value?sigma%7Csearch_for=stefan+boltzmann"
+      },
+      {
+        "id": "45cfdbb9-d105-4c99-b2b4-db692ae675bf",
+        "title": "electrical.ohm_law",
+        "type": "Electromagnetism",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "7e176de7-aa66-4771-8c7a-9acb6558091f",
+        "title": "electrical.power",
+        "type": "Electromagnetism",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "18657ee8-8bcb-4f75-8f1f-2846b906f157",
+        "title": "propulsion.rocket_delta_v",
+        "type": "Propulsion",
+        "status": "PASS",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+      },
+      {
+        "id": "6cc732b9-0c2e-4f19-a54a-5bfda98b6136",
+        "title": "propulsion.mass_flow_thrust",
+        "type": "Propulsion",
+        "status": "PASS",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/specific-impulse/"
+      },
+      {
+        "id": "0c4d6a83-73d5-4fe0-906c-99813e7d8a47",
+        "title": "propulsion.photon_momentum",
+        "type": "Propulsion",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/6-key-equations"
+      },
+      {
+        "id": "f69d87f9-28c7-42d8-bcc8-5329c83d73e4",
+        "title": "relativity.lorentz_factor",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "538895b3-4def-4d0e-b99f-a6d032b30359",
+        "title": "relativity.time_dilation",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "6f60d011-b813-4dd0-b8f4-75637bccd7a0",
+        "title": "relativity.length_contraction",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "71afaa0a-331e-4698-9898-3898896dd1f4",
+        "title": "relativity.momentum",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "43905a71-1c49-42f2-b308-d2e0f5b48701",
+        "title": "relativity.energy_momentum",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "OpenStax, University Physics Vol. 3, Chapter 5, Special Relativity"
+      },
+      {
+        "id": "e3ddbcd7-3cc1-46b8-96fb-3ab9c8e791e6",
+        "title": "numerics.derivative_central",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.4"
+      },
+      {
+        "id": "0881b08d-1c40-431a-99b0-d89252830d0d",
+        "title": "numerics.bisection_sqrt2",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.8"
+      },
+      {
+        "id": "1605143c-a267-496a-8da3-93dc78ea45d1",
+        "title": "numerics.simpson_sine",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.5"
+      },
+      {
+        "id": "80cd0130-33ea-40b2-9cfa-5465b2ecf437",
+        "title": "numerics.rk4_exponential",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.7"
+      },
+      {
+        "id": "d4401723-19c9-4d26-868f-f576cc17fc52",
+        "title": "metric.minkowski_flatness",
+        "type": "General relativity numerical check",
+        "status": "PASS",
+        "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+      },
+      {
+        "id": "d61c22cf-b915-4096-9d83-828e2c1e0b77",
+        "title": "metric.minkowski_determinant",
+        "type": "General relativity numerical check",
+        "status": "PASS",
+        "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+      },
+      {
+        "id": "2b64d2b7-59f4-4bcd-b490-9745a9048289",
+        "title": "metric.schwarzschild_vacuum",
+        "type": "General relativity numerical check",
+        "status": "PASS",
+        "source": "https://arxiv.org/abs/physics/9905030"
+      },
+      {
+        "id": "ea452ec4-b336-4575-b5d2-065e917ff560",
+        "title": "matrix.inverse_identity",
+        "type": "Numerical linear algebra",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3"
+      },
+      {
+        "id": "c92057a4-2d72-4799-a9ba-6c98f42027bf",
+        "title": "numerics.rk4_exponential",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.7"
+      },
+      {
+        "id": "eb914f9d-42fb-468e-8543-68546cee3295",
+        "title": "numerics.rk4_exponential",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.7"
+      },
+      {
+        "id": "579a1bd8-0788-4e0a-964c-33f2b1f84bef",
+        "title": "numerics.rk4_exponential",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.7"
+      },
+      {
+        "id": "450ab52a-c606-4814-aeb7-b223f3e1a50e",
+        "title": "numerics.rk4_exponential",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.7"
+      },
+      {
+        "id": "620c289b-7ab4-453d-af43-4d628a4d7e3b",
+        "title": "numerics.derivative_central",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.4"
+      },
+      {
+        "id": "fa91ec11-6b07-44c8-8639-15e6b3654b77",
+        "title": "numerics.derivative_central",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.4"
+      },
+      {
+        "id": "77afdb50-d2fe-4e8c-bd35-bae2f9ae5bba",
+        "title": "numerics.derivative_central",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.4"
+      },
+      {
+        "id": "f063fade-b676-4e9b-bc42-1748f1a0929a",
+        "title": "numerics.derivative_central",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.4"
+      },
+      {
+        "id": "c6f2349e-3c04-4711-bf01-de6ea45c0b97",
+        "title": "Idealized 1-AU rest-to-rest propulsion benchmark",
+        "type": "",
+        "status": "THEORETICAL_ENGINEERING_ESTIMATE",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+      },
+      {
+        "id": "117c2938-05c6-4f70-a34f-4c9456b92e47",
+        "title": "metric.schwarzschild_vacuum",
+        "type": "General relativity numerical check",
+        "status": "PASS",
+        "source": "https://arxiv.org/abs/physics/9905030"
+      },
+      {
+        "id": "3b8c97da-126c-474e-91a5-e5837d4daa35",
+        "title": "metric.schwarzschild_vacuum",
+        "type": "General relativity numerical check",
+        "status": "PASS",
+        "source": "https://arxiv.org/abs/physics/9905030"
+      },
+      {
+        "id": "fb8954ea-fbd4-4020-96bb-341ea1206079",
+        "title": "numerics.bisection_sqrt2",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.8"
+      },
+      {
+        "id": "b3f97850-d4fd-4f16-8ac2-2648287bd5f3",
+        "title": "mechanics.constant_acceleration",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "92fc9cd1-bd6f-4e97-b502-3d610a68947e",
+        "title": "mechanics.projectile_range",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "d4ff69e6-57af-48bd-aa46-5cb23c40435a",
+        "title": "mechanics.elastic_collision",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "cc75815a-ad77-44a1-a7d4-3dbebc548123",
+        "title": "mechanics.elastic_collision_energy",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-1/pages/9-4-types-of-collisions"
+      },
+      {
+        "id": "db5e61cc-4121-4315-bce3-89356e06de97",
+        "title": "mechanics.rotational_kinematics",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "c68cd3ca-16d7-42c9-b690-9e7acb8b3334",
+        "title": "thermo.ideal_gas",
+        "type": "Thermodynamics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "b919de78-074d-4b8b-8fac-c4f60502fa7c",
+        "title": "thermo.heat_capacity",
+        "type": "Thermodynamics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "f3b15ae4-f26a-40f8-89c6-889f1e7064ae",
+        "title": "thermo.conduction",
+        "type": "Heat transfer",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "985d6566-5d40-4cdf-866a-d4964fe42023",
+        "title": "thermo.radiation",
+        "type": "Heat transfer",
+        "status": "PASS",
+        "source": "https://physics.nist.gov/cgi-bin/cuu/Value?sigma%7Csearch_for=stefan+boltzmann"
+      },
+      {
+        "id": "7e41553a-6daf-4cab-b331-01be9576895a",
+        "title": "electrical.ohm_law",
+        "type": "Electromagnetism",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "0429fcb8-6c29-44d9-a651-aada2519e1e3",
+        "title": "electrical.power",
+        "type": "Electromagnetism",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "ea1e51d6-718e-41d7-8772-da6f642c6f75",
+        "title": "propulsion.rocket_delta_v",
+        "type": "Propulsion",
+        "status": "PASS",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+      },
+      {
+        "id": "72279a59-0fcb-4197-b217-4da690dcd70a",
+        "title": "propulsion.mass_flow_thrust",
+        "type": "Propulsion",
+        "status": "PASS",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/specific-impulse/"
+      },
+      {
+        "id": "2673ca2b-62b2-400d-a6c0-e265b79222d1",
+        "title": "propulsion.photon_momentum",
+        "type": "Propulsion",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/6-key-equations"
+      },
+      {
+        "id": "5eb3abc9-ea0c-4f98-b786-bf5fb90ca76b",
+        "title": "relativity.lorentz_factor",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "2a269695-962a-40b5-b2dc-b56579787b9c",
+        "title": "relativity.time_dilation",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "91e510a3-21ac-413f-8dd6-319471bb8383",
+        "title": "relativity.length_contraction",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "506554cb-8184-4847-a897-5c8320051568",
+        "title": "relativity.momentum",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "579f6575-15cf-41f2-9306-c2d7107de57c",
+        "title": "relativity.energy_momentum",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "OpenStax, University Physics Vol. 3, Chapter 5, Special Relativity"
+      },
+      {
+        "id": "7fdade90-03d0-4df1-a8cb-2671b29c6061",
+        "title": "numerics.derivative_central",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.4"
+      },
+      {
+        "id": "24143963-6942-49e0-a6f8-a06603f713b2",
+        "title": "numerics.bisection_sqrt2",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.8"
+      },
+      {
+        "id": "c8f4bfc7-e228-4c8f-93f8-eaab935538dd",
+        "title": "numerics.simpson_sine",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.5"
+      },
+      {
+        "id": "99bf7347-01ba-4844-bfff-ad1bf0c4373d",
+        "title": "numerics.rk4_exponential",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.7"
+      },
+      {
+        "id": "8b8a4bda-c255-46d1-bad8-441d2ea40c7d",
+        "title": "metric.minkowski_flatness",
+        "type": "General relativity numerical check",
+        "status": "PASS",
+        "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+      },
+      {
+        "id": "b9b3b88c-f33c-46bb-bb35-83ccdf9f836b",
+        "title": "metric.minkowski_determinant",
+        "type": "General relativity numerical check",
+        "status": "PASS",
+        "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+      },
+      {
+        "id": "3965b4c3-d42d-4c90-9db7-2d4a95195b44",
+        "title": "metric.schwarzschild_vacuum",
+        "type": "General relativity numerical check",
+        "status": "PASS",
+        "source": "https://arxiv.org/abs/physics/9905030"
+      },
+      {
+        "id": "941d4a26-ebe1-4543-b00a-3c9d2baca0bb",
+        "title": "matrix.inverse_identity",
+        "type": "Numerical linear algebra",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3"
+      },
+      {
+        "id": "c3c26020-6cc6-49ab-8c19-7cfde80ca144",
+        "title": "numerics.simpson_sine",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.5"
+      },
+      {
+        "id": "88e207e1-8d37-44fc-be69-5324029b32e3",
+        "title": "numerics.simpson_sine",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.5"
+      },
+      {
+        "id": "5d49ffe5-a834-445d-b0ec-dc5512d0d0e4",
+        "title": "numerics.simpson_sine",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.5"
+      },
+      {
+        "id": "ffe77b81-0702-480a-8b70-5bf15c87ea5d",
+        "title": "numerics.simpson_sine",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.5"
+      },
+      {
+        "id": "1aaababc-31ea-4c58-9159-9c207b182b6d",
+        "title": "numerics.rk4_exponential",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.7"
+      },
+      {
+        "id": "bc3c086c-a5a1-4b4d-8ecb-99d7a2c64fd3",
+        "title": "numerics.rk4_exponential",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.7"
+      },
+      {
+        "id": "88e111fb-8959-4280-9fbb-676766ad24f7",
+        "title": "numerics.rk4_exponential",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.7"
+      },
+      {
+        "id": "968ad96f-2c26-4c30-b28f-5cc016ae6612",
+        "title": "numerics.rk4_exponential",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.7"
+      },
+      {
+        "id": "a86096bf-b7dd-4bc1-8330-c622261b8bc1",
+        "title": "numerics.derivative_central",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.4"
+      },
+      {
+        "id": "846dbebb-3432-4294-a6d1-043329626015",
+        "title": "numerics.derivative_central",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.4"
+      },
+      {
+        "id": "35c9faf5-e6d7-49c6-865b-bf0367ed3a23",
+        "title": "numerics.derivative_central",
+        "type": "Numerical analysis",
+        "status": "FAIL",
+        "source": "https://dlmf.nist.gov/3.4"
+      },
+      {
+        "id": "7aff57e0-2b62-4035-8589-350f1cf3de4d",
+        "title": "numerics.derivative_central",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.4"
+      },
+      {
+        "id": "6266a158-0bd5-4361-917c-2be74c44c5bd",
+        "title": "Idealized 1-AU rest-to-rest propulsion benchmark",
+        "type": "",
+        "status": "THEORETICAL_ENGINEERING_ESTIMATE",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+      },
+      {
+        "id": "322ed863-3b8e-44bf-899f-a750cb8bfda1",
+        "title": "mechanics.constant_acceleration",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "5cf185bb-13d4-4c39-ba29-e9ab40e179fb",
+        "title": "mechanics.projectile_range",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "37c4e942-f106-4b65-98c8-b76df3a0465a",
+        "title": "mechanics.elastic_collision",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "24972e09-9977-436b-8d08-ba9290d21972",
+        "title": "mechanics.elastic_collision_energy",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-1/pages/9-4-types-of-collisions"
+      },
+      {
+        "id": "b487c9d8-3a91-4a67-a936-2dc35c10e818",
+        "title": "mechanics.rotational_kinematics",
+        "type": "Classical mechanics",
+        "status": "PASS",
+        "source": "https://openstax.org/details/books/university-physics-volume-1"
+      },
+      {
+        "id": "e84d21b2-c8b2-4312-a209-aea5c4dd782c",
+        "title": "thermo.ideal_gas",
+        "type": "Thermodynamics",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-2/pages/2-key-equations"
+      },
+      {
+        "id": "91d7427e-9438-48a4-bca0-2e342717908f",
+        "title": "thermo.heat_capacity",
+        "type": "Thermodynamics",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-2/pages/3-5-heat-capacities-of-an-ideal-gas"
+      },
+      {
+        "id": "6ee32851-46fa-4996-955e-cb1cc5d38d2a",
+        "title": "thermo.conduction",
+        "type": "Heat transfer",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-2/pages/1-summary"
+      },
+      {
+        "id": "64c82c6b-d033-4ab6-aa87-94c56a7d74f4",
+        "title": "thermo.radiation",
+        "type": "Heat transfer",
+        "status": "PASS",
+        "source": "https://physics.nist.gov/cgi-bin/cuu/Value?sigma%7Csearch_for=stefan+boltzmann"
+      },
+      {
+        "id": "05d65666-7075-42f9-afa7-3b2777dbd631",
+        "title": "electrical.ohm_law",
+        "type": "Electromagnetism",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-2/pages/9-4-ohms-law"
+      },
+      {
+        "id": "3e95fd7c-02b0-4b94-858f-003f9e960505",
+        "title": "electrical.power",
+        "type": "Electromagnetism",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-2/pages/9-5-electrical-energy-and-power"
+      },
+      {
+        "id": "d3f237f4-b273-4783-bedc-9b5255a94da1",
+        "title": "propulsion.rocket_delta_v",
+        "type": "Propulsion",
+        "status": "PASS",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+      },
+      {
+        "id": "cdf62e81-bd0a-4332-bd2f-2a2a444d5034",
+        "title": "propulsion.mass_flow_thrust",
+        "type": "Propulsion",
+        "status": "PASS",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/specific-impulse/"
+      },
+      {
+        "id": "5e1fe8ef-4fcc-4cd5-997e-4ea65ea5897b",
+        "title": "propulsion.photon_momentum",
+        "type": "Propulsion",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/6-key-equations"
+      },
+      {
+        "id": "57b095d7-f3be-4162-b9f4-8e35a14d8ffa",
+        "title": "relativity.lorentz_factor",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "89bc598a-5632-4c99-ab30-ef0238d02554",
+        "title": "relativity.time_dilation",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "80f8d8b5-9033-4698-93a6-6306e0042dd7",
+        "title": "relativity.length_contraction",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "79c591eb-22b9-42a0-b2cc-29a58f7e3852",
+        "title": "relativity.momentum",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations"
+      },
+      {
+        "id": "498e85ba-5d63-4a97-b712-04a7aebd8660",
+        "title": "relativity.energy_momentum",
+        "type": "Special relativity",
+        "status": "PASS",
+        "source": "OpenStax, University Physics Vol. 3, Chapter 5, Special Relativity"
+      },
+      {
+        "id": "5809d22e-8e93-432c-94c0-56bdcb042d21",
+        "title": "numerics.derivative_central",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.4"
+      },
+      {
+        "id": "6520b265-b61f-4327-b418-345eeafd1f75",
+        "title": "numerics.bisection_sqrt2",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.8"
+      },
+      {
+        "id": "9255d148-47db-4b63-b788-45b2a8607f90",
+        "title": "numerics.simpson_sine",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.5"
+      },
+      {
+        "id": "ad858d74-b9e2-4785-baf2-212961292626",
+        "title": "numerics.rk4_exponential",
+        "type": "Numerical analysis",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3.7"
+      },
+      {
+        "id": "171b8af1-a308-4d95-b752-a2b6af2e1e63",
+        "title": "metric.minkowski_flatness",
+        "type": "General relativity numerical check",
+        "status": "PASS",
+        "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+      },
+      {
+        "id": "8590cc73-0346-482a-92ad-bdb7c3b038ea",
+        "title": "metric.minkowski_determinant",
+        "type": "General relativity numerical check",
+        "status": "PASS",
+        "source": "https://doi.org/10.1088/0264-9381/11/5/001"
+      },
+      {
+        "id": "6461303a-4439-4285-93ae-f2d7cbbc55e1",
+        "title": "metric.schwarzschild_vacuum",
+        "type": "General relativity numerical check",
+        "status": "PASS",
+        "source": "https://arxiv.org/abs/physics/9905030"
+      },
+      {
+        "id": "d77db989-f03c-4eaf-aee7-2ba2d84b008f",
+        "title": "matrix.inverse_identity",
+        "type": "Numerical linear algebra",
+        "status": "PASS",
+        "source": "https://dlmf.nist.gov/3"
+      },
+      {
+        "id": "894a77ab-7d67-4019-9bc8-6301b31e3aba",
+        "title": "Idealized 1-AU rest-to-rest propulsion benchmark",
+        "type": "",
+        "status": "THEORETICAL_ENGINEERING_ESTIMATE",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+      },
+      {
+        "id": "131332de-5089-47d5-96d7-1324787ae41b",
+        "title": "Idealized 1-AU rest-to-rest propulsion benchmark",
+        "type": "",
+        "status": "THEORETICAL_ENGINEERING_ESTIMATE",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+      },
+      {
+        "id": "80f447a9-22ec-4459-a4e3-31ad0a7f2b3a",
+        "title": "Idealized 1-AU rest-to-rest propulsion benchmark",
+        "type": "",
+        "status": "THEORETICAL_ENGINEERING_ESTIMATE",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+      },
+      {
+        "id": "1929acd9-2d40-4cf4-9805-f7fde5b766bd",
+        "title": "Idealized 1-AU rest-to-rest propulsion benchmark",
+        "type": "",
+        "status": "THEORETICAL_ENGINEERING_ESTIMATE",
+        "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/"
+      }
+    ]
+  },
+  "created_at": "2026-11-04T00:00:00Z",
+  "updated_at": "2026-11-04T00:00:00Z",
+  "deleted_at": null
+}
