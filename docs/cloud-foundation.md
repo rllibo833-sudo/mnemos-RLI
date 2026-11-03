@@ -24,7 +24,7 @@ If validation, commit, push, or acknowledgement fails, the event remains pending
 - RLS is enabled and public/anonymous/authenticated access is revoked.
 - No graph query, permanent graph table, or media archive is required for this delivery path.
 - Supabase may temporarily retain unacknowledged messages. Successful deliveries are marked with the exact Knowledge commit SHA; periodic cleanup can remove delivered rows after a short retention window.
-- The previous `knowledge_nodes` / `knowledge_links` shared-graph tables are legacy and are not the destination of new Steadfast graph writes.
+- The former `knowledge_nodes`, `knowledge_links`, `knowledge_edges`, and `steadfast_knowledge_*` graph tables have been retired: their graph records were preserved in the `Knowledge` branch, their remaining rows were cleared, and API privileges were revoked. New graph writes can only enter through `mnemos_outbox`.
 
 ## Secrets and automation
 
