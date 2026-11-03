@@ -1,5 +1,6 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { validateKnowledgeLayers } from "./validate-knowledge-layers";
 
 async function main() {
 const root = "knowledge";
@@ -21,8 +22,11 @@ for (const file of (await readdir(edgesDir)).filter((f) => f.endsWith(".links.js
     edges.push(e);
   }
 }
+const layerContract = JSON.parse(await readFile(join(root, "layers", "manifest.json"), "utf8"));
+const layerValidation = validateKnowledgeLayers(nodes, edges, layerContract);
+console.log("Knowledge layer validation:", JSON.stringify(layerValidation));
 const reposAnalyzed = new Set(nodes.filter((n: any) => n.kind === "repository_audit").map((n: any) => n.source?.repository_url).filter(Boolean)).size;
-const manifest = { schema_version: 1, source_of_truth: "mnemos-RLI:Knowledge", generated_at: new Date().toISOString(), nodes_count: nodes.length, edges_count: edges.length, repos_analyzed: reposAnalyzed, node_files: await jsonFiles(nodesDir), edge_files: (await readdir(edgesDir)).filter((f) => f.endsWith(".links.json")).sort(), workspaces: ["steadfast-living-shared"] };
+const manifest = { schema_version: 1, source_of_truth: "mnemos-RLI:Knowledge", generated_at: new Date().toISOString(), nodes_count: nodes.length, edges_count: edges.length, repos_analyzed: reposAnalyzed, node_files: await jsonFiles(nodesDir), edge_files: (await readdir(edgesDir)).filter((f) => f.endsWith(".links.json")).sort(), workspaces: ["steadfast-living-shared"], knowledge_layers: Object.keys(layerContract.layers) };
 await writeFile(join(root, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n", "utf8");
 console.log(JSON.stringify({ ok: true, nodes: nodes.length, edges: edges.length, manifest: "knowledge/manifest.json" }));
 
