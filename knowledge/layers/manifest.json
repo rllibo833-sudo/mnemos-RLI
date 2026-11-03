@@ -45,7 +45,8 @@
   },
   "edge_contract": {
     "layer_path": "metadata.knowledge_layer",
-    "provenance_path": "provenance",
+    "provenance_path": "metadata.provenance",
+    "confidence_path": "metadata.confidence",
     "confidence_range": [0, 1],
     "legacy_edges": "Edges without metadata.knowledge_layer remain valid and are not retroactively reclassified."
   },
