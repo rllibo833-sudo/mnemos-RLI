@@ -35,7 +35,6 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          KNOWLEDGE_COMMIT_SHA: ${{ steps.commit.outputs.commit_sha }}
       - name: Validate canonical graph
         run: |
           npx tsx scripts/generate-manifest.ts
@@ -53,3 +52,4 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          KNOWLEDGE_COMMIT_SHA: ${{ steps.commit.outputs.commit_sha }}
