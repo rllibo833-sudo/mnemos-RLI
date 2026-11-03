@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "import_id": "beyond-light-source-import-v1",
+  "imported_at": "2026-11-04T00:00:00Z",
+  "source": {
+    "repository": "https://github.com/rllibo833-sudo/Beyond-Light",
+    "branch": "main",
+    "commit": "8fac43391796e3c61b2faa9ae42eb29415190c1f"
+  },
+  "destination": {
+    "repository": "https://github.com/rllibo833-sudo/mnemos-RLI",
+    "branch": "Knowledge",
+    "archive_path": "knowledge/sources/beyond-light",
+    "graph_path": "knowledge/nodes"
+  },
+  "totals": {
+    "source_files": 10,
+    "source_records": 207,
+    "graph_collection_nodes": 8,
+    "graph_edges": 3
+  },
+  "files": [
+    {
+      "file": "benchmarks.jsonl",
+      "records": 110,
+      "layer": "experimental",
+      "classification": "computational benchmarks; mixed pass/fail/theoretical estimate"
+    },
+    {
+      "file": "datasets.jsonl",
+      "records": 5,
+      "layer": "scientific",
+      "classification": "3 unverified fixtures; 2 NASA-linked transcriptions"
+    },
+    {
+      "file": "experiments.jsonl",
+      "records": 1,
+      "layer": "experimental",
+      "classification": "cross-source predictive screen; not supported against baseline"
+    },
+    {
+      "file": "material_curves.jsonl",
+      "records": 27,
+      "layer": "scientific",
+      "classification": "NIST curve fits"
+    },
+    {
+      "file": "materials.jsonl",
+      "records": 18,
+      "layer": "scientific",
+      "classification": "NASA/NIST material reference records"
+    },
+    {
+      "file": "published_experiments.jsonl",
+      "records": 8,
+      "layer": "scientific",
+      "classification": "published report summaries"
+    },
+    {
+      "file": "research_runs.jsonl",
+      "records": 9,
+      "layer": "experimental",
+      "classification": "computational/model runs; not physical measurements"
+    },
+    {
+      "file": "rl10_derivative_ii_1989_nasa_cr_179595.csv",
+      "records": null,
+      "layer": "scientific",
+      "classification": "NASA-linked data transcription"
+    },
+    {
+      "file": "rl10a_3_3b_1987_nasa_cr_183200.csv",
+      "records": null,
+      "layer": "scientific",
+      "classification": "NASA-linked data transcription"
+    },
+    {
+      "file": "scientific-catalog.json",
+      "records": 29,
+      "layer": "scientific",
+      "classification": "constants and equation reference catalog"
+    }
+  ],
+  "graph_nodes": [
+    "bl-benchmarks-v1",
+    "bl-datasets-v1",
+    "bl-experiments-v1",
+    "bl-material-curves-v1",
+    "bl-materials-v1",
+    "bl-published-experiments-v1",
+    "bl-research-runs-v1",
+    "bl-scientific-catalog-v1"
+  ],
+  "graph_edges": "beyond-light-source-import.links.json",
+  "notes": [
+    "Original source files are preserved verbatim.",
+    "Graph nodes are collection-level indexes, not a claim that every source record has been independently verified.",
+    "The Beyond-Light source repository remains unchanged by this import."
+  ]
+}
