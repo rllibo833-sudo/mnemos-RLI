@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "id": "bl-experiments-v1",
+  "kind": "cross_source_experiment_collection",
+  "title": "Beyond-Light Cross-Source Experiments",
+  "content": "One independent cross-source predictive screen. The stored result says no pattern outperformed the baseline and the second-source result was not replicated.",
+  "source": {
+    "type": "github_source_snapshot",
+    "uri": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/data/experiments.jsonl",
+    "filename": "experiments.jsonl",
+    "extraction_method": "verbatim source-file import; record index generated without altering source records",
+    "observed_at": "2026-11-04T00:00:00Z"
+  },
+  "metadata": {
+    "knowledge_layer": "experimental",
+    "knowledge": {
+      "hypothesis": "A fitted pattern can predict RL10 specific impulse across the two imported source datasets better than a constant baseline.",
+      "method": "Cross-source predictive screen using two distinct NASA RL10 report datasets; not a matched-condition physical replication.",
+      "outcome_status": "not_supported",
+      "results": {
+        "record_count": 1,
+        "record_index": [
+          {
+            "id": "rl10-of-isp-cross-source-2026-11-03",
+            "title": "RL10 mixture ratio versus specific impulse — cross-source predictive screen",
+            "type": "INDEPENDENT_EXPERIMENT",
+            "status": "NO_PATTERN_OUTPERFORMS_BASELINE",
+            "source": ""
+          }
+        ]
+      },
+      "raw_data_refs": [
+        "knowledge/sources/beyond-light/experiments.jsonl"
+      ],
+      "sources": [],
+      "limitations": [
+        "The record reports that no pattern outperformed the baseline.",
+        "The source datasets use different engine variants and test conditions; this is not strict replication or a universal RL10 law."
+      ]
+    },
+    "provenance": {
+      "repository": "rllibo833-sudo/Beyond-Light",
+      "branch": "main",
+      "source_commit": "8fac43391796e3c61b2faa9ae42eb29415190c1f",
+      "original_path": "beyond-light-source/beyond-light/data/experiments.jsonl",
+      "archive_path": "knowledge/sources/beyond-light/experiments.jsonl"
+    },
+    "record_count": 1,
+    "record_index": [
+      {
+        "id": "rl10-of-isp-cross-source-2026-11-03",
+        "title": "RL10 mixture ratio versus specific impulse — cross-source predictive screen",
+        "type": "INDEPENDENT_EXPERIMENT",
+        "status": "NO_PATTERN_OUTPERFORMS_BASELINE",
+        "source": ""
+      }
+    ]
+  },
+  "created_at": "2026-11-04T00:00:00Z",
+  "updated_at": "2026-11-04T00:00:00Z",
+  "deleted_at": null
+}
