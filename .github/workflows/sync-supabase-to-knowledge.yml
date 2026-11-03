@@ -1,4 +1,5 @@
 # The runner lives on main; it checks out Knowledge for canonical graph data.
+# Keep this workflow on the default branch so schedule events remain eligible.
 name: Deliver Supabase transport outbox to Mnemos Knowledge
 on:
   repository_dispatch:
