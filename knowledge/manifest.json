@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "source_of_truth": "mnemos-RLI:Knowledge",
-  "generated_at": "2026-11-03T18:40:19.648Z",
-  "nodes_count": 18,
+  "generated_at": "2026-11-03T18:40:52.387Z",
+  "nodes_count": 17,
   "edges_count": 158,
   "repos_analyzed": 2,
   "node_files": [
@@ -20,7 +20,6 @@
     "finding_sf-a35d5aea-e139-442b-981c-b2bebd9041fe.json",
     "finding_sf-c182d9c3-bc31-4b3a-994e-ec8233a51c6f.json",
     "finding_sf-eb3e2c1e-3f72-461b-ac45-32628aa01fb1.json",
-    "mnemos-transport-smoke-20261104.json",
     "repo_najihh-enquota_sf-3d00ff20-bfea-4121-830a-9212c147b27d.json",
     "repo_rllibo833-sudo-pusingcuk_sf-1ae2c0b2-92a2-4f2f-964a-36fb97cde522.json",
     "repo_rllibo833-sudo-pusingcuk_sf-83fb0a30-f21a-4c40-8edd-a724158d0b02.json"
