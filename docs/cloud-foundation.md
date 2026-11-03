@@ -1,31 +1,58 @@
 # Mnemos Cloud Foundation
 
-## Current boundary
+## Canonical storage boundary
 
-SQLite remains the local source of work. The optional Knowledge-branch sync plugin transfers bounded text and graph metadata to Supabase only when explicitly invoked. It does not upload original media or run automatically. The local stdio MCP server remains independent; this plugin is not a deployed remote MCP endpoint.
+The `Knowledge` branch of this repository is the durable, inspectable graph snapshot and canonical publication target. Supabase is **temporary transport only**; it must not be treated as the long-term graph archive.
 
-## Shared graph model
+Steadfast and other authorized producers enqueue graph events in `public.mnemos_outbox`. The outbox stores a bounded payload, a stable idempotency key, and a checksum while delivery is pending. A GitHub Actions workflow is triggered immediately by repository dispatch and also polls every 10 minutes as a recovery path.
 
-- `public.knowledge_workspaces` defines a workspace and its owner.
-- `public.knowledge_workspace_members` grants reader, writer, or admin access.
-- `public.knowledge_nodes` and `public.knowledge_links` are keyed by workspace and stable local IDs, so authorized members read and write the same graph rather than separate per-user copies.
-- Row-level security derives access from workspace membership. The public anon key alone does not grant access; use a signed-in user's access token.
-- Source references are reduced to safe metadata. Secrets, local paths, and binary payloads are not synchronized.
+## Delivery protocol
 
-The older private `mnemos` schema migration is a separate legacy foundation and is not the table contract used by `knowledge/plugins/supabase-sync/sync.js`.
+1. Producer writes one complete graph event to `mnemos_outbox`.
+2. The producer dispatches `sync-supabase-to-knowledge` to this repository.
+3. The Knowledge workflow reads pending events in creation order and verifies each canonical JSON SHA-256 checksum.
+4. Nodes and edges are written as deterministic, upsertable files. Existing Knowledge files are never deleted by this transport importer.
+5. The manifest generator verifies unique node IDs and that every edge endpoint exists in the resulting Knowledge snapshot.
+6. The workflow commits and pushes the graph to branch `Knowledge`.
+7. Only after the Git push step succeeds does the workflow acknowledge the exact outbox event IDs and payload checksums in Supabase.
+
+If validation, commit, push, or acknowledgement fails, the event remains pending and the next scheduled run retries it. Replaying an event is safe: node filenames are derived from stable node IDs and relation files from stable event IDs. The acknowledgement is guarded by both event ID and payload checksum.
+
+## Supabase boundary
+
+- `public.mnemos_outbox` is a private transport table; only the service role can access it.
+- RLS is enabled and public/anonymous/authenticated access is revoked.
+- No graph query, permanent graph table, or media archive is required for this delivery path.
+- Supabase may temporarily retain unacknowledged messages. Successful deliveries are marked with the exact Knowledge commit SHA; periodic cleanup can remove delivered rows after a short retention window.
+- The previous `knowledge_nodes` / `knowledge_links` shared-graph tables are legacy and are not the destination of new Steadfast graph writes.
+
+## Secrets and automation
+
+Configure these GitHub Actions repository secrets in `rllibo833-sudo/mnemos-RLI`:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+Configure these Supabase Edge Function secrets in Steadfast:
+
+- `MNEMOS_GITHUB_TOKEN`: token with permission to dispatch workflows in `rllibo833-sudo/mnemos-RLI`.
+- `MNEMOS_GITHUB_REPOSITORY`: optional; defaults to `rllibo833-sudo/mnemos-RLI`.
+- `SUPABASE_SERVICE_ROLE_KEY`: server-only key used to enqueue events. Never expose it to a browser.
+
+The workflow's 10-minute schedule is a recovery mechanism, not the primary trigger. Normal delivery is event-driven. The schedule prevents an expired/missing dispatch token or transient GitHub API failure from leaving an event permanently stranded.
 
 ## Local use
 
-Dry-run the local graph bundle without network access:
+The local Mnemos SQLite engine remains independent and local-first. This transport workflow does not upload a local SQLite database or binary media. Local push/pull synchronization remains an optional separate feature and must not be confused with the Steadfast outbox delivery path.
 
-```bash
-python -m mnemos.cli sync --dry-run
-```
+## Verification requirements
 
-For live push/pull, configure `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_ACCESS_TOKEN`, and `MNEMOS_WORKSPACE_ID`. Apply `supabase/migrations/20261024100000_shared_knowledge_graph.sql` before syncing. Create a workspace as an authenticated user; its owner is automatically assigned admin. Add collaborators to `public.knowledge_workspace_members` as reader, writer, or admin.
+A production-ready cycle is verified only after:
+- Supabase is active and the outbox migration is applied.
+- The Steadfast Edge Function is deployed with the transport implementation.
+- The GitHub Actions secrets and Supabase function secrets are present.
+- A test event is enqueued, automatically delivered to `Knowledge`, and acknowledged with the commit SHA.
+- A replay of the same event creates no duplicate nodes or edges.
+- A failed dispatch leaves the event pending for scheduled retry.
 
-The sync plugin compares timestamps and content hashes, batches requests, and resolves equal-timestamp content conflicts using a canonical fingerprint, then advances the winning row's remote update timestamp so a subsequent pull converges. It refuses truncated pulls or bundles with unsupported tombstones. It does not acknowledge a transactional SQLite outbox; retries rely on idempotent workspace-keyed upserts. Deletion propagation is deliberately not enabled until a local tombstone protocol exists.
-
-## Security and verification
-
-Never put a service-role key in a device, skill, agent, or repository. Use the authenticated user's JWT and RLS. The repository code can be syntax-checked offline, but a live round trip and cross-account isolation must be verified against the configured Supabase project before claiming production readiness. No local SQLite data has been uploaded as part of these code changes.
+Do not claim end-to-end automation based on a successful workflow syntax check alone.
