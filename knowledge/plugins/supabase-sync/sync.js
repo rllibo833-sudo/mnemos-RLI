@@ -291,96 +291,75 @@ async function push(bundlePath) {
   if (!bundlePath) throw new Error("usage: sync.js push bundle.json");
   const workspaceId = uuid(env(CONFIG.workspace_id_env), CONFIG.workspace_id_env);
   const bundle = validateBundle(JSON.parse(fs.readFileSync(path.resolve(bundlePath), "utf8")), workspaceId);
+  const payload = {
+    nodes: bundle.nodes.map(node => ({ ...node, workspace_id: workspaceId })),
+    edges: bundle.links.map(link => ({
+      source: link.source_id, target: link.target_id, relation: link.relation,
+      created_at: link.created_at || new Date().toISOString(),
+      metadata: { ...(link.metadata || {}), provenance: link.provenance || null, confidence: link.confidence ?? null }
+    }))
+  };
+  if (!payload.nodes.length && !payload.edges.length) throw new Error("refusing to enqueue an empty graph bundle");
+  const payloadHash = sha256(stableJson(payload));
+  const idempotencyKey = "mnemos-local:" + payloadHash;
   const request = client();
-  const remoteNodes = await readAllTable(request, CONFIG.supabase.nodes_table, workspaceId, "updated_at.asc,id.asc", null);
-  const remoteLinks = await readAllTable(request, CONFIG.supabase.links_table, workspaceId, "updated_at.asc,source_id.asc,target_id.asc,relation.asc", null);
-  const remoteNodeById = new Map(remoteNodes.map(node => [rowKeyNode(node), node]));
-  const remoteLinkByKey = new Map(remoteLinks.map(link => [rowKeyLink(link), link]));
-  let nodesSkippedOlder = 0, nodesConflicted = 0, linksSkippedOlder = 0, linksConflicted = 0;
-  const remoteNodeConflictsToTouch = [], remoteLinkConflictsToTouch = [];
-  const nodesToPush = bundle.nodes.filter(node => {
-    const remote = remoteNodeById.get(node.id);
-    if (!remote) return true;
-    const localTime = Date.parse(node.updated_at || node.created_at || 0) || 0;
-    const remoteTime = Date.parse(remote.updated_at || remote.created_at || 0) || 0;
-    if (localTime < remoteTime) { nodesSkippedOlder++; return false; }
-    const differs = node.content_sha256 !== remote.content_sha256 ||
-      stableJson(node.metadata) !== stableJson(remote.metadata) ||
-      stableJson(node.source) !== stableJson(remote.source) ||
-      stableJson(node.media) !== stableJson(remote.media) ||
-      node.content !== remote.content || node.kind !== remote.kind || node.title !== remote.title;
-    if (localTime === remoteTime) {
-      if (!differs) return false;
-      nodesConflicted++;
-      if (nodeFingerprint(node) < nodeFingerprint(remote)) return true;
-      remoteNodeConflictsToTouch.push(remote);
-      return false;
-    }
-    return differs;
-  });
-  const linksToPush = bundle.links.filter(link => {
-    const remote = remoteLinkByKey.get(rowKeyLink(link));
-    if (!remote) return true;
-    const localTime = Date.parse(link.updated_at || link.created_at || 0) || 0;
-    const remoteTime = Date.parse(remote.updated_at || remote.created_at || 0) || 0;
-    if (localTime < remoteTime) { linksSkippedOlder++; return false; }
-    if (localTime === remoteTime) {
-      const differs = stableJson({ relation: link.relation, provenance: link.provenance, confidence: link.confidence, metadata: link.metadata }) !==
-        stableJson({ relation: remote.relation, provenance: remote.provenance, confidence: remote.confidence, metadata: remote.metadata });
-      if (!differs) { linksSkippedOlder++; return false; }
-      linksConflicted++;
-      if (linkFingerprint(link) < linkFingerprint(remote)) return true;
-      remoteLinkConflictsToTouch.push(remote);
-      return false;
-    }
-    return true;
-  });
-  const availableIds = new Set(remoteNodes.map(node => node.id));
-  for (const node of nodesToPush) availableIds.add(node.id);
-  for (const link of linksToPush) {
-    if (!availableIds.has(link.source_id) || !availableIds.has(link.target_id)) {
-      throw new Error("link endpoint missing in remote workspace and push bundle: " + link.source_id + " -> " + link.target_id);
-    }
-  }
-  for (const batch of batches(nodesToPush, BATCH_SIZE)) if (batch.length) {
-    await request(CONFIG.supabase.nodes_table, "on_conflict=workspace_id,id", "POST", batch);
-  }
-  for (const batch of batches(linksToPush, BATCH_SIZE)) if (batch.length) {
-    await request(CONFIG.supabase.links_table, "on_conflict=workspace_id,source_id,target_id,relation", "POST", batch);
-  }
-  // A deterministic fingerprint winner is propagated by bumping the remote row's
-  // update timestamp, so the next pull can apply it even when original timestamps tie.
-  for (const row of remoteNodeConflictsToTouch) {
-    const params = new URLSearchParams({ workspace_id: "eq." + workspaceId, id: "eq." + row.id });
-    await request(CONFIG.supabase.nodes_table, params.toString(), "PATCH", { updated_at: new Date().toISOString() });
-  }
-  for (const row of remoteLinkConflictsToTouch) {
-    const params = new URLSearchParams({ workspace_id: "eq." + workspaceId, source_id: "eq." + row.source_id,
-      target_id: "eq." + row.target_id, relation: "eq." + row.relation });
-    await request(CONFIG.supabase.links_table, params.toString(), "PATCH", { updated_at: new Date().toISOString() });
-  }
+  await request("mnemos_outbox", "on_conflict=workspace_id,idempotency_key", "POST", [{
+    workspace_id: workspaceId,
+    event_type: "knowledge.graph.upsert.v1",
+    idempotency_key: idempotencyKey,
+    payload,
+    payload_sha256: payloadHash
+  }], { Prefer: "resolution=ignore-duplicates,return=minimal" });
   console.log(JSON.stringify({
-    ok: true,
-    workspace_id: bundle.workspace_id,
-    nodes_upserted: nodesToPush.length,
-    links_upserted: linksToPush.length,
-    nodes_skipped_older: nodesSkippedOlder,
-    nodes_conflicts_resolved_deterministically: nodesConflicted,
-    links_skipped_older: linksSkippedOlder,
-    links_conflicts_resolved_deterministically: linksConflicted,
-    binary_uploaded: false
+    ok: true, mode: "temporary-transport",
+    workspace_id: workspaceId,
+    nodes_queued: payload.nodes.length,
+    links_queued: payload.edges.length,
+    idempotency_key: idempotencyKey,
+    durable_destination: "mnemos-RLI:Knowledge",
+    supabase_role: "temporary outbox only",
+    delivery: "event-driven when dispatched; 10-minute recovery poll"
   }, null, 2));
 }
 async function pull(since, outputPath) {
+  if (since) throw new Error("incremental pull is not supported by the canonical Knowledge snapshot; omit the timestamp for a complete pull");
   const workspaceId = uuid(env(CONFIG.workspace_id_env), CONFIG.workspace_id_env);
-  if (since && Number.isNaN(Date.parse(since))) throw new Error("since must be an ISO timestamp");
-  const request = client();
-  const nodes = await readAllTable(request, CONFIG.supabase.nodes_table, workspaceId, "updated_at.asc,id.asc", since);
-  const links = await readAllTable(request, CONFIG.supabase.links_table, workspaceId, "updated_at.asc,source_id.asc,target_id.asc,relation.asc", since);
+  const base = "https://raw.githubusercontent.com/rllibo833-sudo/mnemos-RLI/Knowledge/knowledge/";
+  const response = await fetch(base + "manifest.json", { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(20000) });
+  if (!response.ok) throw new Error("Knowledge manifest fetch failed: HTTP " + response.status);
+  const manifest = await response.json();
+  if (!Array.isArray(manifest.node_files) || !Array.isArray(manifest.edge_files)) throw new Error("Knowledge manifest is missing file indexes");
+  const [nodeFiles, edgeFiles] = await Promise.all([
+    Promise.all(manifest.node_files.map(async file => {
+      const result = await fetch(base + "nodes/" + encodeURIComponent(file), { signal: AbortSignal.timeout(20000) });
+      if (!result.ok) throw new Error("Knowledge node file missing: " + file);
+      return result.json();
+    })),
+    Promise.all(manifest.edge_files.map(async file => {
+      const result = await fetch(base + "edges/" + encodeURIComponent(file), { signal: AbortSignal.timeout(20000) });
+      if (!result.ok) throw new Error("Knowledge edge file missing: " + file);
+      return result.json();
+    }))
+  ]);
+  const nodes = nodeFiles.flat().map(node => ({ ...node, workspace_id: workspaceId }));
+  const links = edgeFiles.flat().map(edge => ({
+    source_id: edge.source ?? edge.source_id,
+    target_id: edge.target ?? edge.target_id,
+    relation: edge.relation ?? edge.relation_type ?? "related_to",
+    provenance: edge.provenance ?? edge.metadata?.provenance ?? {},
+    confidence: edge.confidence ?? edge.metadata?.confidence ?? null,
+    metadata: edge.metadata ?? {},
+    created_at: edge.created_at || manifest.generated_at
+  }));
+  const ids = new Set(nodes.map(node => node.id));
+  if (ids.size !== nodes.length) throw new Error("Knowledge snapshot contains duplicate node IDs");
+  for (const link of links) if (!ids.has(link.source_id) || !ids.has(link.target_id)) {
+    throw new Error("Knowledge snapshot contains a dangling edge: " + link.source_id + " -> " + link.target_id);
+  }
   const json = JSON.stringify({ schema_version: 1, workspace_id: workspaceId, nodes, links }, null, 2) + "\n";
   if (outputPath) {
     fs.writeFileSync(path.resolve(outputPath), json, "utf8");
-    console.error("Wrote " + nodes.length + " nodes and " + links.length + " links to " + path.resolve(outputPath));
+    console.error("Wrote complete Knowledge snapshot: " + nodes.length + " nodes and " + links.length + " links to " + path.resolve(outputPath));
   } else process.stdout.write(json);
 }
 function runBridge(args) {
@@ -414,7 +393,7 @@ async function syncLocal(args) {
     await push(bundlePath); await pull(null, remotePath);
     const remote = JSON.parse(fs.readFileSync(remotePath, "utf8")); const back = bundleToExport(remote); fs.writeFileSync(importPath, JSON.stringify(back) + "\n", "utf8");
     const imported = JSON.parse(runBridge(["import", "--input", importPath, ...dbArgs]));
-    console.log(JSON.stringify({ mode: "live-sync", local_memories: bundle.nodes.length, local_links: bundle.links.length, remote_memories: back.memories.length, remote_links: back.links.length, imported, outbox_acknowledged: 0, outbox_ack_deferred: true, reason: "outbox schema cannot be safely identified by this bridge; no ACK issued" }, null, 2));
+    console.log(JSON.stringify({ mode: "local-to-Knowledge", local_memories: bundle.nodes.length, local_links: bundle.links.length, knowledge_memories: back.memories.length, knowledge_links: back.links.length, imported, transport: "Supabase outbox", durable_source: "mnemos-RLI:Knowledge" }, null, 2));
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }
 async function createWorkspace(name) {
