@@ -6,7 +6,11 @@
     "created_at": "2026-11-04T00:00:00Z",
     "metadata": {
       "knowledge_layer": "experimental",
-      "provenance": "Beyond-Light source import",
+      "provenance": {
+        "repository": "rllibo833-sudo/Beyond-Light",
+        "branch": "main",
+        "source_commit": "8fac43391796e3c61b2faa9ae42eb29415190c1f"
+      },
       "note": "The cross-source predictive screen consumes the two imported RL10 dataset records."
     }
   },
@@ -17,7 +21,11 @@
     "created_at": "2026-11-04T00:00:00Z",
     "metadata": {
       "knowledge_layer": "experimental",
-      "provenance": "Beyond-Light source import",
+      "provenance": {
+        "repository": "rllibo833-sudo/Beyond-Light",
+        "branch": "main",
+        "source_commit": "8fac43391796e3c61b2faa9ae42eb29415190c1f"
+      },
       "note": "Research runs reference supplied datasets; synthetic fixtures remain distinguished from source-linked data."
     }
   },
@@ -28,7 +36,11 @@
     "created_at": "2026-11-04T00:00:00Z",
     "metadata": {
       "knowledge_layer": "scientific",
-      "provenance": "Beyond-Light source import",
+      "provenance": {
+        "repository": "rllibo833-sudo/Beyond-Light",
+        "branch": "main",
+        "source_commit": "8fac43391796e3c61b2faa9ae42eb29415190c1f"
+      },
       "note": "Material curve records are linked to their material reference records."
     }
   }
