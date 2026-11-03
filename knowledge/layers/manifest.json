@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "mnemos.knowledge-layers.v1",
+  "source_of_truth": "mnemos-RLI:Knowledge",
+  "node_metadata_path": "metadata.knowledge_layer + metadata.knowledge",
+  "layers": {
+    "historical": {
+      "label": "Historical Knowledge",
+      "purpose": "Connect ideas to dated events, discoveries, people, institutions, and developments over time.",
+      "required_fields": ["sources"],
+      "recommended_fields": ["date", "time_period", "event_type", "people", "institutions", "historical_context"],
+      "relations": ["preceded_by", "occurred_during", "discovered_by", "introduced_by", "influenced_by", "inspired_by", "superseded_by"]
+    },
+    "philosophical": {
+      "label": "Philosophical Knowledge",
+      "purpose": "Expose assumptions, principles, questions, arguments, ethics, and consequences behind ideas.",
+      "requires_any": ["questions", "assumptions", "principles", "arguments", "ethical_considerations", "consequences"],
+      "recommended_fields": ["position", "counterarguments", "implications", "sources"],
+      "relations": ["assumes", "questions", "supports_argument", "challenges", "contradicts", "implies", "has_ethical_implication", "depends_on"]
+    },
+    "scientific": {
+      "label": "Scientific Knowledge",
+      "purpose": "Connect scientific claims to theories, laws, research, methods, observations, and evidence status.",
+      "required_fields": ["claim_type", "evidence_status", "sources"],
+      "evidence_status": ["proposed", "theoretical", "supported", "contested", "refuted", "unknown"],
+      "recommended_fields": ["theory", "law", "method", "observations", "uncertainty", "limitations"],
+      "relations": ["supports", "refutes", "derived_from", "explains", "predicts", "measured_by", "consistent_with", "inconsistent_with"]
+    },
+    "cross-disciplinary": {
+      "label": "Cross-Disciplinary Relations",
+      "purpose": "Make explicit, justified connections between concepts, methods, models, or structures from distinct disciplines.",
+      "required_fields": ["disciplines", "mapping_rationale"],
+      "minimum_disciplines": 2,
+      "recommended_fields": ["shared_concept", "transfer_limits", "analogy_type", "sources"],
+      "relations": ["bridges", "maps_to", "analogous_to", "applies_to", "shares_structure_with", "transfers_method_to"]
+    },
+    "experimental": {
+      "label": "Experimental Knowledge",
+      "purpose": "Track hypotheses, methods, protocols, simulations, measurements, outcomes, replications, and failures.",
+      "required_fields": ["hypothesis", "method", "outcome_status"],
+      "outcome_status": ["planned", "in_progress", "supported", "not_supported", "inconclusive", "failed", "replicated"],
+      "recommended_fields": ["protocol", "conditions", "variables", "results", "raw_data_refs", "failure_modes", "limitations", "replication_of"],
+      "relations": ["tests", "reproduces", "confirms", "fails_to_support", "contradicts_result", "uses_method", "produces_result", "replicates"]
+    }
+  },
+  "edge_contract": {
+    "layer_path": "metadata.knowledge_layer",
+    "provenance_path": "provenance",
+    "confidence_range": [0, 1],
+    "legacy_edges": "Edges without metadata.knowledge_layer remain valid and are not retroactively reclassified."
+  },
+  "evidence_contract": {
+    "source_shape": {
+      "type": "string",
+      "ref": "string",
+      "title": "string",
+      "publisher": "string",
+      "published_at": "ISO-8601 string",
+      "accessed_at": "ISO-8601 string"
+    },
+    "rule": "Preserve source identity and limitations. Do not upgrade theoretical, simulated, or inferred results into experimental support."
+  }
+}
