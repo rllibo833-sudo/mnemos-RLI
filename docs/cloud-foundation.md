@@ -4,7 +4,7 @@
 
 The `Knowledge` branch of this repository is the durable, inspectable graph snapshot and canonical publication target. Supabase is **temporary transport only**; it must not be treated as the long-term graph archive.
 
-Steadfast and other authorized producers enqueue graph events in `public.mnemos_outbox`. The outbox stores a bounded payload, a stable idempotency key, and a checksum while delivery is pending. A GitHub Actions workflow is triggered immediately by repository dispatch and also polls every 10 minutes as a recovery path.
+Steadfast and other authorized producers enqueue graph events in `public.mnemos_outbox`. The outbox stores a bounded payload, a stable idempotency key, and a checksum while delivery is pending. The workflow definition lives on the repository default branch (`main`) so GitHub schedule and repository-dispatch events actually execute. It checks out `Knowledge` for graph data and commits. It is triggered immediately by repository dispatch and also polls every 10 minutes as a recovery path.
 
 ## Delivery protocol
 
