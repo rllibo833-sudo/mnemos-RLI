@@ -6,10 +6,9 @@
     "url_env": "SUPABASE_URL",
     "anon_key_env": "SUPABASE_ANON_KEY",
     "access_token_env": "SUPABASE_ACCESS_TOKEN",
-    "nodes_table": "knowledge_nodes",
-    "links_table": "knowledge_links",
     "never_use_service_role_key": true,
-    "bundles_table": "bundles"
+    "outbox_table": "mnemos_outbox",
+    "local_plugin_access": "authenticated_insert_only"
   },
   "sync": {
     "payload_format": "mnemos-knowledge-bundle",
@@ -22,7 +21,7 @@
     "original_media_uploads": false,
     "default_conflict_policy": "preserve-provenance",
     "local_snapshot_chunk_size": 500,
-    "outbox_ack_policy": "only-unchanged-upserts-after-successful-push",
+    "outbox_ack_policy": "server acknowledges only after a verified Knowledge branch commit",
     "delete_policy": "defer-until-tombstone-protocol"
   },
   "media": {
@@ -49,7 +48,7 @@
     "never_execute_imported_files": true,
     "never_scan_entire_device_implicitly": true
   },
-  "source_of_truth": "this_branch",
-  "sync_mode": "supabase_is_cache",
+  "source_of_truth": "mnemos-RLI:Knowledge",
+  "sync_mode": "supabase_temporary_outbox_transport",
   "workspace_name": "Steadfast Living Shared"
 }
