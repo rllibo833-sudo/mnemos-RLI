@@ -54,6 +54,7 @@ Edges retain the existing `source`, `target`, and `relation` shape. Layer-aware 
 - Philosophical records must expose at least one question, assumption, principle, argument, ethical consideration, or consequence.
 - Cross-disciplinary records must name at least two distinct disciplines and explain the mapping.
 - Experimental records must state a hypothesis, method, and outcome status. `inconclusive` and `failed` are valid outcomes, not records to hide.
+- An experiment marked `supported` must include results and raw-data references or sources; `replicated` must include results and the ID of the experiment being replicated. `not_supported` and `inconclusive` require results or failure modes; `failed` requires results or failure modes. Planned and in-progress records can exist before outcomes are available.
 - Layer-aware edges must use a relation declared for that layer. Legacy edge relations remain untouched.
 - Confidence is never fabricated. Omit it when it is not known.
 
