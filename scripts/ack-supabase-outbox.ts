@@ -1,4 +1,6 @@
 import { readFile } from "node:fs/promises";
+
+async function main() {
 const base = process.env.SUPABASE_URL?.replace(/\/$/, "");
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!base || !key) throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required");
@@ -14,3 +16,7 @@ for (const item of acknowledgements) {
   if (!Array.isArray(rows) || rows.length !== 1) throw new Error("Outbox acknowledgement did not update exactly one pending event: " + item.id);
 }
 console.log(JSON.stringify({ acknowledged: acknowledgements.length }));
+
+}
+
+main().catch(error => { console.error(error); process.exitCode = 1; });
