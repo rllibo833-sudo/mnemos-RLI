@@ -12,7 +12,6 @@ const CONFIG = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
 const MAX_TEXT_CHARS = CONFIG.sync.max_inline_text_chars;
 const MAX_NODES = CONFIG.sync.max_nodes_per_bundle;
 const MAX_LINKS = CONFIG.sync.max_links_per_bundle;
-const BATCH_SIZE = CONFIG.sync.max_batch_records;
 const BINARY_KEYS = new Set(["base64", "data_base64", "binary", "binary_data", "file_bytes", "image_bytes", "video_bytes", "raw_bytes", "blob_bytes"]);
 
 function env(name) {
@@ -262,31 +261,6 @@ function bundleToExport(bundle) {
   });
   return { format: "mnemos-export-v1", exported_at: new Date().toISOString(), memories, links };
 }
-async function readAllTable(request, table, workspaceId, order, since) {
-  const rows = [];
-  const pageSize = 500;
-  const maximum = table === CONFIG.supabase.nodes_table ? MAX_NODES : MAX_LINKS;
-  for (let offset = 0; ; offset += pageSize) {
-    const params = new URLSearchParams({
-      select: "*",
-      workspace_id: "eq." + workspaceId,
-      order,
-      limit: String(pageSize)
-    });
-    if (since) params.set("updated_at", "gte." + new Date(Date.parse(since) - 2000).toISOString());
-    const page = await request(table, params.toString(), "GET", undefined, {
-      "Range-Unit": "items",
-      Range: offset + "-" + (offset + pageSize - 1)
-    });
-    if (!Array.isArray(page)) throw new Error("expected array response from " + table);
-    rows.push(...page);
-    if (rows.length > maximum) throw new Error(table + " exceeds configured bundle limit; refusing a truncated pull");
-    if (page.length < pageSize) break;
-  }
-  return rows;
-}
-function rowKeyNode(node) { return node.id; }
-function rowKeyLink(link) { return link.source_id + "|" + link.target_id + "|" + link.relation; }
 async function push(bundlePath) {
   if (!bundlePath) throw new Error("usage: sync.js push bundle.json");
   const workspaceId = uuid(env(CONFIG.workspace_id_env), CONFIG.workspace_id_env);
