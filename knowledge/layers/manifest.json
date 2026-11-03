@@ -46,7 +46,7 @@
         "inconclusive": ["results or failure_modes"],
         "failed": ["failure_modes or results"]
       },
-      "recommended_fields": ["protocol", "conditions", "variables", "results", "raw_data_refs", "failure_modes", "limitations", "replication_of"],
+      "recommended_fields": ["protocol", "conditions", "variables", "results", "raw_data_refs", "sources", "failure_modes", "limitations", "replication_of"],
       "relations": ["tests", "reproduces", "confirms", "fails_to_support", "contradicts_result", "uses_method", "produces_result", "replicates"]
     }
   },
