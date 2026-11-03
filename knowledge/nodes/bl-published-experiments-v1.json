@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "id": "bl-published-experiments-v1",
+  "kind": "published_experiment_source_collection",
+  "title": "Open Published Experiment Sources",
+  "content": "Eight published experiment summaries, primarily NASA technical reports, preserving authors, year, method, conditions, uncertainty, limits, and source URLs.",
+  "source": {
+    "type": "github_source_snapshot",
+    "uri": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/data/published_experiments.jsonl",
+    "filename": "published_experiments.jsonl",
+    "extraction_method": "verbatim source-file import; record index generated without altering source records",
+    "observed_at": "2026-11-04T00:00:00Z"
+  },
+  "metadata": {
+    "knowledge_layer": "scientific",
+    "knowledge": {
+      "claim_type": "published_experiment_report_summaries",
+      "evidence_status": "supported",
+      "sources": [
+        {
+          "type": "source",
+          "ref": "https://ntrs.nasa.gov/citations/20020063408",
+          "title": "Status of the RBCC Direct-Connect Mixer Combustor Experiment",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://ntrs.nasa.gov/citations/19950009913",
+          "title": "Test results from a simple, low-cost, pressure-fed liquid hydrogen/liquid oxygen rocket combustor",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://ntrs.nasa.gov/citations/20140006727",
+          "title": "Spring 2014 Internship Diffuser Data Analysis",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://ntrs.nasa.gov/citations/20230015325",
+          "title": "BHT-6000 Hall Thruster Facility Effects Test",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://ntrs.nasa.gov/citations/20240015605",
+          "title": "Calorimeter Heat Flux Trends in NASA’s Subscale Rotating Detonation Rocket Engine",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://ntrs.nasa.gov/citations/20180002048",
+          "title": "C18150 (CuCrZr) Additively Manufactured Rocket Chamber Liner Hot-Fire Testing",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://ntrs.nasa.gov/citations/19910004173",
+          "title": "RL10A-3-3B High Mixture Ratio Qualification Program — Final Report",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        },
+        {
+          "type": "source",
+          "ref": "https://ntrs.nasa.gov/citations/19890014148",
+          "title": "Design, Fabrication, and Test of the RL10 Derivative II Chamber/Primary Nozzle",
+          "publisher": "As stated in original Beyond-Light record",
+          "accessed_at": "2026-11-04T00:00:00Z"
+        }
+      ],
+      "limitations": [
+        "These are summaries of published reports, not raw time-series data unless explicitly stated.",
+        "Source-reported results are not independently reanalyzed by this import."
+      ],
+      "record_count": 8,
+      "record_index": [
+        {
+          "id": "nasa-rbcc-mixer-2002",
+          "title": "Status of the RBCC Direct-Connect Mixer Combustor Experiment",
+          "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+          "status": "NASA_NTRS_RECORD_AND_REPORT",
+          "source": "https://ntrs.nasa.gov/citations/20020063408"
+        },
+        {
+          "id": "nasa-pressure-fed-lox-lh2-1993",
+          "title": "Test results from a simple, low-cost, pressure-fed liquid hydrogen/liquid oxygen rocket combustor",
+          "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+          "status": "NASA_NTRS_PUBLISHED_TEST_SUMMARY",
+          "source": "https://ntrs.nasa.gov/citations/19950009913"
+        },
+        {
+          "id": "nasa-j2x-diffuser-2014",
+          "title": "Spring 2014 Internship Diffuser Data Analysis",
+          "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+          "status": "NASA_NTRS_PUBLISHED_TEST_SUMMARY",
+          "source": "https://ntrs.nasa.gov/citations/20140006727"
+        },
+        {
+          "id": "nasa-bht6000-hall-2023",
+          "title": "BHT-6000 Hall Thruster Facility Effects Test",
+          "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+          "status": "NASA_NTRS_PUBLISHED_TEST_SUMMARY",
+          "source": "https://ntrs.nasa.gov/citations/20230015325"
+        },
+        {
+          "id": "nasa-rdre-calorimeter-2025",
+          "title": "Calorimeter Heat Flux Trends in NASA’s Subscale Rotating Detonation Rocket Engine",
+          "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+          "status": "NASA_NTRS_PUBLISHED_EXPERIMENT_SUMMARY",
+          "source": "https://ntrs.nasa.gov/citations/20240015605"
+        },
+        {
+          "id": "nasa-c18150-liner-2018",
+          "title": "C18150 (CuCrZr) Additively Manufactured Rocket Chamber Liner Hot-Fire Testing",
+          "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+          "status": "NASA_NTRS_PUBLISHED_TEST_SUMMARY",
+          "source": "https://ntrs.nasa.gov/citations/20180002048"
+        },
+        {
+          "id": "nasa-rl10a-3-3b-high-mixture-1987",
+          "title": "RL10A-3-3B High Mixture Ratio Qualification Program — Final Report",
+          "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+          "status": "NASA_NTRS_REPORT_TABLE_V7_TRANSCRIPTION",
+          "source": "https://ntrs.nasa.gov/citations/19910004173"
+        },
+        {
+          "id": "nasa-rl10-derivative-ii-1989",
+          "title": "Design, Fabrication, and Test of the RL10 Derivative II Chamber/Primary Nozzle",
+          "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+          "status": "NASA_2024_TABLE_17_ACTUAL_VALUES_CITING_NASA_CR_179595",
+          "source": "https://ntrs.nasa.gov/citations/19890014148"
+        }
+      ]
+    },
+    "provenance": {
+      "repository": "rllibo833-sudo/Beyond-Light",
+      "branch": "main",
+      "source_commit": "8fac43391796e3c61b2faa9ae42eb29415190c1f",
+      "original_path": "beyond-light-source/beyond-light/data/published_experiments.jsonl",
+      "archive_path": "knowledge/sources/beyond-light/published_experiments.jsonl"
+    },
+    "record_count": 8,
+    "record_index": [
+      {
+        "id": "nasa-rbcc-mixer-2002",
+        "title": "Status of the RBCC Direct-Connect Mixer Combustor Experiment",
+        "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+        "status": "NASA_NTRS_RECORD_AND_REPORT",
+        "source": "https://ntrs.nasa.gov/citations/20020063408"
+      },
+      {
+        "id": "nasa-pressure-fed-lox-lh2-1993",
+        "title": "Test results from a simple, low-cost, pressure-fed liquid hydrogen/liquid oxygen rocket combustor",
+        "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+        "status": "NASA_NTRS_PUBLISHED_TEST_SUMMARY",
+        "source": "https://ntrs.nasa.gov/citations/19950009913"
+      },
+      {
+        "id": "nasa-j2x-diffuser-2014",
+        "title": "Spring 2014 Internship Diffuser Data Analysis",
+        "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+        "status": "NASA_NTRS_PUBLISHED_TEST_SUMMARY",
+        "source": "https://ntrs.nasa.gov/citations/20140006727"
+      },
+      {
+        "id": "nasa-bht6000-hall-2023",
+        "title": "BHT-6000 Hall Thruster Facility Effects Test",
+        "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+        "status": "NASA_NTRS_PUBLISHED_TEST_SUMMARY",
+        "source": "https://ntrs.nasa.gov/citations/20230015325"
+      },
+      {
+        "id": "nasa-rdre-calorimeter-2025",
+        "title": "Calorimeter Heat Flux Trends in NASA’s Subscale Rotating Detonation Rocket Engine",
+        "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+        "status": "NASA_NTRS_PUBLISHED_EXPERIMENT_SUMMARY",
+        "source": "https://ntrs.nasa.gov/citations/20240015605"
+      },
+      {
+        "id": "nasa-c18150-liner-2018",
+        "title": "C18150 (CuCrZr) Additively Manufactured Rocket Chamber Liner Hot-Fire Testing",
+        "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+        "status": "NASA_NTRS_PUBLISHED_TEST_SUMMARY",
+        "source": "https://ntrs.nasa.gov/citations/20180002048"
+      },
+      {
+        "id": "nasa-rl10a-3-3b-high-mixture-1987",
+        "title": "RL10A-3-3B High Mixture Ratio Qualification Program — Final Report",
+        "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+        "status": "NASA_NTRS_REPORT_TABLE_V7_TRANSCRIPTION",
+        "source": "https://ntrs.nasa.gov/citations/19910004173"
+      },
+      {
+        "id": "nasa-rl10-derivative-ii-1989",
+        "title": "Design, Fabrication, and Test of the RL10 Derivative II Chamber/Primary Nozzle",
+        "type": "PUBLISHED_EXPERIMENT_SUMMARY",
+        "status": "NASA_2024_TABLE_17_ACTUAL_VALUES_CITING_NASA_CR_179595",
+        "source": "https://ntrs.nasa.gov/citations/19890014148"
+      }
+    ]
+  },
+  "created_at": "2026-11-04T00:00:00Z",
+  "updated_at": "2026-11-04T00:00:00Z",
+  "deleted_at": null
+}
