@@ -4,7 +4,7 @@
 
 Mnemos helps agents preserve useful knowledge across sessions: decisions, facts, solutions, project context, and links between them. Its goal is simple: **learn once, recall anywhere**.
 
-> Status: local SQLite, explicit graph links, MCP tools, and an optional authenticated Supabase workspace-sync plugin are present. Live sharing requires the shared-graph schema, workspace membership, and user access-token configuration; no local data is uploaded automatically.
+> Status: local SQLite remains available; the `Knowledge` branch is the durable shared graph snapshot. Supabase is used as a temporary outbox transport for automated Steadfast delivery, not as the permanent graph database. See [Cloud Foundation](docs/cloud-foundation.md) for the delivery and retry protocol.
 
 ## Why Mnemos?
 
@@ -49,7 +49,7 @@ Mnemos supports CLI use, a portable agent skill, and a local stdio MCP adapter f
 - [MCP Integration](docs/mcp-integration.md) — structured tools for compatible hosts supporting a local stdio MCP server.
 - [Cloud Foundation](docs/cloud-foundation.md) — current cloud boundary, shared workspace sync, and security requirements.
 
-**Important environment boundary:** the local MCP adapter remains stdio. The Knowledge branch includes an opt-in bundle push/pull plugin for authenticated Supabase users, but this does not by itself expose a remote MCP endpoint or connect a cloud-hosted agent. Live sync requires applying the shared-graph migration and configuring workspace membership first.
+**Important environment boundary:** the local MCP adapter remains stdio. The Knowledge branch also contains an automated Supabase outbox delivery workflow for Steadfast graph events. This is separate from the local stdio MCP adapter and does not expose a remote MCP endpoint. Live delivery requires the outbox migration and configured server-side secrets.
 
 ## What is stored?
 
