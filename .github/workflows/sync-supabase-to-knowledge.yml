@@ -29,6 +29,8 @@ jobs:
         with:
           node-version: 22
       - run: npm install --no-save tsx
+      - name: Test five-layer Knowledge contract
+        run: npx tsx scripts/validate-knowledge-layers.test.ts
       - name: Import pending outbox events
         run: npx tsx scripts/sync-supabase-to-knowledge.ts
         env:
