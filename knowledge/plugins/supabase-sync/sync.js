@@ -274,14 +274,15 @@ async function push(bundlePath) {
     }))
   };
   if (!payload.nodes.length && !payload.edges.length) throw new Error("refusing to enqueue an empty graph bundle");
-  const payloadHash = sha256(stableJson(payload));
+  const wirePayload = JSON.parse(JSON.stringify(payload));
+  const payloadHash = sha256(stableJson(wirePayload));
   const idempotencyKey = "mnemos-local:" + payloadHash;
   const request = client();
   await request("mnemos_outbox", "on_conflict=workspace_id,idempotency_key", "POST", [{
     workspace_id: workspaceId,
     event_type: "knowledge.graph.upsert.v1",
     idempotency_key: idempotencyKey,
-    payload,
+    payload: wirePayload,
     payload_sha256: payloadHash
   }], { Prefer: "resolution=ignore-duplicates,return=minimal" });
   console.log(JSON.stringify({
