@@ -56,8 +56,8 @@
       "ref": "string",
       "title": "string",
       "publisher": "string",
-      "published_at": "ISO-8601 string",
-      "accessed_at": "ISO-8601 string"
+      "published_at": "source-provided publication date string",
+      "accessed_at": "ISO-8601 timestamp string"
     },
     "rule": "Preserve source identity and limitations. Do not upgrade theoretical, simulated, or inferred results into experimental support."
   }
