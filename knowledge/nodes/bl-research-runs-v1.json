@@ -17,74 +17,9 @@
       "hypothesis": "Computational model exploration and engineering-design pipelines can produce traceable candidate analyses from supplied datasets and constraints.",
       "method": "Autonomous model exploration, deterministic research, technology design, and feasibility screening; computational/model outputs, not physical measurements.",
       "outcome_status": "inconclusive",
-      "results": {
-        "record_count": 9,
-        "record_index": [
-          {
-            "id": "833413f8-3368-427d-915b-e0a887ecd6d7",
-            "title": "Riset terpadu model, desain, dan kelayakan: fixture.csv",
-            "type": "INTEGRATED_TECHNOLOGY_RESEARCH",
-            "status": "MODEL_CANDIDATES_AND_IDEALIZED_DESIGN_SCREEN_REPORTED",
-            "source": ""
-          },
-          {
-            "id": "d01b9e41-5312-4bc1-a313-c4de2510c7a0",
-            "title": "Riset terpadu model, desain, dan kelayakan: power-thrust-screen.csv",
-            "type": "INTEGRATED_TECHNOLOGY_RESEARCH",
-            "status": "DATA_DERIVED_DESIGN_CONSTRAINT_APPLIED_MODEL_SCREEN_ONLY",
-            "source": ""
-          },
-          {
-            "id": "e41d16b9-0824-4748-90e8-89406924e5e1",
-            "title": "Riset terpadu model, desain, dan kelayakan: fixture.csv",
-            "type": "INTEGRATED_TECHNOLOGY_RESEARCH",
-            "status": "DESIGN_SCREEN_RUN_MODEL_NOT_QUALIFIED_FOR_PARAMETER_USE",
-            "source": ""
-          },
-          {
-            "id": "75073288-dc82-489e-bb8b-01e9afa63a68",
-            "title": "Eksplorasi desain pendorong reaksi ideal",
-            "type": "TECHNOLOGY_DESIGN_EXPLORATION",
-            "status": "MODEL_SCREEN_ONLY_NOT_A_VALIDATED_DESIGN",
-            "source": ""
-          },
-          {
-            "id": "70615122-5542-4c58-96d0-e25a42416d5c",
-            "title": "Riset terpadu model, desain, dan kelayakan: power-thrust-screen.csv",
-            "type": "INTEGRATED_TECHNOLOGY_RESEARCH",
-            "status": "DATA_DERIVED_DESIGN_CONSTRAINT_APPLIED_MODEL_SCREEN_ONLY",
-            "source": ""
-          },
-          {
-            "id": "fa9fac45-5458-4547-b561-17a3843306bb",
-            "title": "Riset terpadu model, desain, dan kelayakan: power-thrust-bad-screen.csv",
-            "type": "INTEGRATED_TECHNOLOGY_RESEARCH",
-            "status": "DESIGN_SCREEN_RUN_MODEL_NOT_QUALIFIED_FOR_PARAMETER_USE",
-            "source": ""
-          },
-          {
-            "id": "2ab9bc72-bd14-4dcb-9200-54a69c1ada2e",
-            "title": "Eksplorasi envelope penyimpanan energi ideal",
-            "type": "TECHNOLOGY_DESIGN_EXPLORATION",
-            "status": "MODEL_SCREEN_ONLY_NOT_A_VALIDATED_DESIGN",
-            "source": ""
-          },
-          {
-            "id": "77e619a0-d638-4bf4-a10f-855553459e18",
-            "title": "Eksplorasi desain pendorong reaksi ideal",
-            "type": "TECHNOLOGY_DESIGN_EXPLORATION",
-            "status": "MODEL_SCREEN_ONLY_NOT_A_VALIDATED_DESIGN",
-            "source": ""
-          },
-          {
-            "id": "967e4f82-2b9b-4be0-ab2d-95ed14c0b32a",
-            "title": "Eksplorasi dataset: rl10a_3_3b_1987_nasa_cr_183200.csv",
-            "type": "DETERMINISTIC_RESEARCH_RUN",
-            "status": "NOT_REPLICATED_ON_SECOND_SOURCE_DATASET",
-            "source": ""
-          }
-        ]
-      },
+      "results": [
+        "Nine computational research runs were imported; run-level outcomes and limitations remain in the verbatim archive."
+      ],
       "raw_data_refs": [
         "knowledge/sources/beyond-light/research_runs.jsonl"
       ],
