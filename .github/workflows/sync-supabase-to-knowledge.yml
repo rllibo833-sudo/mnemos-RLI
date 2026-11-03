@@ -5,13 +5,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "*/10 * * * *"
-  push:
-    branches: [Knowledge]
-    paths:
-      - .github/workflows/sync-supabase-to-knowledge.yml
-      - scripts/sync-supabase-to-knowledge.ts
-      - scripts/ack-supabase-outbox.ts
-      - scripts/generate-manifest.ts
 permissions:
   contents: write
 concurrency:
