@@ -31,6 +31,16 @@ assert.throws(() => validateKnowledgeLayers(
 assert.throws(() => validateKnowledgeLayers(
   [], [{ source: "a", target: "b", relation: "auto_match", metadata: { knowledge_layer: "scientific" } }], contract
 ), /not valid for layer/);
+assert.throws(() => validateKnowledgeLayers(
+  [node("unsupported-evidence", "experimental", {
+    hypothesis: "H", method: "Controlled test", outcome_status: "supported", results: ["Observed result"]
+  })], [], contract
+), /supported experiments require results and raw_data_refs or sources/);
+assert.throws(() => validateKnowledgeLayers(
+  [node("missing-replication", "experimental", {
+    hypothesis: "H", method: "Replication test", outcome_status: "replicated", results: ["Observed result"]
+  })], [], contract
+), /replicated experiments require results and replication_of/);
 const legacy = validateKnowledgeLayers(
   [{ id: "legacy", kind: "audit_finding", metadata: {} }],
   [{ source: "legacy", target: "legacy-2", relation: "auto_match" }],
