@@ -43,7 +43,7 @@ The workflow's 10-minute schedule is a recovery mechanism, not the primary trigg
 
 ## Local use
 
-The local Mnemos SQLite engine remains independent and local-first. This transport workflow does not upload a local SQLite database or binary media. Local push/pull synchronization remains an optional separate feature and must not be confused with the Steadfast outbox delivery path.
+The local Mnemos SQLite engine remains independent and local-first. The optional sync plugin now follows the same boundary: `push` and `sync` enqueue a bounded graph event through the authenticated outbox policy; `pull` reads the committed `Knowledge` branch snapshot directly. The `sync` command reports that delivery is asynchronous and does not claim an immediate local round trip. Original SQLite database files and binary media are never uploaded.
 
 ## Verification requirements
 
