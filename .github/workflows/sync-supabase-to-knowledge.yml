@@ -1,21 +1,26 @@
-name: Sync Supabase cache to Knowledge source of truth
+name: Deliver Supabase transport outbox to Mnemos Knowledge
 on:
   repository_dispatch:
     types: [sync-supabase-to-knowledge]
   workflow_dispatch:
   schedule:
-    - cron: "17 * * * *"
+    - cron: "*/10 * * * *"
   push:
     branches: [Knowledge]
     paths:
       - .github/workflows/sync-supabase-to-knowledge.yml
       - scripts/sync-supabase-to-knowledge.ts
+      - scripts/ack-supabase-outbox.ts
       - scripts/generate-manifest.ts
 permissions:
   contents: write
+concurrency:
+  group: mnemos-knowledge-outbox
+  cancel-in-progress: false
 jobs:
-  sync:
+  deliver:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,16 +30,23 @@ jobs:
         with:
           node-version: 22
       - run: npm install --no-save @supabase/supabase-js tsx
-      - run: |
-          npx tsx scripts/sync-supabase-to-knowledge.ts
-          npx tsx scripts/generate-manifest.ts
-          node -e 'const m=require("./knowledge/manifest.json"); if(m.nodes_count>0 && m.edges_count===0) { console.error("Refusing to commit graph with nodes but zero real relations"); process.exit(1); } console.log("Validated graph manifest:",m.nodes_count,"nodes,",m.edges_count,"edges,",m.repos_analyzed,"repos");'
+      - name: Import pending outbox events
+        run: npx tsx scripts/sync-supabase-to-knowledge.ts
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          MNEMOS_WORKSPACE_ID: ${{ secrets.MNEMOS_WORKSPACE_ID }}
-      - run: |
+      - name: Validate canonical graph
+        run: |
+          npx tsx scripts/generate-manifest.ts
+          node -e 'const m=require("./knowledge/manifest.json"); if(m.nodes_count===0) { console.error("Refusing empty Knowledge graph"); process.exit(1); } console.log("Validated Knowledge graph:",m.nodes_count,"nodes,",m.edges_count,"edges");'
+      - name: Commit Knowledge snapshot
+        run: |
           git config user.name "knowledge-sync[bot]"
           git config user.email "knowledge-sync[bot]@users.noreply.github.com"
           git add knowledge/nodes knowledge/edges knowledge/manifest.json
-          git diff --cached --quiet || (git commit -m "sync: refresh canonical knowledge graph" && git push origin Knowledge)
+          git diff --cached --quiet || (git commit -m "sync: deliver transport events to Knowledge" && git push origin Knowledge)
+      - name: Acknowledge only after commit is present on origin
+        run: npx tsx scripts/ack-supabase-outbox.ts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
