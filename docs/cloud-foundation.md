@@ -56,3 +56,36 @@ A production-ready cycle is verified only after:
 - A failed dispatch leaves the event pending for scheduled retry.
 
 Do not claim end-to-end automation based on a successful workflow syntax check alone.
+
+## Beyond-Light Python runner
+
+Beyond-Light's cloud control panel is hosted as a small Cloudflare Worker from
+`rllibo833-sudo/Beyond-Light` branch `python-migration`. The Worker is only an
+authenticated gateway and status viewer; it does not execute scientific
+calculations or store graph records.
+
+1. The user signs in with Supabase Auth in the Cloudflare dashboard.
+2. The `beyond-light-run` Edge Function validates the session and writer/admin
+   membership in the requested Knowledge workspace.
+3. The function dispatches `run-beyond-light-python` to this repository.
+4. The workflow checks out Beyond-Light at `python-migration`, runs the Python
+   regression suite, catalog validation, analytical benchmarks, idealized
+   mission estimate, and offline research cycle.
+5. A standard-library Python exporter creates a provenance-rich experimental
+   node and typed edges, then inserts one checksummed
+   `knowledge.graph.upsert.v1` event into `mnemos_outbox`.
+6. The existing `sync-supabase-to-knowledge` workflow validates and commits
+   the event to `Knowledge`, then acknowledges the exact event after the
+   commit is present on origin.
+
+The runner preserves the original Beyond-Light JSONL/CSV archives. Its
+published run node is explicitly classified as computational and
+`inconclusive`; passing software tests or analytical benchmarks is not
+presented as physical experimental confirmation. The service-role key and
+GitHub dispatch token remain server-side and are never placed in Cloudflare
+browser assets.
+
+The Cloudflare Free Worker is intentionally a gateway, not the compute host.
+Its free CPU allowance is too small for the full scientific workload; GitHub
+Actions runs the Python engine instead. Cloudflare Workers Builds can deploy
+the gateway directly from the Beyond-Light `python-migration` branch.
