@@ -1,16 +1,9 @@
 {
   "schema_version": 1,
   "source_of_truth": "mnemos-RLI:Knowledge",
-  "generated_at": "2026-11-04T00:00:00Z",
+  "generated_at": "2026-11-04T15:18:32.801Z",
   "nodes_count": 28,
   "edges_count": 163,
-  "knowledge_layers": [
-    "historical",
-    "philosophical",
-    "scientific",
-    "cross-disciplinary",
-    "experimental"
-  ],
   "repos_analyzed": 2,
   "node_files": [
     "bl-benchmarks-v1.json",
@@ -52,5 +45,12 @@
   ],
   "workspaces": [
     "steadfast-living-shared"
+  ],
+  "knowledge_layers": [
+    "historical",
+    "philosophical",
+    "scientific",
+    "cross-disciplinary",
+    "experimental"
   ]
 }
