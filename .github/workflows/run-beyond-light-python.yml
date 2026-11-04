@@ -1,0 +1,97 @@
+name: Run Beyond-Light Python and publish to Mnemos Knowledge
+
+on:
+  repository_dispatch:
+    types: [run-beyond-light-python]
+  workflow_dispatch:
+    inputs:
+      workspace_id:
+        description: Existing Mnemos Knowledge workspace UUID
+        required: true
+        default: f9a3cb1a-7eef-4d9c-86dd-e74414344bca
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beyond-light-python-run
+  cancel-in-progress: false
+
+jobs:
+  execute-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out Mnemos workflow repository
+        uses: actions/checkout@v4
+
+      - name: Check out Beyond-Light Python migration branch
+        uses: actions/checkout@v4
+        with:
+          repository: rllibo833-sudo/Beyond-Light
+          ref: python-migration
+          path: beyond-light
+
+      - name: Record exact Beyond-Light source commit
+        id: source
+        run: echo "sha=$(git -C beyond-light rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run complete Python regression suite
+        working-directory: beyond-light/beyond-light-python
+        run: python -m unittest discover -s tests -v 2>&1 | tee "$RUNNER_TEMP/beyond-light-tests.log"
+
+      - name: Validate scientific catalog and units
+        working-directory: beyond-light
+        run: python beyond-light-python/cli.py validate > "$RUNNER_TEMP/catalog-validation.json"
+
+      - name: Run all analytical reference benchmarks
+        working-directory: beyond-light
+        run: python beyond-light-python/cli.py benchmarks --group all > "$RUNNER_TEMP/benchmarks.json"
+
+      - name: Run integrated mission estimate
+        working-directory: beyond-light
+        run: python beyond-light-python/cli.py mission > "$RUNNER_TEMP/mission.json"
+
+      - name: Run full offline research cycle on preserved archives
+        working-directory: beyond-light
+        run: python beyond-light-python/cli.py research-cycle --query "Beyond-Light complete local archive research and model screening" --attempt-limit 250 > "$RUNNER_TEMP/research-cycle.json"
+
+      - name: Build and enqueue provenance-rich Knowledge event
+        working-directory: beyond-light
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MNEMOS_KNOWLEDGE_WORKSPACE_ID: ${{ github.event.client_payload.workspace_id || inputs.workspace_id || 'f9a3cb1a-7eef-4d9c-86dd-e74414344bca' }}
+          BEYOND_LIGHT_REPOSITORY: rllibo833-sudo/Beyond-Light
+          BEYOND_LIGHT_BRANCH: python-migration
+          BEYOND_LIGHT_SHA: ${{ steps.source.outputs.sha }}
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python beyond-light-python/knowledge_export.py \
+            --validation "$RUNNER_TEMP/catalog-validation.json" \
+            --benchmarks "$RUNNER_TEMP/benchmarks.json" \
+            --mission "$RUNNER_TEMP/mission.json" \
+            --research "$RUNNER_TEMP/research-cycle.json" \
+            --tests-log "$RUNNER_TEMP/beyond-light-tests.log" \
+            --workspace-id "$MNEMOS_KNOWLEDGE_WORKSPACE_ID" \
+            --output "$RUNNER_TEMP/knowledge-event.json" \
+            --enqueue
+
+      - name: Trigger canonical Knowledge delivery
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url "https://api.github.com/repos/${GITHUB_REPOSITORY}/dispatches" \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            --header "Content-Type: application/json" \
+            --data "{\"event_type\":\"sync-supabase-to-knowledge\",\"client_payload\":{\"source\":\"Beyond-Light Python\",\"run_id\":\"${RUN_ID}\"}}"
