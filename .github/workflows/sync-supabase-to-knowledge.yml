@@ -9,6 +9,8 @@ on:
     branches: [main]
     paths:
       - .github/workflows/sync-supabase-to-knowledge.yml
+      - .github/workflows/run-beyond-light-python.yml
+      - supabase/functions/beyond-light-run/**
   schedule:
     - cron: "*/10 * * * *"
 permissions:
