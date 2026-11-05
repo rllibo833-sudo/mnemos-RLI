@@ -71,3 +71,7 @@ The Beyond-Light research archive has been imported into [`sources/beyond-light/
 - Beyond-Light's original repository files were not removed or modified by this import.
 
 The import manifest is [`sources/beyond-light/IMPORT_MANIFEST.json`](sources/beyond-light/IMPORT_MANIFEST.json).
+
+## Canonical project portfolio and other sources
+
+[`nodes/project-portfolio-rllibo833-sudo.json`](nodes/project-portfolio-rllibo833-sudo.json) indexes the account’s five public GitHub repositories observed on 2026-11-05. Stable project nodes are linked from this index; documented cross-project relationships include provenance. This is only the GitHub portion of the larger graph. The source intake rules for files, photos, videos, audio, and Notion are in [`sources/README.md`](sources/README.md); private originals stay with their owner and are not committed here.

@@ -1,0 +1,123 @@
+[
+  {
+    "source": "project-portfolio-rllibo833-sudo",
+    "target": "project-mnemos-rli",
+    "relation": "catalogs_project",
+    "created_at": "2026-11-05T00:00:00Z",
+    "metadata": {
+      "provenance": {
+        "type": "github_account_listing",
+        "uri": "https://github.com/rllibo833-sudo"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "project-portfolio-rllibo833-sudo",
+    "target": "project-ecos",
+    "relation": "catalogs_project",
+    "created_at": "2026-11-05T00:00:00Z",
+    "metadata": {
+      "provenance": {
+        "type": "github_account_listing",
+        "uri": "https://github.com/rllibo833-sudo"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "project-portfolio-rllibo833-sudo",
+    "target": "project-steadfast",
+    "relation": "catalogs_project",
+    "created_at": "2026-11-05T00:00:00Z",
+    "metadata": {
+      "provenance": {
+        "type": "github_account_listing",
+        "uri": "https://github.com/rllibo833-sudo"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "project-portfolio-rllibo833-sudo",
+    "target": "project-pusingcuk",
+    "relation": "catalogs_project",
+    "created_at": "2026-11-05T00:00:00Z",
+    "metadata": {
+      "provenance": {
+        "type": "github_account_listing",
+        "uri": "https://github.com/rllibo833-sudo"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "project-portfolio-rllibo833-sudo",
+    "target": "project-kawasan-masjid-public",
+    "relation": "catalogs_project",
+    "created_at": "2026-11-05T00:00:00Z",
+    "metadata": {
+      "provenance": {
+        "type": "github_account_listing",
+        "uri": "https://github.com/rllibo833-sudo"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "project-mnemos-rli",
+    "target": "project-steadfast",
+    "relation": "receives_graph_updates_from",
+    "created_at": "2026-11-05T00:00:00Z",
+    "metadata": {
+      "provenance": {
+        "type": "repository_documentation",
+        "uri": "https://github.com/rllibo833-sudo/mnemos-RLI/blob/Knowledge/knowledge/README.md"
+      },
+      "confidence": 1,
+      "note": "Mnemos documents Steadfast delivery through its authenticated outbox workflow."
+    }
+  },
+  {
+    "source": "project-beyond-light",
+    "target": "project-mnemos-rli",
+    "relation": "publishes_research_to",
+    "created_at": "2026-11-05T00:00:00Z",
+    "metadata": {
+      "provenance": {
+        "type": "repository_documentation",
+        "uri": "https://github.com/rllibo833-sudo/mnemos-RLI/blob/Knowledge/knowledge/README.md"
+      },
+      "confidence": 1,
+      "note": "Mnemos documents Beyond-Light as a research producer that publishes typed nodes and edges through the outbox."
+    }
+  },
+  {
+    "source": "project-pusingcuk",
+    "target": "project-mnemos-rli",
+    "relation": "informs_interchange_design_of",
+    "created_at": "2026-11-05T00:00:00Z",
+    "metadata": {
+      "provenance": {
+        "type": "repository_documentation",
+        "uri": "https://github.com/rllibo833-sudo/mnemos-RLI/blob/Knowledge/knowledge/README.md"
+      },
+      "confidence": 1,
+      "note": "Mnemos describes PusingCuk's versioned IR and bytecode contracts as models for deterministic interchange."
+    }
+  },
+  {
+    "source": "project-portfolio-rllibo833-sudo",
+    "target": "project-beyond-light",
+    "relation": "retains_historical_project",
+    "created_at": "2026-11-05T00:00:00Z",
+    "metadata": {
+      "provenance": {
+        "type": "existing_graph_import",
+        "uri": "knowledge/sources/beyond-light/IMPORT_MANIFEST.json"
+      },
+      "confidence": 1,
+      "note": "Historical project; not counted among the five repositories listed publicly on observation date."
+    }
+  }
+]

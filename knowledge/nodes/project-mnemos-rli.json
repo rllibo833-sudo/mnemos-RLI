@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "project-mnemos-rli",
+  "kind": "project",
+  "title": "Mnemos RLI",
+  "content": "Portable, offline memory graph for AI agents with local SQLite, lexical search, typed links, a live graph, and portable import/export. This repository hosts the versioned Knowledge graph on its Knowledge branch.",
+  "source": {
+    "type": "github_repository",
+    "uri": "https://github.com/rllibo833-sudo/mnemos-RLI",
+    "extraction_method": "GitHub repository metadata and README",
+    "observed_at": "2026-11-05T00:00:00Z"
+  },
+  "metadata": {
+    "owner": "rllibo833-sudo",
+    "default_branch": "main",
+    "visibility": "public",
+    "canonical_graph_branch": "Knowledge"
+  },
+  "created_at": "2026-11-05T00:00:00Z",
+  "updated_at": "2026-11-05T00:00:00Z",
+  "deleted_at": null
+}

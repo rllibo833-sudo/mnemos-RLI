@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "project-kawasan-masjid-public",
+  "kind": "project",
+  "title": "Kawasan Masjid 1.000 Ha",
+  "content": "Public website for the Kawasan Masjid 1.000 Ha vision: an Islamic Eco-City developed through evidence, digital coordination, and gradual real-world implementation.",
+  "source": {
+    "type": "github_repository",
+    "uri": "https://github.com/rllibo833-sudo/kawasan-masjid-public",
+    "extraction_method": "GitHub repository metadata via gh CLI",
+    "observed_at": "2026-11-05T00:00:00Z"
+  },
+  "metadata": {
+    "owner": "rllibo833-sudo",
+    "default_branch": "main",
+    "visibility": "public"
+  },
+  "created_at": "2026-11-05T00:00:00Z",
+  "updated_at": "2026-11-05T00:00:00Z",
+  "deleted_at": null
+}

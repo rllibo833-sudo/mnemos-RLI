@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "project-beyond-light",
+  "kind": "project",
+  "title": "Beyond-Light",
+  "content": "Historical project record retained because its research archive has already been imported into this graph. The GitHub repository referenced by the source snapshot was not resolvable on 2026-11-05, so this is not counted as a currently listed public repository.",
+  "source": {
+    "type": "historical_repository_snapshot",
+    "uri": "https://github.com/rllibo833-sudo/Beyond-Light",
+    "extraction_method": "Existing Knowledge graph import records",
+    "observed_at": "2026-11-05T00:00:00Z"
+  },
+  "metadata": {
+    "owner": "rllibo833-sudo",
+    "visibility": "unavailable_at_observation",
+    "included_in_current_public_repo_count": false
+  },
+  "created_at": "2026-11-05T00:00:00Z",
+  "updated_at": "2026-11-05T00:00:00Z",
+  "deleted_at": null
+}

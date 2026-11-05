@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "project-ecos",
+  "kind": "project",
+  "title": "ECOS",
+  "content": "Public GitHub repository owned by rllibo833-sudo. No repository description was set when observed; its purpose is not inferred here.",
+  "source": {
+    "type": "github_repository",
+    "uri": "https://github.com/rllibo833-sudo/ECOS",
+    "extraction_method": "GitHub repository metadata via gh CLI",
+    "observed_at": "2026-11-05T00:00:00Z"
+  },
+  "metadata": {
+    "owner": "rllibo833-sudo",
+    "default_branch": "main",
+    "visibility": "public",
+    "description_status": "unset"
+  },
+  "created_at": "2026-11-05T00:00:00Z",
+  "updated_at": "2026-11-05T00:00:00Z",
+  "deleted_at": null
+}
