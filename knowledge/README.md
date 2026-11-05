@@ -19,9 +19,9 @@ Legacy nodes and edges remain valid. A record opts into strict layer validation 
 1. Keep original files on the device by default.
 2. Extract bounded knowledge locally: text, OCR, captions, timestamps, document metadata, and content hashes.
 3. Normalize results into memory nodes and typed links using `schemas/` and the five-layer contract.
-4. Sync the small knowledge payload to Supabase using `plugins/supabase-sync/sync.js`.
+4. Optionally send graph changes through the Supabase outbox transport using `plugins/supabase-sync/sync.js`; Supabase holds pending delivery events only and is not a graph database.
 5. Load agent capabilities from `skills/<name>/manifest.json`; treat `core/` as owner-controlled policy, not agent-editable memory.
-6. Validate the complete graph and layer-specific metadata before the canonical `Knowledge` snapshot is published.
+6. Validate and publish the durable graph snapshot in this repository’s `Knowledge` branch.
 
 The sync client sends JSON metadata and bounded text only. It rejects common binary/base64 payload fields. It does not upload originals, thumbnails, embeddings, or arbitrary file bytes.
 
@@ -31,9 +31,9 @@ Beyond-Light is a research client and producer of research runs, source records,
 
 The mapping and evidence semantics are specified in [layers/README.md](layers/README.md). A simulation or analytical benchmark must not be represented as a successful physical experiment.
 
-## Supabase setup
+## Optional Supabase transport setup
 
-Apply `schemas/supabase.sql` to the target Supabase project. Set these environment variables in the trusted runtime; never commit their values:
+Supabase is an optional delivery queue only. Apply `schemas/supabase.sql` to provision the outbox transport; do not use Supabase tables as the canonical graph archive. Set these environment variables in the trusted runtime; never commit their values:
 
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
