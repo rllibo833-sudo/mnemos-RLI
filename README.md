@@ -4,7 +4,7 @@
 
 Mnemos helps agents preserve useful knowledge across sessions: decisions, facts, solutions, project context, and links between them. Its goal is simple: **learn once, recall anywhere**.
 
-> Status: local SQLite remains available; the `Knowledge` branch is the durable shared graph snapshot. Supabase is used as a temporary outbox transport for automated Steadfast delivery, not as the permanent graph database. See [Cloud Foundation](docs/cloud-foundation.md) for the delivery and retry protocol.
+> Status: local SQLite remains available; the `Knowledge` branch is the durable, living shared knowledge graph for sourced concepts, evidence, research, decisions, media references, and projects. The project portfolio is one part of that graph. Supabase is temporary outbox transport only, not the graph database. See [Cloud Foundation](docs/cloud-foundation.md) for the delivery and retry protocol.
 
 ## Why Mnemos?
 

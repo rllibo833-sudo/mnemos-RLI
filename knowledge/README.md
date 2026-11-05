@@ -1,6 +1,6 @@
 # Mnemos RLI Knowledge
 
-This directory is the portable, versioned knowledge layer for Mnemos RLI. It sits beside the frozen offline SQLite core and evolves independently on the `Knowledge` branch.
+This directory is the portable, versioned knowledge layer for Mnemos RLI. The `Knowledge` branch is the living shared knowledge graph: an evolving, sourced network of concepts, evidence, research, decisions, media references, and projects contributed by authorized participants. It is broader than any one person’s project portfolio. This graph sits beside the frozen offline SQLite core and evolves independently on the `Knowledge` branch.
 
 ## Five knowledge layers
 
@@ -72,6 +72,6 @@ The Beyond-Light research archive has been imported into [`sources/beyond-light/
 
 The import manifest is [`sources/beyond-light/IMPORT_MANIFEST.json`](sources/beyond-light/IMPORT_MANIFEST.json).
 
-## Canonical project portfolio and other sources
+## Project portfolio and source collections
 
-[`nodes/project-portfolio-rllibo833-sudo.json`](nodes/project-portfolio-rllibo833-sudo.json) indexes the account’s five public GitHub repositories observed on 2026-11-05. Stable project nodes are linked from this index; documented cross-project relationships include provenance. This is only the GitHub portion of the larger graph. The source intake rules for files, photos, videos, audio, and Notion are in [`sources/README.md`](sources/README.md); private originals stay with their owner and are not committed here.
+[`nodes/project-portfolio-rllibo833-sudo.json`](nodes/project-portfolio-rllibo833-sudo.json) is one collection index within the shared graph. It records the account’s five public GitHub repositories observed on 2026-11-05, with documented project relationships and provenance. It does not define the graph’s scope. The graph also connects general knowledge, evidence, research, decisions, and other authorized source collections. Intake rules for files, photos, videos, audio, and Notion are in [`sources/README.md`](sources/README.md); private originals stay with their owner and are not committed here.
