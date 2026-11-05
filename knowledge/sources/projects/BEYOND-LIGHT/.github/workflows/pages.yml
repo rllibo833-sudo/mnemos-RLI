@@ -1,0 +1,132 @@
+name: Validate and publish static Beyond-Light site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - ".github/workflows/pages.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Validate static site and source catalog
+        run: |
+          test -s docs/index.html
+          test -s docs/catalog.json
+          test -s docs/autonomous.html
+          test -s docs/engine/knowledge-explorer.js
+          test -s docs/engine/knowledge-explorer.test.cjs
+          test -s docs/engine/research-pathways.js
+          test -s docs/engine/research-pathways.test.cjs
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+          catalog = json.loads(Path("docs/catalog.json").read_text())
+          assert catalog["sourceCount"] == len(catalog["modules"])
+          assert len(catalog["modules"]) >= 30
+          layer_ids = {layer["id"] for layer in catalog["layers"]}
+          visible_layer_ids = {layer["id"] for layer in catalog["layers"] if layer.get("visible", True)}
+          assert len(layer_ids) == 5
+          assert len(visible_layer_ids) == 4
+          assert all(module.get("layer") in layer_ids for module in catalog["modules"])
+          assert all(module.get("browserStatus") and module.get("browserConnection") for module in catalog["modules"])
+          html = Path("docs/index.html").read_text()
+          assert 'id="chatShell"' in html and 'id="chatInput"' in html and 'id="sendChat"' in html
+          assert "BEYOND_LIGHT_API" not in html, "legacy backend URL must not be hard-coded in the frontend"
+          for forbidden in ("localhost:", "127.0.0.1:", "/research/dispatch", "/knowledge/graph"):
+              assert forbidden not in html, f"static UI contains a legacy backend endpoint: {forbidden}"
+          # The browser app must remain independent from a deployable Java container/server.
+          assert not Path("beyond-light-source/beyond-light/Dockerfile").exists()
+          gradle = Path("beyond-light-source/beyond-light/build.gradle").read_text()
+          assert "tasks.register('run'" not in gradle
+          assert "BEYOND_LIGHT_LLM_API_KEY" not in html
+          assert len(re.findall(r'data-layer-panel=', html)) == len(visible_layer_ids)
+          assert len(re.findall(r'class="layer-tab', html)) == len(visible_layer_ids)
+          assert 'id="layer-source"' not in html and 'data-layer="source"' not in html
+          for path in Path("docs/data").glob("*.jsonl"):
+              assert path.stat().st_size > 0, path.name
+              for line in path.read_text().splitlines():
+                  if line.strip():
+                      json.loads(line)
+          for name in ("rl10_derivative_ii_1989_nasa_cr_179595.csv", "rl10a_3_3b_1987_nasa_cr_183200.csv"):
+              path = Path("docs/data") / name
+              assert path.is_file() and path.stat().st_size > 0, name
+          science = json.loads(Path("docs/data/scientific-catalog.json").read_text())
+          assert len(science["constants"]) == 14
+          assert len(science["equations"]) == 15
+          html = Path("docs/index.html").read_text()
+          import re
+          match = re.search(r"<script>(.*?)</script>", html, re.S)
+          assert match, "inline browser script missing"
+          Path("/tmp/beyond-light-site.js").write_text(match.group(1))
+          print(f"Validated {len(catalog['modules'])} source modules, {len(science['constants'])} constants, {len(science['equations'])} equations, and static research data.")
+          PY
+          node --check /tmp/beyond-light-site.js
+          node --check docs/engine/symbolic.js
+          node docs/engine/symbolic.test.cjs
+          node --check docs/engine/research.js
+          node --check docs/engine/research.test.cjs
+          node docs/engine/research.test.cjs
+          node --check docs/engine/decision.js
+          node docs/engine/decision.test.cjs
+          node --check docs/engine/feasibility.js
+          node docs/engine/feasibility.test.cjs
+          node --check docs/engine/feasibility-assessment.js
+          node docs/engine/feasibility-assessment.test.cjs
+          node --check docs/engine/technology-design.js
+          node docs/engine/technology-design.test.cjs
+          node --check docs/engine/autonomous-model.js
+          node --check docs/engine/chat-commands.js
+          node docs/engine/chat-commands.test.cjs
+          node docs/engine/autonomous-model.test.cjs
+          node --check docs/engine/research-core.js
+          node --check docs/engine/research-core.test.cjs
+          node --check docs/engine/research.js
+          node docs/engine/research-core.test.cjs
+          node --check docs/engine/mnemos-knowledge.js
+          node --check docs/engine/knowledge-explorer.js
+          node docs/engine/knowledge-explorer.test.cjs
+          node --check docs/engine/research-pathways.js
+          node docs/engine/research-pathways.test.cjs
+          node --check docs/engine/research-queue.js
+          node docs/engine/research-queue.test.cjs
+          python3 -c 'import re; from pathlib import Path; h=Path("docs/autonomous.html").read_text(); m=re.search(r"<script>(.*?)</script>", h, re.S); assert m; Path("/tmp/beyond-light-autonomous.js").write_text(m.group(1))'
+          node --check /tmp/beyond-light-autonomous.js
+          node --check docs/engine/research-core.test.cjs
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+  deploy:
+    if: github.event_name != 'pull_request'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

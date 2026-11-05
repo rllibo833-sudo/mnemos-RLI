@@ -1,0 +1,673 @@
+{
+  "schema_version": 1,
+  "project": "Beyond-Light",
+  "imported_at": "2026-11-05T00:00:00Z",
+  "source_kind": "user_authorized_local_git_worktree_snapshot",
+  "source_commit": "b23b0dc8626ba7e1e45301fde72f5fda723bab65",
+  "source_repository": "https://github.com/rllibo833-sudo/Beyond-light",
+  "source_remote_status": "repository not found by GitHub at transfer time",
+  "files_count": 129,
+  "total_bytes": 3724882,
+  "manifest_excludes_itself": true,
+  "excluded_patterns": [
+    ".git/ (history and repository metadata)",
+    "**/.gradle/",
+    "**/build/",
+    "*.class",
+    "*.jar",
+    "*.apk",
+    "*.aab",
+    "*.jks",
+    "*.keystore",
+    "local.properties",
+    "*.log",
+    "*.tmp"
+  ],
+  "files": [
+    {
+      "path": ".github/workflows/extract-archive.yml",
+      "size_bytes": 6577,
+      "sha256": "964cd8649422017fdbf7cfb03080ae6e2858cda89d4df57ec2f6ca546d81666f"
+    },
+    {
+      "path": ".github/workflows/java-research-core.yml",
+      "size_bytes": 1186,
+      "sha256": "ee935031b154e26338ad7ca8dc8641f31c3734d44aea6a8a0e1015a352d75790"
+    },
+    {
+      "path": ".github/workflows/pages.yml",
+      "size_bytes": 6198,
+      "sha256": "ae33497b549474c105368f4c48bbd7c8163f06830fa5f3a691d25d717fd8b2d6"
+    },
+    {
+      "path": ".gitignore",
+      "size_bytes": 332,
+      "sha256": "82eca44d4c33abc0c468f4d2991ecf0bd87c25ab9c9309686d8de5db21df167c"
+    },
+    {
+      "path": "LICENSE",
+      "size_bytes": 443,
+      "sha256": "e78f260e9175572f77126aaab0a3c3db509c719548784b5ed43a5f0422591413"
+    },
+    {
+      "path": "README.md",
+      "size_bytes": 3971,
+      "sha256": "d9f8d60a1bd0cb6de746a30b03234b2d3fb489baa9b391a6aa1f553355f9ac51"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/ANDROID_BUILD_STATUS.md",
+      "size_bytes": 1710,
+      "sha256": "9ed34207a9ff95bd3924b0f3636c4d6840967a819514e7d70f6322c319cbb55e"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/README.md",
+      "size_bytes": 1512,
+      "sha256": "26383073067eaafdbd48534839d5ae0ee5751c2aa9505bcec886d834596fdd7f"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/android/README.md",
+      "size_bytes": 1774,
+      "sha256": "d2e58365daec178ec59e09c0d95ef283cd84f2c1fc9ea88e46f45a91206f47ad"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/android/build-apk.sh",
+      "size_bytes": 2662,
+      "sha256": "a0dbd50f82162aa1d4d465ff01fd321270324ed4a488962680bb61d287b92792"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/android/src/main/AndroidManifest.xml",
+      "size_bytes": 702,
+      "sha256": "d1fb04835438ef379bc93c0a3c51cb43e01794f477972c94ece021d0ba007f2e"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/android/src/main/java/com/sun/net/httpserver/Headers.java",
+      "size_bytes": 620,
+      "sha256": "e29e851dc1bd1f80b460c06a169836a2ec7b4b2669242dc9093171cb68c7bdd7"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/android/src/main/java/com/sun/net/httpserver/HttpExchange.java",
+      "size_bytes": 2369,
+      "sha256": "314d6a958eec9f863037975b1e6aaa5352e857328ec577c400b05c90c01d76af"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/android/src/main/java/com/sun/net/httpserver/HttpHandler.java",
+      "size_bytes": 175,
+      "sha256": "f03d176ac472ae4e1b2b615ef7af1a719b9df489c7ddc1fafe834de091f30242"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/android/src/main/java/com/sun/net/httpserver/HttpServer.java",
+      "size_bytes": 4046,
+      "sha256": "9d36c1d7b0772433c94d801271a9a9fdcd162e8f3b41dc0c67df29fa2ff08c3a"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/android/src/main/java/org/beyondlight/android/MainActivity.java",
+      "size_bytes": 7991,
+      "sha256": "9e7f8a558723c2123e5fe986fe2dc8e8842a949994cd3fd49b1ef26fc456f7a6"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/android/src/main/res/drawable/ic_launcher.xml",
+      "size_bytes": 508,
+      "sha256": "2c12d835b11433c60a338cba8b52f229312584b593a66b734fdcc5b1ed474726"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/android/src/main/res/values/styles.xml",
+      "size_bytes": 452,
+      "sha256": "20f25597cae32227a1d9de58830bc3fa086ab0e929c310413529e2f8fbafccf3"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/android/termux-preflight.sh",
+      "size_bytes": 1444,
+      "sha256": "2bfdd383cb0db10e2a6ec1e98b7b6929d13a219e9d7b80f47586efce4b8c3024"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/build.gradle",
+      "size_bytes": 727,
+      "sha256": "25df55382fae373a1ccc430e5629b558e89015556f3b52eecd1864f28b983ba2"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/check.sh",
+      "size_bytes": 161,
+      "sha256": "0496b0d3b41654ea42e0b40a2dd2fb8cb6bb4fa2d8d4c3ccfb32112fa83a4eec"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/data/benchmarks.jsonl",
+      "size_bytes": 88630,
+      "sha256": "8eddcfea4e654edde25cb86537ce8b43c7882efaea38bd2085f81c9522248e18"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/data/datasets.jsonl",
+      "size_bytes": 4776,
+      "sha256": "db7c0de13fb30b73aa5694f93c83a346345938d908f1ffa6d8910cea219c90e4"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/data/experiments.jsonl",
+      "size_bytes": 1202,
+      "sha256": "d399a33e23c5b159022c34018c9b7441894c01d4524b0d1a4d1bd35ac76cd7a0"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/data/material_curves.jsonl",
+      "size_bytes": 23803,
+      "sha256": "38c1104299e03e8ea46936657cc26f78076c26f815a10482711551b10422c18c"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/data/materials.jsonl",
+      "size_bytes": 11630,
+      "sha256": "8e588ecdd0c6718f5f656d16fd9946aae35e444843be0c09184018a8712dc864"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/data/published_experiments.jsonl",
+      "size_bytes": 8024,
+      "sha256": "b5ef73020ce073e567071f1d543dec12ef917ee86402a5a06e7aed165a9056c3"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/data/research_runs.jsonl",
+      "size_bytes": 1024876,
+      "sha256": "6a5fd9421f30e3f59fdc684d69647af15cf0b900199c7cf6189fd8ea97a9c713"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/data/rl10_derivative_ii_1989_nasa_cr_179595.csv",
+      "size_bytes": 98,
+      "sha256": "d8f954f1ce22483d201040348f9d039a40547234ec511036bedf9debf86ad95d"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/data/rl10a_3_3b_1987_nasa_cr_183200.csv",
+      "size_bytes": 92,
+      "sha256": "eaa86233598db6efd53a3a938021b05d36f2f8bc5d5dcd783abdc9d080d251e4"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/settings.gradle",
+      "size_bytes": 34,
+      "sha256": "e76fa057fa5ce0d2f1b69f6287793014bf057018d314de86bbd36356a1822bf7"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/AnalysisResult.java",
+      "size_bytes": 1740,
+      "sha256": "653971dda0a11e78194747a4c6deaefbe3fdf4bc8984b7ee85410688a3669188"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/AutonomousModelExplorer.java",
+      "size_bytes": 8946,
+      "sha256": "bdaa372df8cb22cc6950b25db4e0cb1b12a05ca0178449d42b831ec376477532"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/BenchmarkEngine.java",
+      "size_bytes": 27790,
+      "sha256": "c1f6da22cf9829c980d0fdb147aec0d905380e1d375730d2281931dea9dc255b"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/Core.java",
+      "size_bytes": 4264,
+      "sha256": "189c96d6ed6fa368fc032758151d014ca64c78347599b20566e768f88b1ae803"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/CrossDomainTechnologyResearch.java",
+      "size_bytes": 7649,
+      "sha256": "4e35a54ea8d823fb646bae01b47dce56cd18cfc34af1d4bcbe30cc0b023b9adf"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/DataPaths.java",
+      "size_bytes": 567,
+      "sha256": "a578009f528194858c9aed0bca36f3ffbe28922fc9d3a894d4fce17afb6186ce"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/DataRepository.java",
+      "size_bytes": 8637,
+      "sha256": "e17f5fefdf4e0533f7269f57e66582d7e344e2e50d75aefb8a512f54ec68f304"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/DeterministicResearchEngine.java",
+      "size_bytes": 20524,
+      "sha256": "d90e506e55d6a3d4b02a49b0aa491cee38aa94f0fb425e20c2a5de3685c55ea4"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/Dimensions.java",
+      "size_bytes": 3602,
+      "sha256": "f5ebdab45191d061bbbc7a705695cd917af7d89f93680b46042900ce304038ed"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/Discovery.java",
+      "size_bytes": 6318,
+      "sha256": "daf443eddd5afed6232b1afad0d087dbe708292462ace42cd8abacc2d384e985"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/EnergyStorageDesignDomain.java",
+      "size_bytes": 6358,
+      "sha256": "2f3aa058a79d4050af72001b557351bb8d62647166e4e81d94e0ef4d675aba12"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/EngineRegistry.java",
+      "size_bytes": 1190,
+      "sha256": "608815b5ef54367c18635a38c7bb985564fe3430889022a00931a2cd1b3738d0"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/EquationRegistry.java",
+      "size_bytes": 6020,
+      "sha256": "ccf6cc0b1ddfd3d2c68ae6a49442b12928cc584303e269b94b10f6ed18deb4f9"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/EvidenceEvaluator.java",
+      "size_bytes": 7913,
+      "sha256": "fdfb2f3a71840dcf986289cfc9ce1c95d63878a50ee5410adf7a00f31e7b7882"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/EvidenceReport.java",
+      "size_bytes": 1400,
+      "sha256": "496d4acbd7a7f75b96abb8a97586485bedde11e31a1f86c8e7e8f68bd6978633"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/Expression.java",
+      "size_bytes": 2629,
+      "sha256": "9383904b90c99cc56e3c533302b6565a1d72114e58f7b9138b3bc93f480bd4f8"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/FeasibilityClassification.java",
+      "size_bytes": 4243,
+      "sha256": "e81aa1c3eee76d92281c65b3efc1339b3426a97ca61632f2bb6bf6757a847cc0"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/FeasibilityEngine.java",
+      "size_bytes": 20759,
+      "sha256": "531773d2d026095f801b89b056b915528f9c4894ac524c127d47b7aa91435624"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/IdeaWorkspace.java",
+      "size_bytes": 21875,
+      "sha256": "0a8c5f2d3d6bd5aa68059ef84c880e1c28e5afab34e818d5f3d833e52ddf49ba"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/IntegratedTechnologyResearch.java",
+      "size_bytes": 9836,
+      "sha256": "32c3b5c1098cf1c14e5f76a6776681038d4880d159a7495056f2481aaf942654"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/Json.java",
+      "size_bytes": 4108,
+      "sha256": "7d7e54aead23ce65aa1f53617d249ac4e6e63a05fa2e386580489b2185e1f5da"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/LlmAnswerProvider.java",
+      "size_bytes": 4632,
+      "sha256": "dba3e707d90e96cddb01cdd0667f8924ef27928506c5345fb247c06526cf70ee"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/MachineDesign.java",
+      "size_bytes": 4776,
+      "sha256": "0620250d73965ae6873fdac0bfe9b7b15f697b601d70a81faa8fb1e43339d165"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/Main.java",
+      "size_bytes": 129434,
+      "sha256": "09bad9849f6f340b2cbe19255fe54d83e43d00fbb46f0f5e74e1ee39a6878f00"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/MaterialCurveDatabase.java",
+      "size_bytes": 9065,
+      "sha256": "33fe4db291d904b40c8893cfbb91d98d5236f7a8887a32f902ce13655548780d"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/MaterialDatabase.java",
+      "size_bytes": 5359,
+      "sha256": "cbe1ac4474a98019b43b6b1a6021455ef9233e8ed5087c2279d855ddbd785f6b"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/MnemosKnowledgeAdapter.java",
+      "size_bytes": 50464,
+      "sha256": "96b35b5cf3334db553137769cb6fa168b1c2a8402319fb7c41a565edc2b81058"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/OpenDataClient.java",
+      "size_bytes": 7566,
+      "sha256": "2ee0048bd5dc4d30b9ff111ceb376c9d94ec7d4224877c7643822ff1ccef6e27"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/Physics.java",
+      "size_bytes": 2383,
+      "sha256": "0e9af86313579d2b2496d2bb6763e980eaa5ebd2f16821cf1c4f73c1c4774f9f"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/ReactionPropulsionDomain.java",
+      "size_bytes": 8130,
+      "sha256": "29746ba3abeff27932b334a0e9b7f07c8e3c9e24297e5b429007762f883f36a8"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/Relativity.java",
+      "size_bytes": 10893,
+      "sha256": "07141cd8478dd8b27feefc87b4df3b6c6d99197c63ae3d9bd966bb2c64bbad8d"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchCycle.java",
+      "size_bytes": 8012,
+      "sha256": "8a89d03df6e9f1119f7e10914cf6ab85c87bbf70b430909b3f2730c3cf6271a9"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchDomainAdapters.java",
+      "size_bytes": 31668,
+      "sha256": "7a8161c025250eeafd44cc2ea6aabaca466a9c5d7f2f682f76552e6d586554fe"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchEngine.java",
+      "size_bytes": 281,
+      "sha256": "7ca4f6f5ed2ea18828a781f576732c31275fcaadd299e5a87c794cc14c8f8b02"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchEngineAdapters.java",
+      "size_bytes": 6877,
+      "sha256": "a0d96d1687e78cf824b3aa7629440daf5c4cb28e0ff73c8b33e6c30a9108ad04"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchIntegrationHttp.java",
+      "size_bytes": 21022,
+      "sha256": "63a1d3748084aae98f259bdee679e3f580b29b557a48e91a9951701486812757"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchOrchestrator.java",
+      "size_bytes": 4499,
+      "sha256": "637be633595fe1b9500dc10e4fef22d0f6dbf4d580be29a8602e331cbdd7d323"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchPlan.java",
+      "size_bytes": 1895,
+      "sha256": "207e3174f07d5b95c3a5376c7fd733d2922642d60c05015772aff9c02af2f0c4"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchPlanner.java",
+      "size_bytes": 6695,
+      "sha256": "e9db5ab50a4985bb39c77ae1ed96dd3c84b324d6b94d9ae6a63f9fd47dfc3c9e"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchPlanningProvider.java",
+      "size_bytes": 216,
+      "sha256": "43a57290cabc1370a451331e583fdeb8ba749870668783be6c5ea47556027e62"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchRequest.java",
+      "size_bytes": 2739,
+      "sha256": "bb6277a12e4c33284b7365cc8a4dbe6e1283b6888f84e86983dcba8b763fc0b8"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/ScientificCatalog.java",
+      "size_bytes": 19236,
+      "sha256": "2cab941da229df9921c78f7412b2589da9ed7ca845df9cee8d9a2ae0c971492a"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/SourceRecord.java",
+      "size_bytes": 2713,
+      "sha256": "c9bc4ed0fe105e6f47e3da69846aea0d0ece190b090fe8d2f1dd1f47fa0cd4e1"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/StructuralDesignDomain.java",
+      "size_bytes": 7795,
+      "sha256": "cac0d36198780baf257b056bc75e98d90ded059c2ffa2a12f8b2f670c0c3617b"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/Symbolic.java",
+      "size_bytes": 9516,
+      "sha256": "ed0074f8535242e886cc285eeb85a2289db26b1590fecec06a8bad0827448461"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/TechnologyDesignDomain.java",
+      "size_bytes": 1506,
+      "sha256": "9c8696b098b6b203b3abfacfca1e9048e522728574a5ad374e80fc06af9992ba"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/TechnologyDesignDomains.java",
+      "size_bytes": 1097,
+      "sha256": "ac1000a1fbcc978dbff2d52094f653336739e02c1afff445ad4c2ae172bc47df"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/TechnologyDesignEngine.java",
+      "size_bytes": 3452,
+      "sha256": "62d9d13d67503a890dfc8883961bbbaf10414c131cb469554916dda969f96cca"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/TechnologyDesignExplorer.java",
+      "size_bytes": 1501,
+      "sha256": "c0947a68c008aefabe3970efbc6add88277db8072e60c3a1544f0acd5215a313"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/ThermalManagementDesignDomain.java",
+      "size_bytes": 6778,
+      "sha256": "04d12691a16d56f0afe60355a2eee3bb46182fa94b3d78ba49ff7b3bd2558211"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/main/java/org/beyondlight/Uncertainty.java",
+      "size_bytes": 5613,
+      "sha256": "54c29f50fe8ef227285e0af1bc9596251a576ceeafda57f23be03a2884495a96"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/test/java/org/beyondlight/CoreChecks.java",
+      "size_bytes": 30605,
+      "sha256": "ea631e1414cf4f10f5018fa914840816079ada0bc207ce2811dc106f11656e75"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/test/java/org/beyondlight/MnemosKnowledgeChecks.java",
+      "size_bytes": 16381,
+      "sha256": "989a917ee105d084db03ae0fdbaa5cad280efdc65993c2ed2d118fabf2c52063"
+    },
+    {
+      "path": "beyond-light-source/beyond-light/src/test/java/org/beyondlight/ResearchIntegrationChecks.java",
+      "size_bytes": 11802,
+      "sha256": "64fb769be37ea28b62fa8d430a947eaa9dad3f8e99cceb623a22cb11c0e638b9"
+    },
+    {
+      "path": "beyond-light.zip",
+      "size_bytes": 308002,
+      "sha256": "f45b82a36e4e0d5434fd04446b4a7259b1d97270cfab88f4df7f3ebd4dc64625"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "size_bytes": 6210,
+      "sha256": "99e06ba624dd67b1e8dbf711df8d3dc219db0bc0e06916523c325d7205ba063d"
+    },
+    {
+      "path": "docs/GRAPH_ANSWER_FLOW.md",
+      "size_bytes": 2312,
+      "sha256": "c328c4a6f83fccd6900c0383471fe73372430364513a4aaf2a2ea944d7d4b074"
+    },
+    {
+      "path": "docs/STATUS.md",
+      "size_bytes": 4057,
+      "sha256": "b7b6866a57149b56c6ac6975136d7bca4d4ea729df799fb5fde86d62a7c8ef50"
+    },
+    {
+      "path": "docs/autonomous.html",
+      "size_bytes": 24041,
+      "sha256": "de9fea6b1fa0c3ba30b8f0f36f64ae0bf261726e2113b60a365d7ee0e7225343"
+    },
+    {
+      "path": "docs/catalog.json",
+      "size_bytes": 32918,
+      "sha256": "c245a6201adbe650907919f42e9a2293092d43a4aa3ae85dc8c0770c921ee05f"
+    },
+    {
+      "path": "docs/contracts/mnemos-knowledge-event-v1.schema.json",
+      "size_bytes": 3791,
+      "sha256": "9923b54632d1fa849a0711df931216c6f6a25d5f9d0196036f5f6be0731d2726"
+    },
+    {
+      "path": "docs/data/benchmarks.jsonl",
+      "size_bytes": 88630,
+      "sha256": "8eddcfea4e654edde25cb86537ce8b43c7882efaea38bd2085f81c9522248e18"
+    },
+    {
+      "path": "docs/data/datasets.jsonl",
+      "size_bytes": 4776,
+      "sha256": "db7c0de13fb30b73aa5694f93c83a346345938d908f1ffa6d8910cea219c90e4"
+    },
+    {
+      "path": "docs/data/experiments.jsonl",
+      "size_bytes": 1202,
+      "sha256": "d399a33e23c5b159022c34018c9b7441894c01d4524b0d1a4d1bd35ac76cd7a0"
+    },
+    {
+      "path": "docs/data/material_curves.jsonl",
+      "size_bytes": 23803,
+      "sha256": "38c1104299e03e8ea46936657cc26f78076c26f815a10482711551b10422c18c"
+    },
+    {
+      "path": "docs/data/materials.jsonl",
+      "size_bytes": 11630,
+      "sha256": "8e588ecdd0c6718f5f656d16fd9946aae35e444843be0c09184018a8712dc864"
+    },
+    {
+      "path": "docs/data/published_experiments.jsonl",
+      "size_bytes": 8024,
+      "sha256": "b5ef73020ce073e567071f1d543dec12ef917ee86402a5a06e7aed165a9056c3"
+    },
+    {
+      "path": "docs/data/research_runs.jsonl",
+      "size_bytes": 1024876,
+      "sha256": "6a5fd9421f30e3f59fdc684d69647af15cf0b900199c7cf6189fd8ea97a9c713"
+    },
+    {
+      "path": "docs/data/rl10_derivative_ii_1989_nasa_cr_179595.csv",
+      "size_bytes": 98,
+      "sha256": "d8f954f1ce22483d201040348f9d039a40547234ec511036bedf9debf86ad95d"
+    },
+    {
+      "path": "docs/data/rl10a_3_3b_1987_nasa_cr_183200.csv",
+      "size_bytes": 92,
+      "sha256": "eaa86233598db6efd53a3a938021b05d36f2f8bc5d5dcd783abdc9d080d251e4"
+    },
+    {
+      "path": "docs/data/scientific-catalog.json",
+      "size_bytes": 9220,
+      "sha256": "9d944cb0909f323e358b8f7b8d24f9bbf9a1dbf6eadadf77e92bf9e3fba3b2a2"
+    },
+    {
+      "path": "docs/engine/autonomous-model.js",
+      "size_bytes": 6813,
+      "sha256": "67fa48274a5b500ea033b4331e8362061de875250680fdeea7f4e33d15cd7850"
+    },
+    {
+      "path": "docs/engine/autonomous-model.test.cjs",
+      "size_bytes": 1509,
+      "sha256": "e0136137479c5394e3b938841e9ea0211c3392f7cd79465e6dc0e65ce8c19112"
+    },
+    {
+      "path": "docs/engine/chat-commands.js",
+      "size_bytes": 4580,
+      "sha256": "150453c3b03a8914e1c3d25fbd783606f6fbd916b78882561ecb6419c6c9975c"
+    },
+    {
+      "path": "docs/engine/chat-commands.test.cjs",
+      "size_bytes": 2889,
+      "sha256": "bfefda4fb2eb2a32daa5474d80b7d503e70e2d32953b637bcd3f045e5aa4226d"
+    },
+    {
+      "path": "docs/engine/decision.js",
+      "size_bytes": 5802,
+      "sha256": "8bec41138b8ce4a19e40248109efa49349daaaefc9a9913d2da9a9edf78271a4"
+    },
+    {
+      "path": "docs/engine/decision.test.cjs",
+      "size_bytes": 2298,
+      "sha256": "76cf25089a1bbd0f15ff4378949fa04346868349fe664d80ad7af7d8af8a0617"
+    },
+    {
+      "path": "docs/engine/feasibility-assessment.js",
+      "size_bytes": 16133,
+      "sha256": "5f4b6a3a96fc750e65182d9899bfeb711beae67c231fcf97256660939af4e8ac"
+    },
+    {
+      "path": "docs/engine/feasibility-assessment.test.cjs",
+      "size_bytes": 3902,
+      "sha256": "bce01226ab34cd3caa31edf9e3c727b14367590a42333a212f1528ec91b29c2e"
+    },
+    {
+      "path": "docs/engine/feasibility.js",
+      "size_bytes": 10930,
+      "sha256": "9fd61ce803bcd433bea70bf2d20cf91dd5628967ebab6d40f1cf2661abcc3b88"
+    },
+    {
+      "path": "docs/engine/feasibility.test.cjs",
+      "size_bytes": 2145,
+      "sha256": "d2a5170d772972c1e87240ceb185b0605f0bbbf9ed0991c013400af9983654fc"
+    },
+    {
+      "path": "docs/engine/knowledge-explorer.js",
+      "size_bytes": 9261,
+      "sha256": "881a0f6d8e3197a8a74532f6a65a91a954b03e836a812becbe9bfa4c6362e18c"
+    },
+    {
+      "path": "docs/engine/knowledge-explorer.test.cjs",
+      "size_bytes": 3017,
+      "sha256": "4227d05e37cdc513554241bc80de018acf9ac6348425a4cbdb684aaef7072bf6"
+    },
+    {
+      "path": "docs/engine/mnemos-knowledge.js",
+      "size_bytes": 11777,
+      "sha256": "b4338c49bdf9135ada682ec78377b123afeee5d623283632504173a4f12b1456"
+    },
+    {
+      "path": "docs/engine/research-core.js",
+      "size_bytes": 52113,
+      "sha256": "deb1533ed3e4b3291205c6f7cf396988f2d234056331dd210894dd6ad1a6ac76"
+    },
+    {
+      "path": "docs/engine/research-core.test.cjs",
+      "size_bytes": 8957,
+      "sha256": "f6589a21e090edd6ec51d2836ca35b66d9a120e8b076fda463f853c36933d0fd"
+    },
+    {
+      "path": "docs/engine/research-pathways.js",
+      "size_bytes": 3385,
+      "sha256": "04bccee3583af770c20ee7f715385c6b03509ec04fb5e7ba0f90269dab908342"
+    },
+    {
+      "path": "docs/engine/research-pathways.test.cjs",
+      "size_bytes": 2651,
+      "sha256": "8ce3a76af5b9bc7eef9e65d3344bfa8d14a9ab0f413187ddb997f0416bd5412b"
+    },
+    {
+      "path": "docs/engine/research-queue.js",
+      "size_bytes": 1563,
+      "sha256": "1cf6c72683b2a009a38ff8eb36205be99a0c7690f0a70e79ef8817ab1ac832b9"
+    },
+    {
+      "path": "docs/engine/research-queue.test.cjs",
+      "size_bytes": 895,
+      "sha256": "34c99d6e68317aa46f687b7b574ff2253c6eb2111bd3f088a9a17b6bbfafefa9"
+    },
+    {
+      "path": "docs/engine/research.js",
+      "size_bytes": 22919,
+      "sha256": "f5ba129e48da38b83e71a946ae87ab5199e5d59821ec932d3692e60096568ca5"
+    },
+    {
+      "path": "docs/engine/research.test.cjs",
+      "size_bytes": 1996,
+      "sha256": "843b2efdcbbae44c375d559e35a964b9ad604a588fa2e04ef85d48441c13e23e"
+    },
+    {
+      "path": "docs/engine/symbolic.js",
+      "size_bytes": 9789,
+      "sha256": "768bceecaa55628c3c5228ea9572c2e102511336a9dc1fbf366e506860629721"
+    },
+    {
+      "path": "docs/engine/symbolic.test.cjs",
+      "size_bytes": 1082,
+      "sha256": "b9a4cdd05e434772ed4c9bc2d71ad4c2b8f13a1b23a8a36945461d3c8984b07b"
+    },
+    {
+      "path": "docs/engine/technology-design.js",
+      "size_bytes": 18098,
+      "sha256": "c51df34daf8cd3dad6f7f35e3889dfd9345e1257b86a4ba23f719b69401dbf00"
+    },
+    {
+      "path": "docs/engine/technology-design.test.cjs",
+      "size_bytes": 2395,
+      "sha256": "8527ae3cdaae5b625360e085e988c9739dd3a22eccfe025f7392ed02299ef092"
+    },
+    {
+      "path": "docs/index.html",
+      "size_bytes": 123802,
+      "sha256": "1ca1b0a813f4e6c1a8d339625737aab6b30956f8efc7ca9fcfabfacc78524899"
+    },
+    {
+      "path": "docs/spiral.html",
+      "size_bytes": 20805,
+      "sha256": "d1080717bfc87ad1e1ea9ba6527a0638ada1b601a33d44900651b830ada65485"
+    }
+  ]
+}

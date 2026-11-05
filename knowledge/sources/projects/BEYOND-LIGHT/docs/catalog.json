@@ -1,0 +1,536 @@
+{
+  "project": "Beyond-Light",
+  "branch": "main",
+  "sourceCount": 50,
+  "notice": "Catalog distinguishes tested browser ports, partial translations, server-only components replaced by the static runtime, and Java/Android source that is not yet equivalent in the browser. GitHub Pages executes only the tested browser implementations; it does not run the Java server.",
+  "modules": [
+    {
+      "file": "Main.java",
+      "functionality": "Application router and scientific workbench endpoints",
+      "category": "Gateway",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/Main.java",
+      "layer": "home",
+      "browserStatus": "Replaced by static browser runtime",
+      "browserConnection": "Router HTTP Java tidak digunakan pada GitHub Pages; halaman dan research-core.js menggantikan dispatch browser."
+    },
+    {
+      "file": "IdeaWorkspace.java",
+      "functionality": "Earlier natural-language research workspace; retained as source reference",
+      "category": "Idea explorer",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/IdeaWorkspace.java",
+      "layer": "home",
+      "browserStatus": "Browser prototype",
+      "browserConnection": "Alur ide natural-language jadi inspirasi pemetaan kata kunci browser; bukan reasoning AI penuh."
+    },
+    {
+      "file": "Core.java",
+      "functionality": "Core application services and shared scientific operations",
+      "category": "Foundation",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/Core.java",
+      "layer": "source",
+      "browserStatus": "Browser counterpart",
+      "browserConnection": "Propulsion ideal, screening material, Simpson integration, RK4, dan konversi unit tersedia melalui workflow core-calculation pada research-core.js."
+    },
+    {
+      "file": "Json.java",
+      "functionality": "JSON parsing and serialization used across the research records",
+      "category": "Foundation",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/Json.java",
+      "layer": "research",
+      "browserStatus": "Replaced by browser platform APIs",
+      "browserConnection": "Parsing/serialisasi JSON memakai JSON.parse/JSON.stringify; helper Java tidak dieksekusi di Pages."
+    },
+    {
+      "file": "DataPaths.java",
+      "functionality": "Central paths for local research and experiment storage",
+      "category": "Foundation",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/DataPaths.java",
+      "layer": "research",
+      "browserStatus": "Not applicable to static browser runtime",
+      "browserConnection": "Path filesystem Java digantikan penyimpanan lokal browser; tidak ada akses filesystem server."
+    },
+    {
+      "file": "DataRepository.java",
+      "functionality": "Read/write access to local datasets and research archives",
+      "category": "Research data",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/DataRepository.java",
+      "layer": "research",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Impor CSV lokal browser via localStorage tersedia dengan batas 2 MB/5000 baris; repositori JSONL Java tidak tersedia."
+    },
+    {
+      "file": "Dimensions.java",
+      "functionality": "SI dimensional consistency and unit-aware checks",
+      "category": "Mathematics",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/Dimensions.java",
+      "layer": "physics",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Pemeriksaan dimensi SI untuk ekspresi dan persamaan kini tersedia di docs/engine/research.js; port mendukung basis SI, turunan dimensi umum, fungsi dimensionless, dan eksponen numerik."
+    },
+    {
+      "file": "Physics.java",
+      "functionality": "Physical constants and core physics relations",
+      "category": "Physics",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/Physics.java",
+      "layer": "physics",
+      "browserStatus": "Browser counterpart",
+      "browserConnection": "Katalog konstanta/persamaan serta model roket dan panas di layer Fisika."
+    },
+    {
+      "file": "Relativity.java",
+      "functionality": "Special-relativity calculations and metric-related routines",
+      "category": "Relativity",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/Relativity.java",
+      "layer": "physics",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Minkowski, Schwarzschild, Alcubierre reduced, Morris-Thorne, tensor Riemann/Ricci/Einstein finite-difference, convergence, signature, diagonal energy conditions, dan field residual tersedia; numerik sensitif pada step dan koordinat."
+    },
+    {
+      "file": "Uncertainty.java",
+      "functionality": "Sensitivity, uncertainty propagation, and bounded Monte Carlo tools",
+      "category": "Mathematics",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/Uncertainty.java",
+      "layer": "physics",
+      "browserStatus": "Browser counterpart",
+      "browserConnection": "Kurva normal dan rentang ±1σ di browser; belum menjalankan Monte Carlo Java."
+    },
+    {
+      "file": "Expression.java",
+      "functionality": "Expression representation for symbolic calculations",
+      "category": "Mathematics",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/Expression.java",
+      "layer": "physics",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Parser aritmetika aman, evaluasi variabel, fungsi dasar, turunan dan integral terbatas tersedia di docs/engine/symbolic.js; belum mencakup seluruh API Java."
+    },
+    {
+      "file": "Symbolic.java",
+      "functionality": "Symbolic transformations and equation manipulation",
+      "category": "Mathematics",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/Symbolic.java",
+      "layer": "physics",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "AST simbolik, penyederhanaan dasar, evaluasi, turunan/integral terbatas, substitusi variabel, dan isolasi persamaan dengan operasi invertibel terbatas tersedia di docs/engine/symbolic.js; seluruh edge case Java belum dipindahkan."
+    },
+    {
+      "file": "EquationRegistry.java",
+      "functionality": "Equation definitions, variables, units, and metadata",
+      "category": "Mathematics",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/EquationRegistry.java",
+      "layer": "physics",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Registri persamaan interaktif disimpan lokal pada browser, memvalidasi dimensi, menyertakan metadata sumber, serta ekspor/impor JSON; belum sinkron dengan penyimpanan file Java."
+    },
+    {
+      "file": "ScientificCatalog.java",
+      "functionality": "Catalog of constants, equations, assumptions, and source references",
+      "category": "Knowledge base",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/ScientificCatalog.java",
+      "layer": "physics",
+      "browserStatus": "Data-backed browser view",
+      "browserConnection": "Konstanta, persamaan, asumsi, satuan, ketidakpastian, dan tautan sumber ditampilkan dari katalog browser."
+    },
+    {
+      "file": "MaterialDatabase.java",
+      "functionality": "Material properties, conditions, source traceability, and unknown values",
+      "category": "Materials",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/MaterialDatabase.java",
+      "layer": "materials",
+      "browserStatus": "Data-backed browser view",
+      "browserConnection": "Daftar properti material yang dipublikasikan; nilai hilang tetap UNKNOWN."
+    },
+    {
+      "file": "MaterialCurveDatabase.java",
+      "functionality": "Temperature/property curves and bounded interpolation",
+      "category": "Materials",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/MaterialCurveDatabase.java",
+      "layer": "materials",
+      "browserStatus": "Browser counterpart",
+      "browserConnection": "Kurva properti terhadap suhu dengan batas rentang sumber; interpolasi dibatasi."
+    },
+    {
+      "file": "OpenDataClient.java",
+      "functionality": "Retrieval of public research records and open datasets",
+      "category": "Research data",
+      "runtime": "Java engine; network-dependent",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/OpenDataClient.java",
+      "layer": "research",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Zenodo metadata search dan unduhan CSV publik tersedia via fetch browser; dibatasi 3 file, 2 MB/file, CORS, dan localStorage."
+    },
+    {
+      "file": "ResearchCycle.java",
+      "functionality": "Research cycle from idea/search through data intake and analysis",
+      "category": "Research",
+      "runtime": "Java engine; network-dependent",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchCycle.java",
+      "layer": "research",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Siklus browser mencari metadata Zenodo, mengimpor maksimal tiga CSV numerik, menyimpan lokal, lalu menjalankan screening model terbatas; belum melakukan seluruh derivasi persamaan/mesin Java."
+    },
+    {
+      "file": "DeterministicResearchEngine.java",
+      "functionality": "Repeatable analysis and candidate-model screening",
+      "category": "Research",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/DeterministicResearchEngine.java",
+      "layer": "research",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Analisis dataset lokal mencakup model polinomial derajat 1–4, logaritmik, resiprokal, eksponensial, power-law, dan cross-validation; pencarian multivariabel dan replikasi lintas-DOI belum setara."
+    },
+    {
+      "file": "AutonomousModelExplorer.java",
+      "functionality": "Automated candidate model exploration against baselines",
+      "category": "Research",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/AutonomousModelExplorer.java",
+      "layer": "research",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Pencarian feature grammar browser kini mencakup hingga empat predictor, fitur linear/kuadrat/eksponensial/log-abs, interaksi pasangan, kombinasi satu/dua term, dan cross-validation internal di docs/engine/autonomous-model.js; belum setara penuh untuk validasi independen dan perilaku Java lainnya."
+    },
+    {
+      "file": "Discovery.java",
+      "functionality": "Discovery records and evidence tracking",
+      "category": "Research",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/Discovery.java",
+      "layer": "research",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Pencarian kandidat satu variabel dan pencarian feature grammar multivariabel diterjemahkan; komposisi dua persamaan dengan isolasi variabel bersama, substitusi, dan pemeriksaan dimensi SI tersedia melalui workflow equation-composition; seluruh fit/edge case Java belum setara."
+    },
+    {
+      "file": "BenchmarkEngine.java",
+      "functionality": "Analytical reference cases, error checks, and benchmark reports",
+      "category": "Validation",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/BenchmarkEngine.java",
+      "layer": "research",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "26 dari 27 kasus memiliki evaluator browser deterministik; flatness Minkowski sudah memakai metric solver browser. Benchmark Schwarzschild Ricci tetap INCONCLUSIVE karena benchmark Java meminta komponen ortonormal yang belum dipadankan."
+    },
+    {
+      "file": "FeasibilityClassification.java",
+      "functionality": "Separate classifications for mathematical/physical/engineering feasibility",
+      "category": "Engineering",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/FeasibilityClassification.java",
+      "layer": "research",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Klasifikasi bukti matematis/fisik/rekayasa tersedia melalui decision.js dan dipanggil oleh workflow assessment; klaim eksperimen tetap memerlukan metadata bukti mentah."
+    },
+    {
+      "file": "FeasibilityEngine.java",
+      "functionality": "Preliminary feasibility screening and conservation checks",
+      "category": "Engineering",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/FeasibilityEngine.java",
+      "layer": "research",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Staged assess() pipeline is translated in docs/engine/feasibility-assessment.js, including family routing (reaction/photon/spacetime/unimplemented), mathematical/conservation/energy-thermal/engineering stages, status precedence and report structure. MachineDesign.assemble() aggregation is also ported for imported component/material records. No Java filesystem persistence, local endpoints, metric-to-thrust model, or experimental verification."
+    },
+    {
+      "file": "MachineDesign.java",
+      "functionality": "Component-level mass, power, energy, and heat aggregation",
+      "category": "Engineering",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/MachineDesign.java",
+      "layer": "materials",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "MachineDesign.assemble() mass, power, energy, heat, missing-property and dependency aggregation is translated for user-imported components/materials in docs/engine/feasibility-assessment.js. Browser does not implement Java JSONL storage, add/edit/delete CRUD, or live MaterialDatabase lookup."
+    },
+    {
+      "file": "ReactionPropulsionDomain.java",
+      "functionality": "Rocket propulsion and ideal reaction-propulsion calculations",
+      "category": "Propulsion",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/ReactionPropulsionDomain.java",
+      "layer": "physics",
+      "browserStatus": "Browser domain port — tested",
+      "browserConnection": "Generates and evaluates idealized reaction-propulsion candidates; bounded Isp/efficiency/duration sweep, ideal rocket relation, power/heat constraints and equation cross-checks. No hardware design."
+    },
+    {
+      "file": "EnergyStorageDesignDomain.java",
+      "functionality": "Energy-storage system screening and energy-density constraints",
+      "category": "Engineering",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/EnergyStorageDesignDomain.java",
+      "layer": "materials",
+      "browserStatus": "Browser domain port — tested",
+      "browserConnection": "Generates energy-density/efficiency combinations and evaluates ideal storage mass, input energy, conversion loss and user limits; no chemistry/device selection."
+    },
+    {
+      "file": "StructuralDesignDomain.java",
+      "functionality": "Structural stress, strain, deformation, and buckling screening",
+      "category": "Engineering",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/StructuralDesignDomain.java",
+      "layer": "materials",
+      "browserStatus": "Browser domain port — tested",
+      "browserConnection": "Generates section-scale candidates and screens von Mises stress plus ideal Euler buckling; inputs and material properties remain user-supplied."
+    },
+    {
+      "file": "ThermalManagementDesignDomain.java",
+      "functionality": "Thermal loads, conduction, radiation, and cooling screening",
+      "category": "Thermal physics",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/ThermalManagementDesignDomain.java",
+      "layer": "materials",
+      "browserStatus": "Browser domain port — tested",
+      "browserConnection": "Generates cooling-capacity candidates and evaluates steady-state conduction, Stefan–Boltzmann radiation and cooling margin."
+    },
+    {
+      "file": "CrossDomainTechnologyResearch.java",
+      "functionality": "Links engineering constraints across multiple technology domains",
+      "category": "Engineering",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/CrossDomainTechnologyResearch.java",
+      "layer": "research",
+      "browserStatus": "Browser domain port — tested",
+      "browserConnection": "Urutan energy storage → thermal → structural diterjemahkan dengan transfer variabel eksplisit; bukan solver multiphysics penuh."
+    },
+    {
+      "file": "IntegratedTechnologyResearch.java",
+      "functionality": "Sequential multi-domain technology research workflow",
+      "category": "Engineering",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/IntegratedTechnologyResearch.java",
+      "layer": "research",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Gate empiris thrust-power, rentang daya teramati, syarat satuan N/W, cross-validation, dan penyaringan kandidat propulsion diterjemahkan; memakai model linear satu prediktor, bukan AutonomousModelExplorer multi-feature."
+    },
+    {
+      "file": "TechnologyDesignDomain.java",
+      "functionality": "Shared contract for technology-design domains",
+      "category": "Engineering",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/TechnologyDesignDomain.java",
+      "layer": "source",
+      "browserStatus": "Browser domain contract — browser translated",
+      "browserConnection": "Input maps, domain objectives, evaluation metrics, search spaces, equations, sources and limitations are represented by the browser domain contract."
+    },
+    {
+      "file": "TechnologyDesignDomains.java",
+      "functionality": "Registry of technology-design domain implementations",
+      "category": "Engineering",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/TechnologyDesignDomains.java",
+      "layer": "source",
+      "browserStatus": "Browser domain registry — browser translated",
+      "browserConnection": "All four registered Java domains are represented in the browser technology-design explorer."
+    },
+    {
+      "file": "TechnologyDesignEngine.java",
+      "functionality": "Coordinates technology-design calculations",
+      "category": "Engineering",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/TechnologyDesignEngine.java",
+      "layer": "research",
+      "browserStatus": "Browser domain port — tested",
+      "browserConnection": "Shared candidate generation/evaluation, invalid-candidate accounting, feasible-envelope filtering and multi-objective Pareto front are available in docs/engine/technology-design.js."
+    },
+    {
+      "file": "TechnologyDesignExplorer.java",
+      "functionality": "Explores candidate technology configurations",
+      "category": "Engineering",
+      "runtime": "Java engine",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/TechnologyDesignExplorer.java",
+      "layer": "research",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Domain propulsion ideal dan penerapan batas empiris thrust-power pada kandidat dalam rentang observasi tersedia melalui technology-design.js dan research-core.js."
+    },
+    {
+      "file": "MainActivity.java",
+      "functionality": "Android entry point/adapter for the experimental mobile build",
+      "category": "Mobile",
+      "runtime": "Android-specific Java; not Pages runtime",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/android/src/main/java/org/beyondlight/android/MainActivity.java",
+      "layer": "source",
+      "browserStatus": "Android source only",
+      "browserConnection": "Aplikasi Android tidak dijalankan pada GitHub Pages dan tetap berada di source Android."
+    },
+    {
+      "file": "ResearchRequest.java",
+      "functionality": "Immutable request contract for user questions, context and discipline hints",
+      "category": "Contract",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchRequest.java",
+      "layer": "source",
+      "browserStatus": "Browser orchestration port — tested",
+      "browserConnection": "Validasi request, context, hint disiplin, dan timestamp diterjemahkan ke research-core.js."
+    },
+    {
+      "file": "ResearchPlan.java",
+      "functionality": "Inspectable discipline routing and ordered engine execution steps",
+      "category": "Planning",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchPlan.java",
+      "layer": "source",
+      "browserStatus": "Browser orchestration port — tested",
+      "browserConnection": "Plan eksplisit, urutan langkah, engineId, dan rationale tersedia melalui research-core.js."
+    },
+    {
+      "file": "SourceRecord.java",
+      "functionality": "Normalized source provenance, identifiers, licensing and verification metadata",
+      "category": "Evidence",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/SourceRecord.java",
+      "layer": "source",
+      "browserStatus": "Browser orchestration port — tested",
+      "browserConnection": "Normalisasi metadata sumber dan provenance diterjemahkan ke record sumber research-core.js."
+    },
+    {
+      "file": "AnalysisResult.java",
+      "functionality": "Normalized engine output, execution status, sources and limitations",
+      "category": "Contract",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/AnalysisResult.java",
+      "layer": "source",
+      "browserStatus": "Browser orchestration port — tested",
+      "browserConnection": "Kontrak hasil analisis, status, output, sumber, batasan, dan error diterjemahkan ke hasil dispatch browser."
+    },
+    {
+      "file": "EvidenceReport.java",
+      "functionality": "Evidence classification, validation checks, uncertainty and limitations",
+      "category": "Evidence",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/EvidenceReport.java",
+      "layer": "source",
+      "browserStatus": "Browser orchestration port — tested",
+      "browserConnection": "Struktur laporan evidence konservatif diterjemahkan pada output research-core browser."
+    },
+    {
+      "file": "ResearchEngine.java",
+      "functionality": "Adapter interface for existing and future research engines",
+      "category": "Integration",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchEngine.java",
+      "layer": "source",
+      "browserStatus": "Browser orchestration port — tested",
+      "browserConnection": "Kontrak eksekusi engine diterjemahkan ke adapter dispatch browser; implementasi spesifik tetap mengikuti status workflow."
+    },
+    {
+      "file": "EngineRegistry.java",
+      "functionality": "Explicit registry for safe research engine selection",
+      "category": "Integration",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/EngineRegistry.java",
+      "layer": "source",
+      "browserStatus": "Browser orchestration port — tested",
+      "browserConnection": "Registry workflow browser menyediakan daftar mesin dan routing eksplisit tanpa reflection/server."
+    },
+    {
+      "file": "ResearchPlanner.java",
+      "functionality": "Deterministic baseline planner; not an LLM reasoning layer",
+      "category": "Planning",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchPlanner.java",
+      "layer": "source",
+      "browserStatus": "Browser orchestration port — tested",
+      "browserConnection": "Planner deterministik dengan workflow map dan inferensi disiplin diterjemahkan ke research-core.js."
+    },
+    {
+      "file": "EvidenceEvaluator.java",
+      "functionality": "Conservative evidence evaluator that separates screening from validation",
+      "category": "Evidence",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/EvidenceEvaluator.java",
+      "layer": "source",
+      "browserStatus": "Browser orchestration port — tested",
+      "browserConnection": "Laporan bukti konservatif diterjemahkan; tidak menaikkan screening menjadi bukti eksperimen."
+    },
+    {
+      "file": "ResearchOrchestrator.java",
+      "functionality": "Single dispatch coordinator for planning, execution and evidence review",
+      "category": "Integration",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchOrchestrator.java",
+      "layer": "source",
+      "browserStatus": "Browser orchestration port — tested",
+      "browserConnection": "Dispatch, hasil langkah, status gagal, dan evidence report berjalan di browser."
+    },
+    {
+      "file": "ResearchEngineAdapters.java",
+      "functionality": "Adapters for existing open-data, deterministic dataset and integrated technology workflows",
+      "category": "Integration",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchEngineAdapters.java",
+      "layer": "source",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Adapter workflow diterjemahkan untuk mesin browser yang tersedia; workflow integrated research dan siklus impor penuh masih terbatas."
+    },
+    {
+      "file": "ResearchIntegrationHttp.java",
+      "functionality": "JSON HTTP endpoints for unified research dispatch and engine discovery",
+      "category": "Gateway",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchIntegrationHttp.java",
+      "layer": "source",
+      "browserStatus": "Replaced by static browser runtime",
+      "browserConnection": "Endpoint HTTP /research/dispatch dan /knowledge/graph tidak dipakai; retrieval Mnemos langsung dari browser."
+    },
+    {
+      "file": "ResearchPlanningProvider.java",
+      "functionality": "Replaceable interface for deterministic, LLM-backed or human-authored research planning",
+      "category": "Planning",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchPlanningProvider.java",
+      "layer": "source",
+      "browserStatus": "Browser orchestration port — tested",
+      "browserConnection": "Boundary planner diterjemahkan menjadi API plan() browser."
+    },
+    {
+      "file": "ResearchDomainAdapters.java",
+      "functionality": "Adapters for scientific catalog validation, symbolic math, special relativity, feasibility, numerical benchmarks, material selection, uncertainty, technology-domain and cross-domain workflows",
+      "category": "Integration",
+      "runtime": "Java server; not executable on Pages",
+      "url": "https://github.com/rllibo833-sudo/Beyond-Light/blob/main/beyond-light-source/beyond-light/src/main/java/org/beyondlight/ResearchDomainAdapters.java",
+      "layer": "source",
+      "browserStatus": "Partial browser port",
+      "browserConnection": "Workflow browser tersedia untuk katalog, symbolic, special relativity, feasibility, benchmark, material screening, uncertainty, technology domain, cross-domain, metric geometry, engineering, dan open-data; beberapa tetap partial sesuai katalog."
+    }
+  ],
+  "layers": [
+    {
+      "id": "home",
+      "name": "Beranda & ide",
+      "purpose": "Mulai dari pertanyaan alami dan peta konsep awal."
+    },
+    {
+      "id": "physics",
+      "name": "Fisika & matematika",
+      "purpose": "Model browser, konstanta, variabel, persamaan, cahaya, relativitas, gravitasi, dan ketidakpastian."
+    },
+    {
+      "id": "materials",
+      "name": "Material & kimia",
+      "purpose": "Database material, kurva suhu, sifat termal, dan ilustrasi kisi atom."
+    },
+    {
+      "id": "research",
+      "name": "Riset & data",
+      "purpose": "Ringkasan eksperimen, dataset, benchmark, dan arsip hasil riset."
+    },
+    {
+      "id": "source",
+      "name": "Mesin internal (tidak ditampilkan)",
+      "purpose": "Peta internal modul dan batas runtime; dokumentasi source tetap berada di repository.",
+      "visible": false
+    }
+  ]
+}

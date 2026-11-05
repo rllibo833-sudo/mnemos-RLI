@@ -1,0 +1,35 @@
+# Gradle
+.gradle/
+**/.gradle/
+build/
+**/build/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+
+# Android build outputs and local signing material
+local.properties
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp

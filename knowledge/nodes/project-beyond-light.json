@@ -3,17 +3,23 @@
   "id": "project-beyond-light",
   "kind": "project",
   "title": "Beyond-Light",
-  "content": "Historical project record retained because its research archive has already been imported into this graph. The GitHub repository referenced by the source snapshot was not resolvable on 2026-11-05, so this is not counted as a currently listed public repository.",
+  "content": "Beyond-Light is a research and simulation project whose documentation, browser application, Java/Android source, datasets, workflows, tests, and source archive are now preserved as a versioned source snapshot in the Knowledge branch. Its research archive is also represented in the curated beyond-light knowledge collection. The source repository could not be resolved on GitHub at transfer time; this local snapshot preserves the project files, not its Git history.",
   "source": {
-    "type": "historical_repository_snapshot",
-    "uri": "https://github.com/rllibo833-sudo/Beyond-Light",
-    "extraction_method": "Existing Knowledge graph import records",
+    "type": "local_git_worktree_snapshot",
+    "uri": "https://github.com/rllibo833-sudo/mnemos-RLI/tree/Knowledge/knowledge/sources/projects/BEYOND-LIGHT",
+    "filename": "Beyond-light working tree",
+    "extraction_method": "User-directed snapshot of clean local main worktree; Git metadata and generated build output excluded",
     "observed_at": "2026-11-05T00:00:00Z"
   },
   "metadata": {
     "owner": "rllibo833-sudo",
-    "visibility": "unavailable_at_observation",
-    "included_in_current_public_repo_count": false
+    "snapshot_path": "knowledge/sources/projects/BEYOND-LIGHT",
+    "import_manifest": "knowledge/sources/projects/BEYOND-LIGHT/IMPORT_MANIFEST.json",
+    "source_commit": "b23b0dc8626ba7e1e45301fde72f5fda723bab65",
+    "upstream_repository": "https://github.com/rllibo833-sudo/Beyond-light",
+    "upstream_status": "not_found_at_transfer_time",
+    "git_history_included": false,
+    "previous_research_import_preserved": true
   },
   "created_at": "2026-11-05T00:00:00Z",
   "updated_at": "2026-11-05T00:00:00Z",

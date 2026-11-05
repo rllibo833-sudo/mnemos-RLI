@@ -1,0 +1,52 @@
+const assert=require("node:assert/strict");
+global.window=global;require("./feasibility-assessment.js");
+const A=global.BeyondLightFeasibilityAssessment,S=A.STATUS;
+const validAssembly={massKg:120,powerW:5000,energyJ:50000,heatW:200,missing:[],dependencyErrors:[],components:3,classification:"PRELIMINARY ESTIMATE — NOT A BUILD CERTIFICATION"};
+let r=A.assess({family:"electric",dryKg:800,payloadKg:200,dv:3000,isp:450,thrust:100000,efficiency:.65,duration:120,availablePowerW:1e9,coolingW:1e9,assembly:validAssembly});
+assert.equal(r.mathematical.status,S.MAT_VALID);
+assert.equal(r.conservation.status,S.PHYS_OK);
+assert.equal(r.energyThermal.status,S.PHYS_OK);
+assert.equal(r.engineering.status,S.ENG_OK);
+assert.equal(r.overallClassification,S.EXPERIMENT);
+assert.ok(r.results.propellant_kg>0);
+assert.ok(r.mathematical.checks.some(x=>x.law==="ideal rocket relation"));
+assert.ok(r.conservation.checks.some(x=>x.law==="reaction momentum flux"));
+assert.ok(r.energyThermal.checks.some(x=>x.law==="heat rejection"));
+r=A.assess({family:"chemical",dryKg:800,payloadKg:200,dv:3000,isp:450,thrust:100000,efficiency:.65,duration:120,availablePowerW:1,coolingW:0,assembly:validAssembly});
+assert.equal(r.energyThermal.status,S.ENG_BAD);
+assert.equal(r.overallClassification,S.PHYS_BAD);
+r=A.assess({family:"photon",dryKg:800,payloadKg:200,dv:3000,isp:450,thrust:2,efficiency:.8,duration:10,availablePowerW:0,coolingW:0});
+assert.equal(r.mathematical.status,S.MAT_VALID);
+assert.equal(r.conservation.status,S.PHYS_OK);
+assert.equal(r.engineering.status,S.MISSING);
+assert.ok(r.results.beam_power_W>0);
+r=A.assess({family:"spacetime-warp",dryKg:800,payloadKg:200,dv:3000,isp:450,thrust:100,efficiency:.8,duration:10,availablePowerW:1e6,coolingW:1e6});
+assert.equal(r.overallClassification,S.THEORY);
+assert.equal(r.mathematical.status,S.THEORY);
+assert.equal(r.conservation.status,S.MISSING);
+r=A.assess({family:"fusion",dryKg:800,payloadKg:200,dv:3000,isp:450,thrust:100,efficiency:.8,duration:10,availablePowerW:1e6,coolingW:1e6});
+assert.equal(r.mathematical.status,S.THEORY);
+assert.equal(r.overallClassification,S.MISSING);
+r=A.assess({family:"electric",dryKg:0,payloadKg:200,dv:3000,isp:450,thrust:100,efficiency:.8,duration:10,availablePowerW:1e6,coolingW:1e6});
+assert.equal(r.overallClassification,S.MAT_BAD);
+r=A.assess({family:"electric",dryKg:800,payloadKg:0,dv:3000,isp:450,thrust:100,efficiency:.8,duration:10,availablePowerW:1e6,coolingW:1e6});
+assert.equal(r.mathematical.status,S.MAT_BAD); // Java assess domain permits zero payload, but Core.propulsion rejects it.
+const assembly=A.assemble({components:[
+ {id:"a",name:"tank",volumeM3:.01,materialId:"mat",powerW:10,durationS:5,heatW:2,loadN:100,areaM2:.001,dependencies:[]},
+ {id:"b",name:"controller",volumeM3:0,materialId:"",powerW:20,durationS:2,heatW:1,loadN:0,areaM2:0,dependencies:["missing-id"]}
+],materials:[{id:"mat",name:"test alloy",densityKgM3:1000,yieldPa:1e8}]});
+assert.equal(assembly.massKg,10);
+assert.equal(assembly.powerW,30);
+assert.equal(assembly.energyJ,90);
+assert.equal(assembly.heatW,3);
+assert.equal(assembly.dependencyErrors.length,1);
+assert.equal(assembly.missing.length,0);
+assert.equal(assembly.classification,"DEPENDENCY ERRORS");
+const incomplete=A.assemble({components:[{id:"x",name:"unknown",volumeM3:1,materialId:"",powerW:0,durationS:0,heatW:0,loadN:1,areaM2:0,dependencies:[]}],materials:[]});
+assert.equal(incomplete.missing.length,2);
+assert.equal(incomplete.classification,"INCOMPLETE — MISSING DATA");
+const emptyAssembly=A.assemble({components:[],materials:[]});
+assert.equal(emptyAssembly.massKg,0);
+assert.equal(emptyAssembly.classification,"PRELIMINARY ESTIMATE — NOT A BUILD CERTIFICATION");
+assert.equal(A.assess({family:"x"}).overallClassification,S.MAT_BAD);
+console.log("feasibility assessment: 34 checks passed; staged family logic and imported MachineDesign assembly verified");

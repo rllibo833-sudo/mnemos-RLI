@@ -1,0 +1,10 @@
+"use strict";
+const assert=require("node:assert/strict"),vm=require("node:vm"),fs=require("node:fs");
+const store=new Map(),context={window:{},localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)}};
+vm.runInNewContext(fs.readFileSync("docs/engine/research-queue.js","utf8"),context);
+const q=context.window.BeyondLightResearchQueue,c={id:"a::b",sourceTitle:"A",targetTitle:"B"},p={question:"Can A relate to B?"};
+const item=q.add(c,p);assert.equal(item.status,"REVIEW_REQUIRED");assert.equal(q.add(c,p).id,item.id);
+q.update(item.id,{status:"REVIEWED",reviewNote:"Sources checked"});assert.equal(q.list()[0].status,"REVIEWED");
+q.update(item.id,{status:"TESTED",lastOutcome:{status:"INCONCLUSIVE"}});assert.equal(q.list()[0].lastOutcome.status,"INCONCLUSIVE");
+q.remove(item.id);assert.equal(q.list().length,0);
+console.log("autonomous research review queue tests passed");

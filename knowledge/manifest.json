@@ -3,7 +3,7 @@
   "source_of_truth": "mnemos-RLI:Knowledge",
   "generated_at": "2026-11-05T00:00:00Z",
   "nodes_count": 37,
-  "edges_count": 174,
+  "edges_count": 183,
   "repos_analyzed": 2,
   "node_files": [
     "bl-benchmarks-v1.json",

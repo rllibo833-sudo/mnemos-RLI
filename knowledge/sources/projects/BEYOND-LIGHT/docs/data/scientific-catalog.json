@@ -1,0 +1,254 @@
+{
+  "source": "ScientificCatalog.java",
+  "constants": [
+    {
+      "id": "c",
+      "name": "Speed of light in vacuum",
+      "value": 299792458,
+      "unit": "m/s",
+      "uncertainty": "exact",
+      "source": "https://www.bipm.org/en/publications/si-brochure",
+      "notes": "SI defining constant; vacuum"
+    },
+    {
+      "id": "h",
+      "name": "Planck constant",
+      "value": 6.62607015e-34,
+      "unit": "J s",
+      "uncertainty": "exact",
+      "source": "https://www.bipm.org/en/publications/si-brochure",
+      "notes": "Exact by SI definition"
+    },
+    {
+      "id": "k_B",
+      "name": "Boltzmann constant",
+      "value": 1.380649e-23,
+      "unit": "J/K",
+      "uncertainty": "exact",
+      "source": "https://www.bipm.org/en/publications/si-brochure",
+      "notes": "Exact by SI definition"
+    },
+    {
+      "id": "e",
+      "name": "Elementary charge",
+      "value": 1.602176634e-19,
+      "unit": "C",
+      "uncertainty": "exact",
+      "source": "https://www.bipm.org/en/publications/si-brochure",
+      "notes": "Magnitude of elementary charge; exact"
+    },
+    {
+      "id": "N_A",
+      "name": "Avogadro constant",
+      "value": 6.02214076e+23,
+      "unit": "mol^-1",
+      "uncertainty": "exact",
+      "source": "https://www.bipm.org/en/publications/si-brochure",
+      "notes": "Exact by SI definition"
+    },
+    {
+      "id": "G",
+      "name": "Newtonian constant of gravitation",
+      "value": 6.6743e-11,
+      "unit": "m^3 kg^-1 s^-2",
+      "uncertainty": "CODATA 2022 ± 0.00015e-11",
+      "source": "https://physics.nist.gov/cuu/Constants/index.html",
+      "notes": "Measured/recommended; not exact"
+    },
+    {
+      "id": "m_e",
+      "name": "Electron mass",
+      "value": 9.1093837139e-31,
+      "unit": "kg",
+      "uncertainty": "CODATA 2022 ± 0.0000000028e-31",
+      "source": "https://physics.nist.gov/cuu/Constants/index.html",
+      "notes": "Rest mass"
+    },
+    {
+      "id": "m_p",
+      "name": "Proton mass",
+      "value": 1.67262192595e-27,
+      "unit": "kg",
+      "uncertainty": "CODATA 2022 ± 0.00000000052e-27",
+      "source": "https://physics.nist.gov/cuu/Constants/index.html",
+      "notes": "Rest mass"
+    },
+    {
+      "id": "m_n",
+      "name": "Neutron mass",
+      "value": 1.67492750056e-27,
+      "unit": "kg",
+      "uncertainty": "CODATA 2022 ± 0.00000000085e-27",
+      "source": "https://physics.nist.gov/cuu/Constants/index.html",
+      "notes": "Rest mass"
+    },
+    {
+      "id": "epsilon_0",
+      "name": "Vacuum electric permittivity",
+      "value": 8.8541878188e-12,
+      "unit": "F/m",
+      "uncertainty": "CODATA 2022 ± 0.0000000014e-12",
+      "source": "https://physics.nist.gov/cuu/Constants/index.html",
+      "notes": "Post-2019 SI recommended value"
+    },
+    {
+      "id": "mu_0",
+      "name": "Vacuum magnetic permeability",
+      "value": 0.00000125663706127,
+      "unit": "N/A^2",
+      "uncertainty": "CODATA 2022 ± 0.00000000020e-6",
+      "source": "https://physics.nist.gov/cuu/Constants/index.html",
+      "notes": "Post-2019 SI recommended value"
+    },
+    {
+      "id": "sigma_SB",
+      "name": "Stefan–Boltzmann constant",
+      "value": 5.670374419e-8,
+      "unit": "W m^-2 K^-4",
+      "uncertainty": "derived from exact constants",
+      "source": "https://physics.nist.gov/cuu/Constants/index.html",
+      "notes": "Derived from exact SI constants"
+    },
+    {
+      "id": "g0",
+      "name": "Standard gravity",
+      "value": 9.80665,
+      "unit": "m/s^2",
+      "uncertainty": "conventional value",
+      "source": "https://physics.nist.gov/cuu/Constants/index.html",
+      "notes": "Not local measured gravity"
+    },
+    {
+      "id": "au",
+      "name": "Astronomical unit",
+      "value": 149597870700,
+      "unit": "m",
+      "uncertainty": "exact",
+      "source": "https://www.iau.org/static/resolutions/IAU2012_English.pdf",
+      "notes": "Exact IAU definition; not instantaneous Earth–Sun distance"
+    }
+  ],
+  "equations": [
+    {
+      "name": "Ideal rocket equation",
+      "equation": "Δv = vₑ ln(m₀/mf)",
+      "domain": "Propulsion",
+      "sourceTitle": "NASA Glenn",
+      "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/",
+      "limits": "Constant effective exhaust velocity; idealized single-stage performance."
+    },
+    {
+      "name": "Photon thrust",
+      "equation": "F = P/c",
+      "domain": "Propulsion",
+      "sourceTitle": "NASA Glenn",
+      "source": "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/thrust-equation/",
+      "limits": "Directed photon beam; excludes source mass, efficiency, and thermal design."
+    },
+    {
+      "name": "Newton's second law",
+      "equation": "F = ma",
+      "domain": "Mechanics",
+      "sourceTitle": "OpenStax",
+      "source": "https://openstax.org/books/university-physics-volume-1/pages/5-4-newtons-second-law",
+      "limits": "Inertial frame; constant-mass form."
+    },
+    {
+      "name": "Kinetic energy",
+      "equation": "K = ½mv²",
+      "domain": "Mechanics",
+      "sourceTitle": "OpenStax",
+      "source": "https://openstax.org/books/university-physics-volume-1/pages/7-2-kinetic-energy",
+      "limits": "Classical speeds; use relativistic energy at high speed."
+    },
+    {
+      "name": "First law of thermodynamics",
+      "equation": "ΔU = Q − W",
+      "domain": "Thermodynamics",
+      "sourceTitle": "OpenStax",
+      "source": "https://openstax.org/books/university-physics-volume-2/pages/3-4-the-first-law-of-thermodynamics",
+      "limits": "Closed system; work done by system sign convention."
+    },
+    {
+      "name": "Fourier heat conduction",
+      "equation": "Q̇ = kAΔT/L",
+      "domain": "Thermal physics",
+      "sourceTitle": "OpenStax",
+      "source": "https://openstax.org/books/university-physics-volume-2/pages/1-6-mechanisms-of-heat-transfer",
+      "limits": "Steady 1-D conduction; constant k; contact resistance omitted."
+    },
+    {
+      "name": "Lorentz force",
+      "equation": "F = q(E + v × B)",
+      "domain": "Electromagnetism",
+      "sourceTitle": "OpenStax",
+      "source": "https://openstax.org/books/university-physics-volume-2/pages/11-4-magnetic-force-on-a-current-carrying-conductor",
+      "limits": "Classical fields; radiation reaction omitted."
+    },
+    {
+      "name": "Relativistic energy-momentum",
+      "equation": "E² = (pc)² + (mc²)²",
+      "domain": "Special relativity",
+      "sourceTitle": "OpenStax",
+      "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations",
+      "limits": "Invariant relation in an inertial frame."
+    },
+    {
+      "name": "Lorentz factor",
+      "equation": "γ = 1/√(1 − v²/c²)",
+      "domain": "Special relativity",
+      "sourceTitle": "OpenStax",
+      "source": "https://openstax.org/books/university-physics-volume-3/pages/5-key-equations",
+      "limits": "Massive objects remain below c."
+    },
+    {
+      "name": "Einstein field equation",
+      "equation": "Gμν + Λgμν = (8πG/c⁴)Tμν",
+      "domain": "General relativity",
+      "sourceTitle": "Einstein (1916)",
+      "source": "https://doi.org/10.1002/andp.19163540702",
+      "limits": "Conventions and coordinates matter; numerical source needs independent validation."
+    },
+    {
+      "name": "Schwarzschild exterior metric",
+      "equation": "ds² = −(1−rs/r)c²dt² + (1−rs/r)⁻¹dr² + r²dΩ²",
+      "domain": "General relativity",
+      "sourceTitle": "Schwarzschild (1916)",
+      "source": "https://arxiv.org/abs/physics/9905030",
+      "limits": "Spherical static vacuum exterior; r > rs."
+    },
+    {
+      "name": "Alcubierre metric",
+      "equation": "ds² = −c²dt² + [dx − vs f(rs)dt]² + dy² + dz²",
+      "domain": "General relativity",
+      "sourceTitle": "Alcubierre (1994)",
+      "source": "https://doi.org/10.1088/0264-9381/11/5/001",
+      "limits": "Theoretical geometry; physical realizability unresolved."
+    },
+    {
+      "name": "Morris–Thorne wormhole metric",
+      "equation": "ds² = −e²Φc²dt² + (1−b/r)⁻¹dr² + r²dΩ²",
+      "domain": "General relativity",
+      "sourceTitle": "Morris & Thorne (1988)",
+      "source": "https://doi.org/10.1119/1.15620",
+      "limits": "Theoretical ansatz; requires throat and energy-condition analysis."
+    },
+    {
+      "name": "Composite Simpson integration",
+      "equation": "∫aᵇf(x)dx ≈ h/3 [f₀ + 4f₁ + 2f₂ + … + fₙ]",
+      "domain": "Numerical methods",
+      "sourceTitle": "NIST DLMF §3",
+      "source": "https://dlmf.nist.gov/3",
+      "limits": "Smooth integrand; even number of subintervals."
+    },
+    {
+      "name": "Classical fourth-order Runge–Kutta",
+      "equation": "yₙ₊₁ = yₙ + h(k₁+2k₂+2k₃+k₄)/6",
+      "domain": "Numerical methods",
+      "sourceTitle": "NIST DLMF §3",
+      "source": "https://dlmf.nist.gov/3",
+      "limits": "Initial-value ODE; error depends on step size and smoothness."
+    }
+  ],
+  "notice": "Catalog values and references are copied from the curated ScientificCatalog.java seed. SI exact values are distinguished from CODATA recommended values; verify sources before critical use."
+}

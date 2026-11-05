@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#070b13">
+<title>Beyond-Light — Autonomous Knowledge Cycle</title>
+<style>
+:root{color-scheme:dark;--bg:#070b13;--panel:#101a2a;--line:#263b58;--ink:#edf4ff;--muted:#9db0c9;--cyan:#79e5ee;--green:#9de6bd;--gold:#f7c873}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% -15%,#1b3450 0,transparent 42%),var(--bg);color:var(--ink);font:15px/1.6 system-ui,sans-serif}a{color:var(--cyan)}button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:11px 16px;font-weight:750;background:#b5f2ef;color:#06151d}button.secondary{background:#17263a;color:var(--ink);border:1px solid var(--line)}button:disabled{opacity:.5;cursor:wait}
+header{border-bottom:1px solid #1c2b40;background:#070b13df}.nav,main{max-width:1120px;margin:auto;padding:16px 22px}.nav{display:flex;align-items:center;justify-content:space-between;gap:14px}.logo{font-weight:900;letter-spacing:.16em;text-decoration:none}.nav-links{display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
+.hero{padding:45px 0 26px}.eyebrow{color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:.2em}.hero h1{font-size:clamp(34px,6vw,58px);line-height:1.04;letter-spacing:-.05em;margin:10px 0}.hero p{color:var(--muted);max-width:720px;margin:0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.status{margin-top:15px;color:var(--muted);font-size:12px}.status strong{color:var(--green)}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}.metric,.panel,.candidate{background:linear-gradient(145deg,#122036,#0d1726);border:1px solid var(--line);border-radius:15px}.metric{padding:14px}.metric b{display:block;font-size:27px;color:var(--cyan)}.metric span{font-size:11px;color:var(--muted)}
+.panel{padding:18px;margin:16px 0}.panel h2{margin:0 0 10px;font-size:20px}.panel p{color:var(--muted);font-size:13px}.candidate-list{display:grid;gap:10px}.candidate{padding:15px}.candidate h3{font-size:15px;margin:0 0 8px}.candidate .relation{color:var(--cyan);font-size:12px}.candidate .meta{font-size:11px;color:var(--muted);margin-top:8px}.terms{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.term{border:1px solid #35516e;border-radius:20px;padding:2px 8px;font-size:10px;color:#c7e6ed}.warning{border-left:3px solid var(--gold);background:#191a1b;padding:10px 13px;color:#d7c9a8;font-size:12px;margin:12px 0}.validation-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}.validation-stat{padding:12px;border:1px solid var(--line);border-radius:12px;background:#0b1422}.validation-stat b{display:block;font-size:23px}.validation-stat span{font-size:11px;color:var(--muted)}.validation-item{padding:9px 0;border-bottom:1px solid #20324a;font-size:12px}.validation-item strong{display:inline-block;min-width:105px}.validation-item .fail{color:#ff9a9a}.validation-item .inconclusive{color:var(--gold)}.source-links{display:flex;gap:9px;flex-wrap:wrap;margin-top:9px;font-size:11px}.source-links a{color:var(--cyan)}.pathway{margin-top:12px;padding:12px;border:1px solid #36516d;border-radius:10px;background:#0a1422}.pathway button{margin-top:8px}.pathway-result{margin-top:8px;font-size:12px;color:#c7d8eb;white-space:pre-wrap}.reason{font-size:12px;color:#b9c9dc;margin-top:7px}.empty{color:var(--muted);padding:15px;text-align:center}.small{font-size:11px;color:var(--muted)}.history{display:grid;gap:7px}.history-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #20324a;font-size:12px}.footer{padding:30px 0 50px;color:#8095ae;font-size:12px;border-top:1px solid #17263a;margin-top:30px}
+@media(max-width:700px){.metrics{grid-template-columns:repeat(2,1fr)}.nav{align-items:flex-start;flex-direction:column}main{padding:10px 15px}.hero{padding-top:30px}.history-row{flex-direction:column;gap:2px}}
+</style>
+</head>
+<body>
+<header><div class="nav"><a class="logo" href="./index.html">BEYOND-LIGHT</a><div class="nav-links"><a href="./index.html">Beranda</a><a href="./spiral.html">Peta Spiral</a></div></div></header>
+<main>
+<section class="hero">
+ <div class="eyebrow">CORE · AUTONOMOUS KNOWLEDGE CYCLE</div>
+ <h1>Jelajahi hubungan yang belum terlihat.</h1>
+ <p>Beyond-Light membaca graph Mnemos-RLI, memeriksa struktur pengetahuan, lalu menyusun kandidat hubungan lintas bidang untuk ditinjau. Prosesnya deterministik—bukan LLM.</p>
+ <div class="actions"><button id="runCycle" disabled>Memuat Knowledge…</button><button class="secondary" id="exportRun" disabled>Ekspor hasil JSON</button></div>
+ <div class="status" id="sourceStatus">Menghubungkan ke Mnemos-RLI branch Knowledge…</div>
+</section>
+<section class="metrics" aria-label="Ringkasan graph">
+ <div class="metric"><b id="nodeCount">—</b><span>Node pengetahuan</span></div>
+ <div class="metric"><b id="edgeCount">—</b><span>Relasi tercatat</span></div>
+ <div class="metric"><b id="componentCount">—</b><span>Komponen graph</span></div>
+ <div class="metric"><b id="candidateCount">—</b><span>Kandidat hubungan</span></div>
+</section>
+<section class="panel">
+ <h2>Hasil siklus</h2>
+ <p id="cycleSummary">Menunggu graph selesai dimuat.</p>
+ <div class="warning">Kandidat di bawah ini adalah petunjuk untuk pemeriksaan manusia. Kesamaan istilah tidak membuktikan hubungan ilmiah, sebab-akibat, atau kebenaran suatu klaim. Beyond-Light tidak mengubah graph Knowledge secara otomatis.</div>
+ <div class="pathway"><strong>Dataset lokal untuk Candidate testing</strong><p class="small">Impor CSV numerik (6–5000 baris, maksimal 2 MB). Data disimpan hanya di browser ini.</p><input id="datasetUpload" type="file" accept=".csv,text/csv"><div class="small" id="datasetStatus">Belum ada dataset yang diimpor.</div></div>
+ <div class="candidate-list" id="candidateList"><div class="empty">Belum ada hasil.</div></div>
+</section>
+<section class="panel">
+ <h2>Validasi mesin riset Beyond-Light</h2>
+ <p id="validationSummary">Validasi akan berjalan bersama siklus graph.</p>
+ <div class="validation-grid">
+  <div class="validation-stat"><b id="benchPass">—</b><span>Benchmark lulus</span></div>
+  <div class="validation-stat"><b id="benchFail">—</b><span>Benchmark gagal</span></div>
+  <div class="validation-stat"><b id="benchInconclusive">—</b><span>Belum dapat diuji</span></div>
+ </div>
+ <div id="validationDetails"><div class="empty">Belum ada hasil validasi.</div></div>
+ <div class="small">Ini menguji evaluator benchmark browser yang tersedia. Hasil PASS menguji kecocokan komputasi terhadap referensi yang tertanam, bukan membuktikan teori atau eksperimen fisik.</div>
+</section>
+<section class="panel">
+ <h2>Perbandingan dengan siklus sebelumnya</h2>
+ <p id="cycleComparison">Siklus pertama belum dijalankan.</p>
+ <div class="small">Riwayat tersimpan hanya di browser perangkat ini. Tidak ada data yang dikirim ke server.</div>
+</section>
+<section class="panel">
+ <h2>Antrean penelitian yang ditinjau</h2>
+ <p>Kandidat yang ditinjau tetap proposal. Catatan dan status tersimpan lokal, bukan ke graph kanonis.</p>
+ <div id="researchQueue" class="history"><div class="empty">Belum ada kandidat dalam antrean.</div></div>
+</section>
+<section class="panel">
+ <h2>Riwayat siklus lokal</h2>
+ <div class="history" id="cycleHistory"><div class="empty">Belum ada riwayat.</div></div>
+</section>
+<div class="footer">Sumber: mnemos-RLI / branch Knowledge · Graph read-only · Analisis dan riwayat berjalan lokal di browser. Tidak memakai LLM, API key, server Beyond-Light, atau database baru.</div>
+</main>
+<script src="./engine/symbolic.js"></script>
+<script src="./engine/research.js"></script>
+<script src="./engine/decision.js"></script>
+<script src="./engine/feasibility.js"></script>
+<script src="./engine/feasibility-assessment.js"></script>
+<script src="./engine/technology-design.js"></script>
+<script src="./engine/autonomous-model.js"></script>
+<script src="./engine/research-core.js"></script>
+<script src="./engine/mnemos-knowledge.js"></script>
+<script src="./engine/knowledge-explorer.js"></script>
+<script src="./engine/research-pathways.js"></script>
+<script src="./engine/research-queue.js"></script>
+<script>
+(() => {
+"use strict";
+const $=id=>document.getElementById(id);
+const KEY="beyond-light.knowledge-cycle.v1";
+let latest=null, graph=null;
+const safe=value=>String(value??"");
+function readHistory(){try{const x=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(x)?x:[];}catch{return [];}}
+function writeHistory(items){try{localStorage.setItem(KEY,JSON.stringify(items.slice(0,8)));}catch{}}
+function showStatus(status){
+ const partial=status.status==="partial"?" · beberapa file gagal dimuat":"";
+ $("sourceStatus").innerHTML="<strong>"+status.loadedNodes+" / "+status.expectedNodes+" node</strong> dan <strong>"+status.loadedEdges+" / "+status.expectedEdges+" relasi</strong> dari Mnemos-RLI:Knowledge"+partial+".";
+}
+function addCandidate(item){
+ const card=document.createElement("article");card.className="candidate";
+ const title=document.createElement("h3");title.textContent=item.sourceTitle+"  ↔  "+item.targetTitle;card.appendChild(title);
+ const relation=document.createElement("div");relation.className="relation";relation.textContent=(item.crossLayer?"Lintas lapisan":"Dalam lapisan")+" · skor kecocokan istilah "+item.score;card.appendChild(relation);
+ const meta=document.createElement("div");meta.className="meta";meta.textContent=item.sourceLayer+" ("+item.sourceEvidence+") → "+item.targetLayer+" ("+item.targetEvidence+")";card.appendChild(meta);
+ const terms=document.createElement("div");terms.className="terms";
+ for(const term of item.sharedConcepts){const chip=document.createElement("span");chip.className="term";chip.textContent=term;terms.appendChild(chip);}
+ card.appendChild(terms);
+ const why=document.createElement("div");why.className="reason";why.textContent=(item.reasoning||[]).join(" ");card.appendChild(why);
+ if(item.sharedNeighbors?.length){const near=document.createElement("div");near.className="meta";near.textContent="Tetangga bersama: "+item.sharedNeighbors.map(x=>x.title+" ["+x.layer+"]").join(" · ");card.appendChild(near);}
+ const note=document.createElement("div");note.className="meta";note.textContent=item.warning;card.appendChild(note);
+ if(item.sourceReferences?.length){const links=document.createElement("div");links.className="source-links";item.sourceReferences.forEach(ref=>{const a=document.createElement("a");a.href=ref.url;a.target="_blank";a.rel="noopener noreferrer";a.textContent=ref.title+" ↗";links.appendChild(a);});card.appendChild(links);}
+ const pathway=window.BeyondLightResearchPathways.create(item),box=document.createElement("div");box.className="pathway";const pathTitle=document.createElement("strong");pathTitle.textContent="Jalur penelitian yang diusulkan";box.appendChild(pathTitle);const question=document.createElement("p");question.textContent=pathway.question;box.appendChild(question);const goal=document.createElement("p");goal.className="small";goal.textContent=pathway.goal;box.appendChild(goal);const readiness=document.createElement("p");readiness.className="small";readiness.textContent="Uji kandidat: "+pathway.testability.status+" — "+pathway.testability.reason;box.appendChild(readiness);const required=document.createElement("p");required.className="small";required.textContent="Yang dibutuhkan: "+pathway.testability.required.join("; ");box.appendChild(required);const runButton=document.createElement("button");runButton.className="secondary";runButton.textContent="Cari metadata sumber terbuka";const resultBox=document.createElement("div");resultBox.className="pathway-result";resultBox.textContent="Belum dijalankan · pencarian Zenodo hanya mengambil metadata.";runButton.addEventListener("click",async()=>{runButton.disabled=true;runButton.textContent="Mencari…";resultBox.textContent="Menjalankan research.open-data-discovery…";try{const result=await window.BeyondLightResearchCore.dispatch({question:pathway.question,context:{workflow:"open-data-discovery"}});const summary=window.BeyondLightResearchPathways.summarize(result);resultBox.replaceChildren();const detail=document.createElement("div");detail.textContent=summary.error?"ENGINE_FAILED: "+summary.error:summary.recordCount+" rekaman metadata ditemukan. Status: "+summary.status+"\n"+summary.records.map(r=>r.title+(r.year?" ("+r.year+")":"")+(r.doi?" · DOI "+r.doi:"")).join("\n")+"\n\nMetadata belum dibaca penuh atau diverifikasi.";resultBox.appendChild(detail);for(const record of summary.records){if(!record.url)continue;const a=document.createElement("a");a.href=record.url;a.target="_blank";a.rel="noopener noreferrer";a.textContent=record.title+" ↗";a.style.display="block";resultBox.appendChild(a);}if(!summary.recordCount&&!summary.error){const note=document.createElement("div");note.textContent="NEEDS_DATA: belum ditemukan rekaman metadata yang cocok.";resultBox.appendChild(note);}}catch(error){resultBox.textContent="ENGINE_FAILED: "+String(error.message||error);}finally{runButton.disabled=false;runButton.textContent="Ulangi pencarian metadata";}});box.append(runButton,resultBox);card.appendChild(box);
+ const queueButton=document.createElement("button");queueButton.className="secondary";queueButton.textContent="Masukkan ke antrean penelitian";queueButton.addEventListener("click",()=>{window.BeyondLightResearchQueue.add(item,pathway);renderQueue();queueButton.textContent="Sudah dalam antrean";queueButton.disabled=true;});if(window.BeyondLightResearchQueue.list().some(q=>q.candidateId===item.id)){queueButton.textContent="Sudah dalam antrean";queueButton.disabled=true;}card.appendChild(queueButton);
+ const testing=document.createElement("div");testing.className="pathway";const testHeading=document.createElement("strong");testHeading.textContent="Candidate testing · dataset";testing.appendChild(testHeading);
+ const datasets=window.BeyondLightResearchCore.listDatasets(),datasetSelect=document.createElement("select"),xSelect=document.createElement("select"),ySelect=document.createElement("select"),testButton=document.createElement("button"),testResult=document.createElement("div");testResult.className="pathway-result";
+ const fill=(el,items,label)=>{el.replaceChildren();const o=document.createElement("option");o.value="";o.textContent=label;el.appendChild(o);items.forEach(v=>{const option=document.createElement("option");option.value=v;option.textContent=v;el.appendChild(option);});};
+ fill(datasetSelect,datasets.map(d=>d.id),"Pilih dataset");fill(xSelect,[],"Pilih variabel X");fill(ySelect,[],"Pilih variabel Y");
+ const refreshColumns=()=>{const d=datasets.find(v=>v.id===datasetSelect.value);fill(xSelect,d?.variables||[],"Pilih variabel X");fill(ySelect,d?.variables||[],"Pilih variabel Y");};datasetSelect.addEventListener("change",refreshColumns);
+ testButton.className="secondary";testButton.textContent="Jalankan screening dataset";testButton.disabled=!datasets.length;
+ if(!datasets.length){const hint=document.createElement("p");hint.className="small";hint.textContent="NEEDS_DATA · Impor CSV di atas untuk mengaktifkan mesin analisis.";testing.appendChild(hint);}
+ testButton.addEventListener("click",async()=>{if(!datasetSelect.value||!xSelect.value||!ySelect.value||xSelect.value===ySelect.value){testResult.textContent="Pilih dataset dan dua variabel berbeda.";return;}testButton.disabled=true;testResult.textContent="Mesin dataset-analysis berjalan…";try{const result=await window.BeyondLightResearchCore.dispatch({question:"Screen kandidat "+item.sourceTitle+" dan "+item.targetTitle+" pada dataset "+xSelect.value+" vs "+ySelect.value,context:{workflow:"dataset-analysis",datasetId:datasetSelect.value,x:xSelect.value,y:ySelect.value}});const out=result.analysis.output||{};testResult.textContent="Status: "+result.analysis.status+" · "+(out.rowsAnalyzed||0)+" baris\n"+(out.models||[]).slice(0,3).map(m=>m.algorithm+" · R² "+m.rSquared+" · CV RMSE "+m.crossValidationRmse).join("\n")+"\nScreening statistik tidak membuktikan sebab-akibat.";const queued=window.BeyondLightResearchQueue.list().find(q=>q.candidateId===item.id);if(queued)window.BeyondLightResearchQueue.update(queued.id,{status:"TESTED",lastOutcome:{status:result.analysis.status,rowsAnalyzed:out.rowsAnalyzed||0}});renderQueue();}catch(error){testResult.textContent="ENGINE_FAILED: "+String(error.message||error);}finally{testButton.disabled=false;}});testing.append(datasetSelect,xSelect,ySelect,testButton,testResult);card.appendChild(testing);
+ $("candidateList").appendChild(card);
+}
+function renderQueue(){
+ const root=$("researchQueue"),items=window.BeyondLightResearchQueue.list();root.replaceChildren();
+ if(!items.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="Belum ada kandidat dalam antrean.";root.appendChild(empty);return;}
+ items.forEach(item=>{const row=document.createElement("div");row.className="history-row";const title=document.createElement("strong");title.textContent=item.title;const status=document.createElement("span");status.textContent=item.status;row.append(title,status);root.appendChild(row);const note=document.createElement("textarea");note.rows=2;note.value=item.reviewNote||"";note.placeholder="Catatan tinjauan atau metode…";note.style.cssText="width:100%;background:#101a2a;color:#edf4ff;border:1px solid #263b58;border-radius:8px;padding:8px";root.appendChild(note);const save=document.createElement("button");save.className="secondary";save.textContent="Simpan catatan dan tandai ditinjau";save.addEventListener("click",()=>{window.BeyondLightResearchQueue.update(item.id,{status:"REVIEWED",reviewNote:note.value});renderQueue();});root.appendChild(save);});
+}
+function render(report){
+ latest=report;
+ $("nodeCount").textContent=report.metrics.nodes;
+ $("edgeCount").textContent=report.metrics.edges;
+ $("componentCount").textContent=report.metrics.connectedComponents;
+ $("candidateCount").textContent=report.metrics.candidatePairs;
+ $("cycleSummary").textContent="Siklus "+new Date(report.createdAt).toLocaleString("id-ID")+" memeriksa "+report.metrics.nodes+" node dan "+report.metrics.edges+" relasi. Ditemukan "+report.metrics.candidatePairs+" kandidat; "+report.metrics.crossLayerCandidates+" lintas lapisan, "+report.metrics.structuralCandidates+" punya tetangga graph bersama, dan "+report.metrics.disconnectedBridgeCandidates+" berada di komponen terpisah. Referensi sumber ditampilkan jika tersedia.";
+ $("candidateList").replaceChildren();
+ if(!report.candidates.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="Belum ada kandidat relasi yang memenuhi ambang kecocokan. Ini bukan berarti graph sudah lengkap."; $("candidateList").appendChild(empty);}
+ else report.candidates.forEach(addCandidate);
+ const c=report.cycleComparison;
+ $("cycleComparison").textContent=c.previousCandidates
+ ? c.newCandidates+" kandidat baru · "+c.stillOpen+" masih terbuka · "+c.resolvedByNewGraphEdges+" kini sudah memiliki relasi tercatat."
+ : "Ini siklus pertama. Siklus berikutnya akan dibandingkan dengan hasil ini.";
+ $("exportRun").disabled=false;
+ renderQueue();
+ const history=readHistory();
+ $("cycleHistory").replaceChildren();
+ if(!history.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="Belum ada riwayat."; $("cycleHistory").appendChild(empty);}
+ history.forEach(item=>{const row=document.createElement("div");row.className="history-row";const left=document.createElement("span");left.textContent=new Date(item.createdAt).toLocaleString("id-ID");const right=document.createElement("span");right.textContent=item.metrics.nodes+" node · "+item.metrics.candidatePairs+" kandidat";row.append(left,right);$("cycleHistory").appendChild(row);});
+ if(report.engineValidation)renderValidation(report.engineValidation);
+}
+function renderValidation(result){
+ $("benchPass").textContent=result.counts.PASS;
+ $("benchFail").textContent=result.counts.FAIL;
+ $("benchInconclusive").textContent=result.counts.INCONCLUSIVE;
+ $("validationSummary").textContent=result.total+" benchmark browser dijalankan. "+result.counts.PASS+" lulus, "+result.counts.FAIL+" gagal, dan "+result.counts.INCONCLUSIVE+" belum dapat dievaluasi oleh port browser.";
+ const root=$("validationDetails");root.replaceChildren();
+ const noteworthy=result.results.filter(x=>x.status!=="PASS").slice(0,16);
+ if(!noteworthy.length){const p=document.createElement("div");p.className="empty";p.textContent="Semua benchmark yang terdaftar lulus.";root.appendChild(p);return;}
+ noteworthy.forEach(item=>{const row=document.createElement("div");row.className="validation-item";const label=document.createElement("strong");label.className=item.status==="FAIL"?"fail":"inconclusive";label.textContent=item.status;const name=document.createElement("span");name.textContent=item.id;row.append(label,name);if(item.reason){const detail=document.createElement("div");detail.className="small";detail.textContent=item.reason;row.appendChild(detail);}else if(item.status==="FAIL"){const detail=document.createElement("div");detail.className="small";detail.textContent="Selisih: "+item.absoluteError+" · toleransi: "+item.tolerance;row.appendChild(detail);}root.appendChild(row);});
+}
+async function run(){
+ $("runCycle").disabled=true;$("runCycle").textContent="Menjalankan siklus…";
+ try{
+  const previous=readHistory()[0]||null;
+  const status=await window.BeyondLightMnemos.ready;
+  graph=window.BeyondLightMnemos.getGraph();
+  const report=window.BeyondLightKnowledgeExplorer.analyze(graph.nodes,graph.edges,previous);
+  const benchmarkResults=window.BeyondLightResearch.benchmarks.runAll();
+  const counts={PASS:0,FAIL:0,INCONCLUSIVE:0};
+  benchmarkResults.forEach(item=>{counts[item.status]=(counts[item.status]||0)+1;});
+  report.engineValidation={total:benchmarkResults.length,counts,results:benchmarkResults.map(item=>({id:item.id,status:item.status,reason:item.reason||null,absoluteError:item.absoluteError??null,tolerance:item.tolerance??null}))};
+  report.reviewQueue=window.BeyondLightResearchQueue.list();
+  const history=readHistory();history.unshift(report);writeHistory(history);
+  showStatus(status);render(report);
+  $("runCycle").textContent="Jalankan siklus berikutnya";
+ }catch(error){
+  $("sourceStatus").textContent="Gagal membaca Knowledge: "+safe(error.message||error);
+  $("cycleSummary").textContent="Siklus belum berjalan. Periksa koneksi internet dan akses publik ke GitHub Raw.";
+  $("runCycle").textContent="Coba lagi";
+ }finally{$("runCycle").disabled=false;}
+}
+$("datasetUpload").addEventListener("change",async event=>{const file=event.target.files&&event.target.files[0];if(!file)return;try{const saved=window.BeyondLightResearchCore.importDatasetCsv(file.name,await file.text(),{source:"USER_IMPORTED"});$("datasetStatus").textContent="Tersimpan: "+saved.filename+" · "+saved.rows+" baris · "+saved.variables.join(", ");if(latest)render(latest);}catch(error){$("datasetStatus").textContent="Gagal impor: "+String(error.message||error);}finally{event.target.value="";}});
+$("runCycle").addEventListener("click",run);
+$("exportRun").addEventListener("click",()=>{
+ if(!latest)return;
+ const blob=new Blob([JSON.stringify(latest,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="beyond-light-knowledge-cycle.json";a.click();URL.revokeObjectURL(url);
+});
+(async()=>{
+ try{
+  const status=await window.BeyondLightMnemos.ready;
+  graph=window.BeyondLightMnemos.getGraph();showStatus(status);
+  $("runCycle").disabled=false;$("runCycle").textContent="Jalankan siklus Autonomous";
+  await run();
+ }catch(error){$("sourceStatus").textContent="Knowledge belum tersedia: "+safe(error.message||error);$("runCycle").disabled=false;$("runCycle").textContent="Coba muat ulang";}
+})();
+})();
+</script>
+</body>
+</html>

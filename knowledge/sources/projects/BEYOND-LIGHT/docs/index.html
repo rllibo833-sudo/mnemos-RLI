@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#070b13"><meta name="description" content="Beyond-Light — ruang eksplorasi ide, fisika, matematika, material, dan riset terbuka.">
+<title>BEYOND-LIGHT — Beyond the Known</title>
+<style>
+:root{color-scheme:dark;--bg:#070b13;--panel:#101a2a;--panel2:#152338;--line:#263b58;--ink:#edf4ff;--muted:#9db0c9;--cyan:#79e5ee;--blue:#82aaff;--gold:#f7c873;--pink:#e4a1ff;--green:#9de6bd}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 72% -12%,#1b3450 0,transparent 42%),var(--bg);color:var(--ink);font:15px/1.6 Inter,ui-sans-serif,system-ui,sans-serif}a{color:var(--cyan)}button,input,select{font:inherit}button{cursor:pointer;background:#b5f2ef;color:#06151d;border:0;border-radius:10px;padding:10px 15px;font-weight:750}button.secondary{background:#17263a;color:var(--ink);border:1px solid var(--line)}input,select{background:#08111e;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:9px;max-width:100%}
+header{position:sticky;top:0;z-index:20;background:#070b13df;backdrop-filter:blur(14px);border-bottom:1px solid #1c2b40}.nav{max-width:1200px;margin:auto;padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}.logo{font-weight:900;letter-spacing:.19em;color:var(--cyan)}nav{display:flex;gap:16px;flex-wrap:wrap}nav a{text-decoration:none;color:#b8c9dc;font-size:13px}.wrap{max-width:1200px;margin:auto;padding:0 22px}.hero{min-height:570px;display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:24px;padding-top:54px;padding-bottom:50px}.eyebrow{color:var(--cyan);letter-spacing:.22em;font-size:11px;font-weight:800}.hero h1{font-size:clamp(46px,7vw,84px);line-height:.98;letter-spacing:-.055em;margin:15px 0}.hero h1 span{color:var(--cyan)}.hero p{font-size:18px;color:var(--muted);max-width:590px}.hero-art{height:380px;position:relative;border:1px solid #243b59;border-radius:28px;overflow:hidden;background:radial-gradient(circle at 50% 55%,#132e4b,#091321 56%,#070b13)}canvas{display:block;width:100%;height:100%}.orb-label{position:absolute;bottom:16px;left:18px;color:#a9bfd9;font-size:11px;letter-spacing:.12em}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.section{padding:56px 0;border-top:1px solid #17263a}.section-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:24px}.section h2{font-size:clamp(27px,4vw,42px);line-height:1.1;margin:8px 0}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card,.lab{background:linear-gradient(145deg,#122036,#0d1726);border:1px solid var(--line);border-radius:17px;padding:18px;min-width:0}.card h3,.lab h3{margin:5px 0 8px}.tag{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--cyan);font-weight:800}.card p{color:var(--muted);margin:7px 0}.lab-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}.lab{padding:20px}.lab canvas{height:230px;background:#08111e;border:1px solid #20344d;border-radius:12px;margin:14px 0}.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.control{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:12px}.control input{width:145px}.readout{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}.metric{background:#091421;border:1px solid #1d3049;padding:9px 12px;border-radius:10px;min-width:110px}.metric b{display:block;color:var(--cyan);font-size:18px}.metric small{color:var(--muted)}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:680px}th,td{text-align:left;padding:10px 12px;border-bottom:1px solid #20324a;font-size:13px}th{color:var(--cyan);background:#0b1727}td{color:#c3d1e2}.search{width:min(100%,360px)}.module-list{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.module{border:1px solid #20344d;background:#0c1726;border-radius:11px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px}.module strong{display:block}.module small{display:block;color:var(--muted)}.module a{font-size:12px;white-space:nowrap}.pill{display:inline-block;border:1px solid #35516e;border-radius:20px;padding:2px 8px;font-size:10px;color:#b8d4e6}.notice{border-left:3px solid var(--gold);padding:10px 14px;background:#191a1b;color:#c9c6b9;margin:14px 0;font-size:13px}.formula{font:15px ui-monospace,monospace;color:#d4e7ff;background:#08111e;border:1px solid #22344b;border-radius:10px;padding:12px;overflow:auto}.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}.footer{padding:35px 0 55px;color:#8095ae;border-top:1px solid #17263a;font-size:12px}.empty{color:var(--muted);padding:20px;text-align:center}
+@media(max-width:850px){.hero{grid-template-columns:1fr;padding-top:42px}.hero-art{height:300px}.grid{grid-template-columns:repeat(2,1fr)}.lab-grid{grid-template-columns:1fr}.section-head{align-items:start;flex-direction:column}}@media(max-width:560px){.nav{align-items:flex-start;flex-direction:column}.wrap{padding:0 15px}.hero{min-height:auto}.hero-art{height:250px}.grid,.module-list,.split{grid-template-columns:1fr}.section{padding:40px 0}.hero h1{font-size:50px}}
+.repo-link{text-decoration:none;font-size:13px;color:var(--muted);white-space:nowrap}.layerbar-wrap{position:sticky;top:52px;z-index:19;background:#0a111eeb;backdrop-filter:blur(14px);border-bottom:1px solid #20344d}.layerbar{max-width:1200px;margin:auto;padding:9px 22px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin}.layer-tab{display:inline-flex;align-items:center;gap:9px;white-space:nowrap;background:transparent;color:#a9bfd9;border:1px solid transparent;border-radius:12px;padding:10px 13px;font-size:13px;font-weight:700}.layer-tab span{font-size:10px;color:#6f8aa8;letter-spacing:.12em}.layer-tab:hover{background:#132238;color:#eaf7ff}.layer-tab.active{background:#153044;border-color:#376078;color:#9cf0f1;box-shadow:inset 0 0 0 1px #21475a}.layer-panel[hidden]{display:none!important}.layer-panel{min-height:55vh;animation:layerIn .22s ease-out}@keyframes layerIn{from{opacity:.55;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}.layer-intro{color:var(--muted);font-size:13px;margin:0 0 18px}.layer-panel .hero{padding-top:38px;min-height:490px}.layer-panel .section:first-child{border-top:0}@media(max-width:700px){.nav{padding:10px 15px;flex-direction:row;align-items:center}.layerbar{padding:8px 12px}.layer-tab{padding:9px 11px;font-size:12px}.layerbar-wrap{top:46px}.layer-panel .hero{grid-template-columns:1fr;min-height:auto;padding-top:28px}.hero-art{height:260px}.section{padding:34px 0}.section-head{align-items:start;flex-direction:column}.section-head .search{width:100%}}
+.module-list{display:block}.module-group-title{margin:22px 0 9px;color:var(--cyan);font-size:14px;letter-spacing:.08em}.module{display:block;margin-bottom:9px}.module-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.module-purpose{margin:4px 0 7px;color:#b6c8dc;font-size:13px}.module-connection{margin:8px 0 4px;color:#d3e2f2;font-size:13px}.module-runtime{color:#839ab4;font-size:11px}.status-pill{display:inline-flex;align-items:center;border-radius:20px;padding:4px 9px;font-size:10px;white-space:nowrap;border:1px solid #35516e;color:#a8e8d1}.status-pill.source-only{color:#e8c98c;border-color:#675434}.module-actions{display:flex;align-items:center;gap:14px;margin-top:10px}.module-actions a{font-size:12px}.layer-jump{background:#15283a;color:#bdebf0;border:1px solid #34546a;padding:5px 9px;border-radius:8px;font-size:11px}.module-actions button:hover{background:#1b3b50}@media(max-width:560px){.module-top{flex-direction:column}.module-actions{flex-wrap:wrap}}
+.dimension-result{margin:14px 0}.dimension-result p{color:#c4d5e7;margin:8px 0}.dimension-result+.split{gap:10px}.dimension-result+.split .formula{margin-top:6px;min-height:48px}
+
+/* Human-readable technology-design explorer */
+#technologyDesignLab summary,#paretoLab summary{cursor:pointer;color:var(--cyan);padding:8px 0}#technologyDesignInputs .control{min-width:0}#technologyDesignInputs .control input{width:100%;min-width:0}#technologyDesignLab h4{margin:22px 0 9px;color:#d8e9fb;font-size:15px}#technologyKeyMetrics .metric{min-width:0}#technologyKeyMetrics .metric b{font-size:16px;overflow-wrap:anywhere}.design-formula{background:#0a1625;border:1px solid #22364e;border-radius:10px;padding:10px;color:#d7e5f6;font-size:13px}.design-source{display:block;margin:7px 0}.design-plot-label{fill:#9db0c9;font-size:12px}.design-plot-axis{stroke:#49617c;stroke-width:1}.design-plot-grid{stroke:#24364d;stroke-width:1;stroke-dasharray:4 5}.design-plot-point{fill:#79e5ee;stroke:#07111e;stroke-width:2}.design-plot-point:hover{fill:#f7c873}
+
+/* Review-driven visual hierarchy */
+.idea-map{grid-template-columns:repeat(4,minmax(0,1fr))}
+.curve-plot{max-width:100%;overflow:hidden;border:1px solid #20344d;border-radius:12px;background:#08111e;padding:8px}
+.curve-plot canvas{height:165px!important;margin:0!important}
+#curveGuide{font-size:12px;margin:8px 0}
+#layer-source{display:none!important}
+@media(max-width:850px){.idea-map{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.idea-map{grid-template-columns:1fr}}
+
+/* Chat-first interface: the research layers remain available as an optional workspace. */
+.header-actions{display:flex;align-items:center;gap:14px}
+body:not(.show-labs) .layerbar-wrap,body:not(.show-labs) main{display:none!important}body:not(.show-labs) .footer{display:none!important}
+body.show-labs #chatShell{display:none}
+.chat-app{min-height:calc(100vh - 62px);display:grid;grid-template-columns:258px minmax(0,1fr);max-width:1500px;margin:0 auto;background:#080e18}
+.chat-sidebar{display:flex;flex-direction:column;gap:18px;padding:24px 17px;border-right:1px solid #1d3047;background:#0a111d;min-height:calc(100vh - 62px)}
+.sidebar-brand{display:flex;align-items:center;gap:11px;padding:2px 5px 15px}
+.sidebar-brand strong{display:block;font-size:13px;letter-spacing:.14em;color:#e9f5ff}
+.sidebar-brand small{display:block;color:#7f96b1;font-size:11px;margin-top:2px}
+.brand-mark,.welcome-symbol{display:grid;place-items:center;color:#8cebf0;background:#123143;border:1px solid #2c5b6d;border-radius:13px;width:38px;height:38px;font-size:22px}
+.new-chat{display:flex;justify-content:flex-start;align-items:center;gap:10px;background:#173246;color:#d9f8fa;border:1px solid #31576c;border-radius:12px;padding:12px 14px}
+.new-chat span{font-size:20px;line-height:1}
+.history-heading{color:#7088a4;font-size:10px;font-weight:800;letter-spacing:.16em;padding:12px 7px 0}
+.chat-history{display:flex;flex-direction:column;gap:5px;overflow:auto;flex:1}
+.history-empty{font-size:12px;color:#71869f;padding:8px}
+.history-item{display:block;text-align:left;width:100%;background:transparent;color:#b7c8da;border:1px solid transparent;border-radius:9px;padding:9px 10px;font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-item:hover,.history-item.active{background:#142338;border-color:#263e58;color:#e9f5ff}
+.sidebar-foot{display:flex;align-items:center;gap:10px;border-top:1px solid #1c2d42;padding:17px 5px 0}
+.sidebar-foot strong{display:block;font-size:11px;color:#c9e7e6}
+.sidebar-foot small{display:block;font-size:10px;color:#7f96ad;margin-top:3px}
+.knowledge-dot{width:8px;height:8px;border-radius:50%;background:#83d8b3;box-shadow:0 0 12px #83d8b366;flex:none}
+.chat-main{display:flex;flex-direction:column;min-width:0;min-height:calc(100vh - 62px);max-height:calc(100vh - 62px)}
+.chat-topbar{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:21px clamp(18px,4vw,58px);border-bottom:1px solid #1a2b40}
+.chat-topbar .eyebrow{font-size:9px;letter-spacing:.18em}
+.chat-topbar h1{font-size:16px;letter-spacing:-.02em;margin:3px 0 0;font-weight:650}
+.connection-state{display:inline-flex;align-items:center;gap:8px;color:#9ab0c6;font-size:11px;white-space:nowrap}
+.connection-state i{width:7px;height:7px;border-radius:50%;background:#e6b86b}
+.chat-scroll{flex:1;overflow:auto;padding:32px clamp(16px,5vw,76px) 22px}
+.welcome{max-width:790px;margin:5vh auto 24px;text-align:center}
+.welcome-symbol{width:48px;height:48px;border-radius:16px;margin:0 auto 19px;font-size:25px}
+.welcome-kicker{color:#85dce5;font-size:10px;letter-spacing:.2em;font-weight:800;margin:0 0 9px}
+.welcome h2{font-size:clamp(27px,4vw,42px);line-height:1.15;letter-spacing:-.045em;margin:0 0 12px}
+.welcome-copy{max-width:590px;margin:0 auto;color:#9aacc1;font-size:14px;line-height:1.75}
+.suggestion-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:30px auto 0;text-align:left}
+.suggestion{display:grid;grid-template-columns:25px 1fr;column-gap:10px;align-items:start;background:#101c2c;border:1px solid #263b54;border-radius:13px;padding:15px;color:#dceafa;text-align:left}
+.suggestion:hover{border-color:#4c8392;background:#132538}
+.suggestion>span{grid-row:span 2;color:#8de6e9;font-size:19px}
+.suggestion b{font-size:12px;font-weight:700}
+.suggestion small{font-size:11px;color:#8fa4bb;line-height:1.5;margin-top:4px}
+.message-list{max-width:850px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.chat-message{display:flex;gap:11px;align-items:flex-start;max-width:100%}
+.chat-message.user{justify-content:flex-end}
+.message-avatar{width:29px;height:29px;flex:none;display:grid;place-items:center;border-radius:10px;background:#153247;color:#8de6e9;font-size:14px}
+.chat-message.user .message-avatar{order:2;background:#24344a;color:#d5e5f5}
+.message-content{max-width:min(760px,88%);min-width:0}
+.message-role{font-size:10px;color:#7e97b1;margin:0 0 5px}
+.chat-message.user .message-role{text-align:right}
+.message-bubble{border:1px solid #22364e;background:#101c2c;border-radius:4px 14px 14px 14px;padding:12px 15px;color:#e2edf9;font-size:14px;line-height:1.7;overflow-wrap:anywhere;white-space:pre-wrap}
+.chat-message.user .message-bubble{background:#173147;border-color:#2d526b;border-radius:14px 4px 14px 14px}
+.message-bubble.system{background:#171c25;border-color:#4c4230;color:#d5c9ac;font-size:12px}
+.composer-wrap{padding:12px clamp(16px,5vw,76px) 17px;background:linear-gradient(0deg,#080e18 75%,#080e1800)}
+.composer{max-width:850px;margin:0 auto;border:1px solid #344c65;border-radius:17px;background:#111d2c;padding:9px 10px 8px;box-shadow:0 10px 35px #0003}
+.composer:focus-within{border-color:#5b9aa4;box-shadow:0 0 0 3px #6ad8e51a}
+.composer textarea{display:block;width:100%;resize:none;max-height:180px;border:0;outline:0;background:transparent;color:#edf5ff;padding:7px 8px;font:14px/1.55 Inter,system-ui,sans-serif}
+.composer textarea::placeholder{color:#7188a2}
+.composer-bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:4px 2px 0 8px}
+.composer-bottom span{font-size:10px;color:#7389a2}
+.composer-bottom button{width:34px;height:34px;padding:0;border-radius:11px;font-size:21px;line-height:1}
+.composer-bottom button:disabled{opacity:.45;cursor:not-allowed}
+.composer-note{max-width:850px;margin:8px auto 0;text-align:center;color:#71869e;font-size:10px;line-height:1.5}
+@media(max-width:760px){.chat-app{grid-template-columns:1fr;min-height:calc(100dvh - 55px)}.chat-sidebar{display:none}.chat-main{min-height:calc(100dvh - 55px);max-height:calc(100dvh - 55px)}.chat-topbar{padding:15px 16px}.chat-scroll{padding:22px 15px}.welcome{margin:5vh auto 20px}.suggestion-grid{gap:8px}.suggestion{padding:12px 10px}.composer-wrap{padding:10px 12px 13px}.header-actions .repo-link{display:none}.header-actions{gap:0}.nav{padding:10px 14px}}
+@media(max-width:430px){.suggestion-grid{grid-template-columns:1fr}.welcome h2{font-size:29px}.welcome-copy{font-size:13px}.chat-topbar h1{font-size:14px}.connection-state{font-size:10px}}
+
+</style>
+</head>
+<body>
+<header><div class="nav"><a class="logo" href="#top" aria-label="Beyond-Light home">BEYOND-LIGHT</a><div class="header-actions"><a class="repo-link" href="./spiral.html">Peta Spiral</a><a class="repo-link" href="./autonomous.html">Siklus Autonomous</a><button class="secondary" id="toggleLabs" type="button">Buka laboratorium</button></div></div></header>
+
+<section class="chat-app" id="chatShell" aria-label="Percakapan Beyond-Light">
+ <aside class="chat-sidebar">
+  <div class="sidebar-brand"><span class="brand-mark">✦</span><div><strong>BEYOND-LIGHT</strong><small>Beyond the known</small></div></div>
+  <button class="new-chat" id="newChat" type="button"><span>＋</span> Percakapan baru</button>
+  <div class="history-heading">RIWAYAT</div>
+  <div class="chat-history" id="chatHistoryList"><p class="history-empty">Percakapanmu akan muncul di sini.</p></div>
+  <div class="sidebar-foot"><span class="knowledge-dot"></span><div><strong>Sumber pengetahuan</strong><small>Mnemos-RLI · branch Knowledge</small></div></div>
+ </aside>
+ <section class="chat-main">
+  <div class="chat-topbar"><div><span class="eyebrow">RUANG EKSPLORASI</span><h1>Tempat pertanyaan berkembang.</h1></div><span class="connection-state" id="chatConnection"><i></i> Memuat Mnemos Knowledge</span></div>
+  <div class="chat-scroll" id="chatScroll">
+   <div class="welcome" id="chatWelcome">
+    <div class="welcome-symbol">✦</div>
+    <p class="welcome-kicker">MULAI DARI RASA PENASARAN</p>
+    <h2>Apa yang ingin kamu temukan?</h2>
+    <p class="welcome-copy">Tanyakan dengan bahasa sehari-hari. Beyond-Light dirancang untuk membantu mengeksplorasi ide, memahami ilmu, menguji kemungkinan, dan menelusuri bukti.</p>
+    <div class="suggestion-grid">
+     <button class="suggestion" type="button" data-prompt="Bantu gw memahami sebuah konsep fisika dari dasar."><span>◈</span><b>Pahami sebuah konsep</b><small>Uraikan pertanyaan yang rumit dengan sederhana.</small></button>
+     <button class="suggestion" type="button" data-prompt="Bantu gw mengeksplorasi kemungkinan dari ide baru ini."><span>✧</span><b>Eksplorasi ide baru</b><small>Ubah gagasan menjadi pertanyaan yang bisa ditelusuri.</small></button>
+     <button class="suggestion" type="button" data-prompt="Bantu gw menelusuri rumus, data, dan sumber ilmiah yang relevan."><span>∑</span><b>Telusuri pengetahuan</b><small>Hubungkan rumus, data, dan sumber ilmiah.</small></button>
+     <button class="suggestion" type="button" data-prompt="Bantu gw menyusun eksperimen untuk menguji hipotesis ini."><span>⌁</span><b>Rancang eksperimen</b><small>Susun hipotesis, metode, dan batas pengujian.</small></button>
+    </div>
+   </div>
+   <div class="message-list" id="chatMessages" aria-live="polite"></div>
+  </div>
+  <div class="composer-wrap">
+   <div class="composer" id="chatComposer">
+    <textarea id="chatInput" rows="1" maxlength="12000" placeholder="Tanyakan apa pun… (atau: turunkan x^2 terhadap x)"></textarea>
+    <div class="composer-bottom"><span>Beyond-Light dapat keliru. Periksa sumber dan bukti penting.</span><button id="sendChat" type="button" aria-label="Kirim pertanyaan">↑</button></div>
+   </div>
+   <p class="composer-note" id="chatNotice">Percakapan statis siap. Coba “turunkan: x^2 terhadap x” atau ketik “bantuan mesin”. Pertanyaan umum ditelusuri ke Mnemos Knowledge.</p>
+  </div>
+ </section>
+</section>
+
+<div class="layerbar-wrap"><div class="layerbar" role="tablist" aria-label="Lapisan Beyond-Light">
+<button class="layer-tab active" id="tab-home" role="tab" aria-selected="true" aria-controls="layer-home" data-layer="home"><span>01</span> Beranda</button>
+<button class="layer-tab" id="tab-physics" role="tab" aria-selected="false" aria-controls="layer-physics" data-layer="physics"><span>02</span> Fisika & matematika</button>
+<button class="layer-tab" id="tab-materials" role="tab" aria-selected="false" aria-controls="layer-materials" data-layer="materials"><span>03</span> Material & kimia</button>
+<button class="layer-tab" id="tab-research" role="tab" aria-selected="false" aria-controls="layer-research" data-layer="research"><span>04</span> Riset & data</button>
+
+</div></div>
+<main>
+<div class="layer-panel" id="layer-home" data-layer-panel="home">
+<section class="wrap hero" id="top">
+<div><div class="eyebrow">AN OPEN KNOWLEDGE & VISUAL EXPLORATION SPACE</div><h1>Beyond the <span>known.</span></h1><p>Tempat buat mikirin cara melewati batas, tanpa harus memahami semua rumus dari awal. Mulai dari rasa penasaran. Lihat gambaran fisikanya. Telusuri ilmu, data, dan kode di baliknya.</p><div class="actions"><a href="#explore"><button>Mulai menjelajah</button></a><button class="secondary" id="goPhysics">Masuk ke semesta fisika</button></div></div>
+<div class="hero-art"><canvas id="universe" aria-label="Animasi ruang angkasa, orbit, dan roket"></canvas><div class="orb-label">IDE → MODEL → BUKTI → BATAS PENGETAHUAN</div></div>
+</section>
+<section class="section wrap" id="explore"><div class="section-head"><div><div class="eyebrow">01 / IDEA EXPLORER</div><h2>Mulai dari pertanyaan, bukan formulir teknis.</h2><p class="muted">Ceritakan tujuanmu dengan bahasa sehari-hari. Beyond-Light akan menyusun tujuan, konsep yang perlu diterjemahkan, jalur eksplorasi, serta bukti dan batas yang perlu diperiksa.</p></div></div>
+<div class="card"><div class="controls"><input class="search" id="idea" placeholder="Contoh: gimana kalau roket bisa memakai energi lebih efisien?"><button id="mapIdea">Petakan ide</button><button class="secondary" id="sendResearch" type="button">Tanya di ruang chat</button></div><p class="muted" id="backendStatus" role="status">Gunakan ruang chat utama untuk melanjutkan pertanyaan ke Beyond-Light.</p><div id="ideaMap" class="grid idea-map" style="margin-top:15px"><div class="card"><span class="tag">01 · TUJUAN</span><h3>Apa yang ingin dicapai?</h3><p>Tulis ide untuk memulai pemetaan.</p></div><div class="card"><span class="tag">02 · PENERJEMAH</span><h3>Apa yang perlu diterjemahkan?</h3><p>Konsep fisika, energi, material, matematika, dan sistem.</p></div><div class="card"><span class="tag">03 · JALUR EKSPLORASI</span><h3>Mulai dari layer mana?</h3><p>Belum ada jalur yang dipilih.</p></div><div class="card"><span class="tag">04 · BUKTI & BATAS</span><h3>Apa yang sudah diketahui?</h3><p>Persamaan, data, eksperimen, asumsi, dan ketidakpastian.</p></div></div><p class="muted" id="ideaNote">Pemetaan awal ini berbasis kata kunci dari katalog lokal, bukan AI yang memahami semua kemungkinan. Pencarian publik langsung memerlukan layanan riset yang terhubung.</p></div>
+</section>
+</div>
+<div class="layer-panel" id="layer-physics" data-layer-panel="physics" hidden>
+<section class="section wrap" id="physics"><div class="section-head"><div><div class="eyebrow">02 / VISUAL PHYSICS</div><h2>Fisika yang bisa dilihat.</h2><p class="muted">Model browser sederhana untuk membangun intuisi. Geser variabel dan lihat apa yang berubah.</p></div></div>
+<article class="lab" id="symbolicLab"><div class="tag">SYMBOLIC ENGINE · BROWSER PORT</div><h3>Persamaan bisa dieksplorasi</h3><p class="muted">Masukkan ekspresi, lalu lihat bentuk kanonis, nilai, turunan, dan integral dasar. Mesin memakai parser terbatas—bukan menjalankan kode.</p><div class="controls"><label class="control">Ekspresi<input id="symbolicExpression" type="text" value="3*x^2 + 2*x + 1" maxlength="4096" autocomplete="off"></label><div class="split"><label class="control">Variabel<input id="symbolicVariable" type="text" value="x" maxlength="32"></label><label class="control">Nilai variabel (opsional)<input id="symbolicValue" type="number" value="2" step="any"></label></div></div><button id="runSymbolic" type="button">Jelajahi persamaan</button><div class="readout"><div class="metric"><b id="symbolicValueResult">—</b><small>Nilai ekspresi</small></div><div class="metric"><b id="symbolicDerivative">—</b><small>Turunan</small></div></div><div class="formula" id="symbolicCanonical">Bentuk kanonis akan muncul di sini.</div><p class="muted" id="symbolicIntegral">Integral dasar akan muncul di sini.</p><p class="muted" id="symbolicMessage" aria-live="polite">Fungsi: +, −, ×, ÷, pangkat, sqrt, ln, exp, sin, cos. Gunakan * untuk perkalian eksplisit.</p><div class="notice">Batas port saat ini mengikuti operasi yang tersedia di Symbolic.java. Integral dan isolasi variabel tidak mencakup semua bentuk matematika; hasil simbolik bukan pembuktian identitas umum.</div></article><article class="lab" id="equationRegistryLab"><div class="tag">EQUATION REGISTRY · DIMENSION ENGINE</div><h3>Bangun perpustakaan persamaan</h3><p class="muted">Simpan definisi persamaan dan metadata sumber di browser perangkat ini. Mesin memeriksa konsistensi dimensi SI sebelum persamaan bisa disimpan.</p><div class="split"><label class="control">Nama persamaan<input id="eqName" value="Hukum II Newton"></label><label class="control">Bidang ilmu<input id="eqDiscipline" value="Mekanika"></label></div><label class="control">Persamaan (satu tanda =)<input id="eqExpression" value="F=m*a"></label><label class="control">Dimensi variabel<input id="eqVariables" value="F:force,m:mass,a:acceleration"></label><label class="control">Sumber / publikasi<input id="eqSource" value="OpenStax University Physics"></label><label class="control">URL sumber<input id="eqUrl" value="https://openstax.org/details/books/university-physics-volume-1"></label><label class="control">Asumsi dan batas (opsional)<input id="eqAssumptions" value="Besaran SI; massa konstan."></label><div class="actions"><button id="validateEquation">Periksa dimensi</button><button class="secondary" id="saveEquation" disabled>Simpan persamaan</button></div><p class="muted" id="equationStatus" aria-live="polite">Contoh: F=m*a; F:force,m:mass,a:acceleration.</p><div id="equationDimensionResult" class="formula">Dimensi ruas kiri dan kanan akan ditampilkan di sini.</div><div class="section-head" style="margin-top:20px"><h3>Persamaan tersimpan di perangkat ini</h3><div class="actions"><button class="secondary" id="exportEquations">Ekspor JSON</button></div></div><div id="equationSavedList" class="grid"><div class="empty">Belum ada persamaan tersimpan.</div></div><label class="control" style="margin-top:16px">Impor koleksi JSON<textarea id="equationImport" rows="3" style="width:100%;background:#08111e;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px" placeholder='[{"name":"Energi kinetik","equation":"E=0.5*m*v^2","variables":"E:energy,m:mass,v:velocity"}]'></textarea></label><button class="secondary" id="importEquations">Impor dan validasi</button><div class="notice">Penyimpanan menggunakan browser lokal (localStorage), bukan sinkronisasi server. Ekspor JSON untuk memindahkan koleksi ke perangkat lain. Persamaan yang lolos dimensi belum otomatis terbukti benar secara fisika atau eksperimen.</div></article><div class="lab-grid">
+<article class="lab"><div class="tag">PROPULSION · ROCKET EQUATION</div><h3>Roket dan perubahan massa</h3><p class="muted">Saat bahan bakar terbakar, massa roket berkurang. Persamaan ideal menghubungkan Isp dan rasio massa dengan perubahan kecepatan.</p><canvas id="rocketCanvas"></canvas><div class="controls"><label class="control">Isp (detik)<input id="isp" type="range" min="180" max="500" value="350"></label><label class="control">Rasio massa awal/akhir<input id="massRatio" type="range" min="1.2" max="20" step=".1" value="5"></label></div><div class="readout"><div class="metric"><b id="dv">—</b><small>Δv ideal (km/s)</small></div><div class="metric"><b id="propFrac">—</b><small>Fraksi propelan</small></div></div><div class="formula">Δv = Isp · g₀ · ln(m₀ / m₁)</div></article>
+<article class="lab"><div class="tag">RELATIVITY · TIME DILATION</div><h3>Ketika kecepatan mendekati cahaya</h3><p class="muted">Semakin dekat kecepatan terhadap c, faktor Lorentz meningkat. Ini bukan efek visual saja; ia mengubah hubungan waktu dan pengukuran ruang.</p><canvas id="relCanvas"></canvas><label class="control">Kecepatan sebagai bagian dari c<input id="velocity" type="range" min="0" max=".99" step=".01" value=".8"></label><div class="readout"><div class="metric"><b id="gamma">—</b><small>Faktor Lorentz γ</small></div><div class="metric"><b id="clock">—</b><small>Waktu kapal / 1 jam diam</small></div></div><div class="formula">γ = 1 / √(1 − v²/c²)</div></article>
+<article class="lab"><div class="tag">THERMAL · HEAT CONDUCTION</div><h3>Panas merambat melalui material</h3><p class="muted">Konduktivitas, luas penampang, jarak, dan beda suhu menentukan laju hantaran panas pada model dinding datar sederhana.</p><canvas id="thermalCanvas"></canvas><div class="controls"><label class="control">Konduktivitas k (W/m·K)<input id="conductivity" type="range" min=".1" max="400" step=".1" value="16"></label><label class="control">Beda suhu ΔT (K)<input id="deltaT" type="range" min="1" max="1000" value="300"></label></div><div class="readout"><div class="metric"><b id="heatFlux">—</b><small>Fluks panas (W/m²)</small></div><div class="metric"><b id="gradient">—</b><small>Gradien suhu (K/m)</small></div></div><div class="formula">q″ = k · ΔT / L &nbsp; (model konduksi 1-D)</div></article>
+<article class="lab"><div class="tag">UNCERTAINTY · PROBABILITY</div><h3>Hasil tidak selalu satu angka</h3><p class="muted">Input dan model memiliki ketidakpastian. Kurva ini menggambarkan sebaran normal ilustratif di sekitar nilai tengah, bukan data eksperimen.</p><canvas id="uncertaintyCanvas"></canvas><div class="controls"><label class="control">Ketidakpastian relatif<input id="uncertainty" type="range" min="1" max="40" value="12"></label><label class="control">Nilai tengah<input id="meanValue" type="range" min="10" max="100" value="60"></label></div><div class="readout"><div class="metric"><b id="spread">—</b><small>Simpangan baku (unit relatif)</small></div><div class="metric"><b id="range68">—</b><small>Rentang ±1σ</small></div></div><div class="formula">x ~ Normal(μ, σ²) · ±1σ ≈ 68% untuk model normal</div></article>
+</div>
+<div class="grid" style="margin-top:15px">
+<article class="lab"><div class="tag">GRAVITY · BLACK HOLE</div><h3>Lensa gravitasi dan horizon</h3><canvas id="blackholeCanvas"></canvas><p class="muted">Visualisasi konseptual pembelokan cahaya di sekitar objek kompak. Bukan ray-tracing relativitas umum atau model black hole numerik.</p></article>
+<article class="lab"><div class="tag">SPACETIME · WORMHOLE</div><h3>Geometri wormhole</h3><canvas id="wormholeCanvas"></canvas><p class="muted">Ilustrasi bentuk throat pada diagram embedding sederhana. Solusi metrik teoretis bukan bukti wormhole dapat dibuat atau dilewati.</p></article>
+<article class="lab"><div class="tag">COSMOLOGY · DARK MATTER</div><h3>Materi gelap dan halo</h3><canvas id="darkCanvas"></canvas><p class="muted">Peta halo konseptual untuk menunjukkan massa tak bercahaya yang disimpulkan dari efek gravitasi. Titik bukan hasil pengamatan astronomi.</p></article>
+<article class="lab"><div class="tag">OPTICS · LIGHT</div><h3>Gelombang cahaya</h3><canvas id="lightCanvas"></canvas><p class="muted">Animasi gelombang elektromagnetik skematik. Cahaya di vakum merambat dengan konstanta c; gambar ini bukan skala panjang gelombang atau simulasi medan penuh.</p></article>
+<article class="lab"><div class="tag">VACUUM · PARTICLES</div><h3>Ruang hampa tidak sesederhana kosong</h3><canvas id="vacuumCanvas"></canvas><p class="muted">Ilustrasi konsep medan kuantum dan fluktuasi vakum. Titik/gelombang bukan partikel yang terukur atau hasil perhitungan QFT.</p></article>
+<article class="lab"><div class="tag">CHEMISTRY · THERMAL MATERIALS</div><h3>Atom, ikatan, dan panas</h3><canvas id="chemCanvas"></canvas><p class="muted">Model kisi atom konseptual untuk melihat bagaimana getaran termal meningkat bersama suhu. Bukan simulasi kimia molekuler atau dinamika material.</p></article>
+</div>
+<div class="card" style="margin-top:15px"><div class="tag">UNCERTAINTY ENGINE · SENSITIVITY + MONTE CARLO</div><h3>Bagaimana ketidakpastian input memengaruhi gaya?</h3><p class="muted">Contoh F = m × a. Bandingkan propagasi ketidakpastian orde pertama dengan simulasi Monte Carlo ber-seed tetap. Asumsi: input independen dan distribusi normal; sampel massa/akselerasi negatif ditolak.</p><div class="controls"><label class="control">Massa m (kg)<input id="mcMass" type="number" min="0.001" step="any" value="1000"></label><label class="control">σ massa (kg)<input id="mcMassSigma" type="number" min="0" step="any" value="20"></label><label class="control">Percepatan a (m/s²)<input id="mcAccel" type="number" min="0.001" step="any" value="9.81"></label><label class="control">σ percepatan (m/s²)<input id="mcAccelSigma" type="number" min="0" step="any" value="0.15"></label><button id="runMonteCarlo">Jalankan 10.000 sampel</button></div><div class="readout"><div class="metric"><b id="mcNominal">—</b><small>Gaya nominal (N)</small></div><div class="metric"><b id="mcLinear">—</b><small>σ linear (N)</small></div><div class="metric"><b id="mcMean">—</b><small>Rata-rata Monte Carlo (N)</small></div><div class="metric"><b id="mcInterval">—</b><small>Interval 95% (N)</small></div></div><canvas id="monteCarloCanvas" style="height:190px"></canvas><p id="mcNote" class="muted">Simulasi belum dijalankan.</p></div></section>
+<section class="section wrap" id="science"><div class="section-head"><div><div class="eyebrow">02B / SCIENTIFIC REFERENCE</div><h2>Konstanta, variabel, dan persamaan.</h2><p class="muted">Angka yang dipakai model harus punya satuan, asal, dan status ketidakpastian.</p></div><input id="scienceSearch" class="search" placeholder="Cari konstanta atau persamaan…"></div><div class="split"><div class="card"><h3>Konstanta fisika</h3><p class="muted">Nilai exact SI dipisahkan dari nilai rekomendasi CODATA.</p><div id="constantList"></div></div><div class="card"><h3>Persamaan dan model</h3><p class="muted">Lihat domain berlaku, asumsi, batas, dan sumber.</p><div id="equationList"></div></div></div><div class="card" style="margin-top:14px"><div class="tag">DIMENSIONS · SI UNIT CHECK</div><h3>Apakah satuan kedua sisi persamaan cocok?</h3><p class="muted">Pemeriksa dimensi berbasis aljabar tujuh satuan dasar SI. Contoh persamaan sudah ditentukan; ini belum parser simbolik bebas.</p><div class="controls"><select id="dimensionPreset"><option value="newton">Hukum II Newton · F = ma</option><option value="energy">Energi relativistik · E = mc²</option><option value="speed">Kecepatan · v = s/t</option><option value="power">Daya mekanik · P = Fv</option><option value="heat">Fluks konduksi · q″ = kΔT/L</option></select><button id="checkDimensions">Periksa dimensi</button></div><div class="dimension-result" id="dimensionResult" aria-live="polite"><span class="status-pill connected">SI DIMENSIONS</span><p>Pilih persamaan untuk membandingkan dimensi ruas kiri dan kanan.</p></div><div class="split"><div><small class="muted">Dimensi ruas kiri</small><div class="formula" id="dimensionLeft">—</div></div><div><small class="muted">Dimensi ruas kanan</small><div class="formula" id="dimensionRight">—</div></div></div></div></section>
+</div>
+<div class="layer-panel" id="layer-materials" data-layer-panel="materials" hidden>
+<section class="section wrap" id="materials"><div class="section-head"><div><div class="eyebrow">03 / MATERIAL ATLAS</div><h2>Material punya cerita.</h2><p class="muted">Komposisi, temperatur, kekuatan, konduktivitas, dan sumber data menentukan apakah suatu bahan cocok untuk suatu kondisi.</p></div><input class="search" id="materialSearch" placeholder="Cari material…"></div>
+<div class="split"><div class="card"><h3>Database material dari repo</h3><p id="materialCount" class="muted">Memuat rekaman material…</p><div id="materialRows" style="max-height:420px;overflow:auto"></div></div><div class="card"><h3>Kurva sifat terhadap suhu</h3><p class="muted">Kurva yang dipublikasikan NIST disajikan dengan rentang validnya. Tidak ada ekstrapolasi di luar rentang sumber.</p><label class="control">Pilih kurva<select id="curveSelect"></select></label><label class="control">Temperatur (K)<input id="curveTemp" type="range" min="4" max="300" value="100"><input id="curveTempNumber" type="number" min="4" max="300" step="1" value="100" aria-label="Temperatur tepat dalam kelvin"></label><div class="readout"><div class="metric"><b id="curveValue">—</b><small id="curveUnit">Nilai</small></div><div class="metric"><b id="curveRange">—</b><small>Rentang data (K)</small></div></div><div class="curve-plot"><canvas id="curveCanvas" aria-label="Kurva properti material terhadap temperatur"></canvas></div><p class="muted" id="curveGuide">Geser temperatur untuk melihat posisi pada kurva. Skala grafik mengikuti rentang data kurva yang dipilih.</p><p id="curveSource" class="muted"></p></div></div>
+<div class="notice">Data material tidak otomatis menjadi design allowable. Nilai yang tidak tersedia tetap UNKNOWN. Periksa grade, temperatur, kondisi uji, dan sumber sebelum membuat keputusan rekayasa.</div>
+</section>
+</div>
+<div class="layer-panel" id="layer-research" data-layer-panel="research" hidden>
+<section class="section wrap" id="research"><div class="section-head"><div><div class="eyebrow">04 / RESEARCH EVIDENCE</div><h2>Bedakan teori, model, dan eksperimen.</h2><p class="muted">Riset terbuka dan ringkasan eksperimen yang sudah direkam di repositori.</p></div></div><div id="experimentList" class="grid"><div class="empty">Memuat arsip eksperimen…</div></div><article class="lab" id="benchmarkLab" style="margin:18px 0"><div class="tag">BENCHMARK ENGINE · REFERENCE COMPARISON</div><h3>Uji mesin terhadap kasus referensi</h3><p class="muted">Port browser membawa 26 kasus yang tercatat di BenchmarkEngine.java. Input bisa diubah; hasil dibandingkan dengan nilai referensi dan toleransi eksplisit.</p><div class="controls"><label class="control">Kasus benchmark<select id="benchmarkSelect" style="min-width:min(100%,340px)"></select></label><label class="control">Toleransi absolut<input id="benchmarkTolerance" type="number" step="any"></label><button id="runBenchmark">Jalankan kasus</button><button class="secondary" id="runAllBenchmarks">Jalankan semua</button></div><div id="benchmarkInputs" class="split" style="margin:14px 0"></div><div class="readout"><div class="metric"><b id="benchmarkStatus">Belum diuji</b><small>Status</small></div><div class="metric"><b id="benchmarkComputed">—</b><small>Hasil komputasi</small></div><div class="metric"><b id="benchmarkError">—</b><small>Galat absolut</small></div><div class="metric"><b id="benchmarkCount">27</b><small>Kasus katalog</small></div></div><p class="muted" id="benchmarkNote">Pilih kasus untuk melihat metode, sumber, dan asumsi.</p><div id="benchmarkBatch" class="table-wrap" style="margin-top:14px"></div><div class="notice">PASS hanya berarti hasil cocok dengan referensi analitik dalam toleransi. Dua benchmark kelengkungan tensor relativitas umum tetap INCONCLUSIVE di browser karena port tensor curvature belum tersedia; keduanya tidak diberi hasil palsu. Ini bukan validasi eksperimen.</div></article><div class="actions"><a href="https://github.com/rllibo833-sudo/Beyond-Light/tree/main/beyond-light-source/beyond-light/data"><button class="secondary">Lihat semua data sumber</button></a><a href="https://github.com/rllibo833-sudo/Beyond-Light/tree/main/beyond-light"><button class="secondary">Dokumentasi teknis lengkap</button></a></div><article class="lab" id="evidenceDecisionLab" style="margin:18px 0"><div class="tag">MODEL VS EXPERIMENT</div><h3>Mana hasil hitungan, mana bukti nyata?</h3><p class="muted">Masukkan hasil model dan metadata pengukuran. Sistem memisahkan konsistensi perhitungan dari dukungan eksperimen; metadata yang kosong tidak boleh dianggap bukti.</p><div class="grid research-input-grid"><label class="control">Matematika<select id="evMath"><option value="MATHEMATICALLY_VALIDATED">Lolos pemeriksaan</option><option value="INSUFFICIENT_DATA">Data belum cukup</option><option value="MATHEMATICALLY_INCONSISTENT">Ada ketidaksesuaian</option></select></label><label class="control">Konservasi<select id="evConservation"><option value="PHYSICALLY_SUPPORTED_WITHIN_MODEL">Konsisten dalam model</option><option value="INSUFFICIENT_DATA">Data belum cukup</option><option value="PHYSICAL_VIOLATION_DETECTED">Tidak konsisten</option></select></label><label class="control">Energi & termal<select id="evThermal"><option value="PHYSICALLY_SUPPORTED_WITHIN_MODEL">Konsisten dalam model</option><option value="INSUFFICIENT_DATA">Data belum cukup</option><option value="PHYSICAL_VIOLATION_DETECTED">Tidak konsisten</option></select></label><label class="control">Rekayasa<select id="evEngineering"><option value="INSUFFICIENT_DATA">Belum cukup data</option><option value="ENGINEERINGALLY_PLAUSIBLE_WITH_AVAILABLE_DATA">Lolos screening model</option><option value="ENGINEERINGALLY_INFEASIBLE">Ada masalah rekayasa</option></select></label></div><h4>Data eksperimen (isi hanya jika ada pengukuran nyata)</h4><div class="grid research-input-grid"><label class="control">ID rekaman<input id="evRecordId" placeholder="Contoh: EXP-001"></label><label class="control">Referensi data mentah<input id="evRawData" placeholder="Path atau tautan data"></label><label class="control">Kondisi pengujian<input id="evConditions" placeholder="Suhu, tekanan, konfigurasi…"></label><label class="control">Satuan pengukuran<input id="evUnits" placeholder="Contoh: SI"></label></div><button id="classifyEvidence">Tinjau status bukti</button><details class="advanced-input"><summary>Impor paket bukti JSON (lanjutan)</summary><textarea id="evidenceBundle" rows="5" style="width:100%;background:#08111e;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px" placeholder="Paket JSON dari mesin Java"></textarea></details><div id="evidenceLabels" class="readout"></div><div id="evidenceReasons" class="muted" aria-live="polite">Belum ada paket bukti yang dinilai.</div><div class="notice">Klasifikasi ini membaca data yang diberikan; ia tidak menjalankan ulang seluruh FeasibilityEngine atau memverifikasi keaslian data eksperimen. Label bukan sertifikasi dan bukan jaminan mesin dapat dibuat.</div></article>
+<article class="lab" id="technologyDesignLab" style="margin:18px 0">
+ <div class="tag">DESIGN EXPLORER</div><h3>Temukan trade-off desain</h3>
+ <p class="muted">Pilih bidang, masukkan batas sistem, lalu jalankan pencarian kandidat. Hasil ditampilkan sebagai angka, perbandingan, dan peta trade-off—bukan dump kode.</p>
+ <div class="controls"><label class="control">Bidang eksplorasi<select id="technologyDomain"><option value="propulsion.reaction.ideal">Propulsi reaksi ideal</option><option value="structures.member.envelope">Struktur batang</option><option value="thermal.management.steady-state">Manajemen termal</option><option value="energy.storage.envelope">Penyimpanan energi</option></select></label><button id="runTechnologyDesign">Bentuk dan evaluasi kandidat</button></div>
+ <p id="technologyDomainDescription" class="muted">Mesin membentuk kandidat dari rentang input, menjalankan pemeriksaan domain, lalu mencari trade-off Pareto.</p>
+ <div id="technologyDesignInputs" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:16px 0"></div>
+ <div class="readout" aria-live="polite"><div class="metric"><b id="technologyStatus">Belum dijalankan</b><small>Status eksplorasi</small></div><div class="metric"><b id="technologyGenerated">—</b><small>Kandidat dibentuk</small></div><div class="metric"><b id="technologyPassing">—</b><small>Lolos batas model</small></div><div class="metric"><b id="technologyParetoCount">—</b><small>Kandidat Pareto</small></div><div class="metric"><b id="technologyInvalid">—</b><small>Gagal dihitung</small></div></div>
+ <p id="technologySummary" class="muted" aria-live="polite">Hasil eksplorasi akan muncul setelah tombol dijalankan.</p><div id="technologyKeyMetrics" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin:12px 0"></div>
+ <div id="technologyChartWrap" hidden><h4>Peta trade-off kandidat Pareto</h4><p class="muted" id="technologyChartCaption">Sumbu menunjukkan dua tujuan utama; arah yang lebih baik mengikuti tujuan minimum/maksimum masing-masing.</p><div class="table-wrap" style="padding:10px;background:#08111e"><svg id="technologyParetoChart" viewBox="0 0 720 300" role="img" aria-label="Grafik trade-off kandidat Pareto" style="width:100%;height:auto;min-width:300px"></svg></div></div>
+ <h4>Perbandingan kandidat terbaik</h4><div id="technologyParetoTable" class="table-wrap"><p class="empty">Belum ada kandidat Pareto.</p></div>
+ <details style="margin-top:14px"><summary>Metode, persamaan, sumber, dan batas model</summary><p id="technologyModelText" class="muted">Pilih bidang untuk membaca metode.</p><div id="technologyEquations" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))"></div><h4>Sumber yang digunakan</h4><div id="technologySources" class="muted">Belum ada sumber.</div><h4>Batas interpretasi</h4><ul id="technologyLimitations" class="muted"></ul></details>
+ <div class="notice">Status “lolos” berarti kandidat memenuhi pemeriksaan matematis dan batas input pada model yang tersedia. Ini bukan bukti eksperimen, desain siap produksi, atau sertifikasi keselamatan. Nilai contoh adalah skenario hipotetis yang bisa diganti.</div>
+</article>
+<details class="lab" id="paretoLab" style="margin:18px 0"><summary><strong>Alat lanjutan — impor hasil eksplorasi JSON dari mesin Java</strong></summary><p class="muted">Gunakan hanya jika ingin membandingkan ulang paket kandidat yang dibuat di Java. Eksplorasi utama di atas sudah membentuk dan mengevaluasi kandidat langsung di browser.</p><label class="control">Hasil eksplorasi JSON<textarea id="designCandidates" rows="6" style="width:100%;background:#08111e;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px" placeholder='{"result":{"allCandidates":[]},"objectives":[]}'></textarea></label><button id="rankDesigns">Hitung Pareto front dari impor</button><p class="muted" id="paretoSummary" aria-live="polite">Belum ada kandidat yang dibandingkan.</p><div id="paretoOutput" class="table-wrap"></div></details><article class="lab" id="feasibilityPrimitiveLab" style="margin:18px 0"><div class="tag">MODEL CHECK</div><h3>Periksa batas fisika dan rekayasa</h3><p class="muted">Pilih jenis pemeriksaan, isi besaran dan satuannya, lalu lihat apakah skenario konsisten dengan model pemeriksaan yang tersedia.</p><div class="controls"><label class="control">Jenis pemeriksaan<select id="feasibilityOperation"><option value="stress">Tegangan & faktor keselamatan</option><option value="eulerBuckling">Tekuk Euler</option><option value="pressureHoop">Tegangan keliling bejana tipis</option><option value="thermalExpansion">Ekspansi termal</option><option value="electrical">Daya & energi listrik</option><option value="energyStorage">Kebutuhan penyimpanan energi</option><option value="energyBalance">Keseimbangan energi</option><option value="chargeBalance">Keseimbangan muatan</option><option value="vectorBalance">Keseimbangan vektor momentum</option><option value="relativisticInvariant">Invarian energi-momentum</option><option value="energyConditions">NEC / WEC diagonal</option></select></label><button id="runFeasibility">Jalankan pemeriksaan</button><button class="secondary" id="loadFeasibilityExample">Muat contoh</button></div><label class="control" style="display:block;margin-top:12px">Input JSON<textarea id="feasibilityInput" rows="7" style="width:100%;background:#08111e;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px">{ "operation":"stress", "tensileN":100, "compressiveN":0, "shearN":10, "areaM2":0.0001, "shearAreaM2":0.0001, "lengthM":2, "youngPa":200000000000, "yieldPa":300000000, "safetyRequired":1.5 }</textarea></label><div class="readout"><div class="metric"><b id="feasibilityStatus">Belum diuji</b><small>Status</small></div><div class="metric"><b id="feasibilityOperationName">—</b><small>Operasi</small></div></div><div id="feasibilityOutput" class="dimension-result">Hasil pemeriksaan akan muncul di sini.</div><div class="notice">Port tahap 01 mencakup primitive konservasi, tegangan, tekuk, bejana tipis, ekspansi, listrik, penyimpanan energi, dan energy conditions. Ini belum menjalankan orkestrasi Assessment propulsion, agregasi MachineDesign, atau validasi eksperimen.</div></article>
+<article class="lab" id="feasibilityAssessmentLab" style="margin:18px 0">
+ <div class="tag">SYSTEM ASSESSMENT</div>
+ <h3>Assessment propulsion dan rakitan mesin</h3>
+ <p class="muted">Masukkan target misi dan kebutuhan sistem. Hasil memisahkan pemeriksaan matematika, konservasi, energi, termal, dan rakitan. Nilai yang dimasukkan adalah skenario model, bukan hasil pengukuran.</p>
+ <div class="grid">
+  <label class="control">Keluarga propulsi<select id="assessmentFamily"><option value="chemical">Chemical</option><option value="electric" selected>Electric</option><option value="ion">Ion</option><option value="hall">Hall</option><option value="plasma">Plasma</option><option value="nuclear thermal">Nuclear thermal</option><option value="nuclear electric">Nuclear electric</option><option value="fusion (reaction)">Fusion (reaction)</option><option value="photon">Photon</option><option value="spacetime-warp">Spacetime / warp</option><option value="wormhole">Wormhole</option><option value="fusion-concept">Unimplemented family example</option></select></label>
+  <label class="control">Dry mass (kg)<input id="assessmentDry" type="number" value="800" min="0" step="any"></label>
+  <label class="control">Payload (kg)<input id="assessmentPayload" type="number" value="200" min="0" step="any"></label>
+  <label class="control">Target delta-v (m/s)<input id="assessmentDv" type="number" value="3000" min="0" step="any"></label>
+  <label class="control">Specific impulse (s)<input id="assessmentIsp" type="number" value="450" min="0" step="any"></label>
+  <label class="control">Thrust (N)<input id="assessmentThrust" type="number" value="100000" min="0" step="any"></label>
+  <label class="control">Efficiency (0–1)<input id="assessmentEfficiency" type="number" value=".65" min="0" max="1" step="any"></label>
+  <label class="control">Mission / burn duration (s)<input id="assessmentDuration" type="number" value="120" min="0" step="any"></label>
+  <label class="control">Available continuous power (W)<input id="assessmentPower" type="number" value="1000000000" min="0" step="any"></label>
+  <label class="control">Cooling capacity (W)<input id="assessmentCooling" type="number" value="100000000" min="0" step="any"></label>
+ </div>
+ <label class="control" style="display:block;margin-top:12px">MachineDesign import JSON (opsional). Tempel respons Java <code>/assembly</code> atau objek <code>{ "components": [...], "materials": [...] }</code>.
+ <textarea id="assessmentAssembly" rows="8" style="width:100%;background:#08111e;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px">{
+  "components": [
+   {"id":"tank-01","name":"Tank shell","volumeM3":0.01,"materialId":"ti64-nasa","powerW":0,"durationS":0,"heatW":0,"loadN":1000,"areaM2":0.001,"dependencies":[]}
+  ],
+  "materials": [
+   {"id":"ti64-nasa","name":"Ti-6Al-4V","densityKgM3":4430,"yieldPa":null}
+  ]
+ }</textarea></label>
+ <div class="controls"><button id="runStagedAssessment">Jalankan Assessment</button><button class="secondary" id="clearAssessmentAssembly">Tanpa data rakitan</button><button class="secondary" id="exportStagedAssessment">Ekspor hasil JSON</button></div>
+ <div class="readout">
+  <div class="metric"><b id="assessmentOverall">Belum diuji</b><small>Klasifikasi keseluruhan</small></div>
+  <div class="metric"><b id="assessmentMath">—</b><small>Matematika</small></div>
+  <div class="metric"><b id="assessmentConservation">—</b><small>Konservasi</small></div>
+  <div class="metric"><b id="assessmentEnergy">—</b><small>Energi & termal</small></div>
+  <div class="metric"><b id="assessmentEngineering">—</b><small>Engineering</small></div>
+ </div>
+ <div id="stagedAssessmentOutput" class="dimension-result">Hasil tiap tahap akan ditampilkan terpisah di sini.</div>
+ <div class="notice">Status “perlu validasi eksperimen” berarti perhitungan model belum didukung pengujian nyata. Data rakitan yang diimpor hanya diperiksa sebagai estimasi awal; bukan sertifikasi atau bukti bahwa mesin siap dibuat.</div>
+</article>
+<div class="card" style="margin:16px 0"><div class="tag">FEASIBILITY ENGINE · CONSERVATION CHECK</div><h3>Pemeriksaan keseimbangan energi</h3><p class="muted">Masukkan energi awal dan akhir dalam joule. Mesin membandingkan residual terhadap toleransi relatif, mengikuti prinsip pemeriksaan konservasi dari FeasibilityEngine.java.</p><div class="controls"><label class="control">Energi awal (J)<input id="energyInitial" type="number" value="100000" step="any"></label><label class="control">Energi akhir (J)<input id="energyFinal" type="number" value="99999.9" step="any"></label><label class="control">Toleransi relatif<input id="energyTolerance" type="number" value="0.0001" min="0" step="any"></label><button id="checkEnergy">Periksa keseimbangan</button></div><div class="readout"><div class="metric"><b id="energyResidual">—</b><small>Residual (J)</small></div><div class="metric"><b id="energyLimit">—</b><small>Batas toleransi (J)</small></div><div class="metric"><b id="energyStatus">Belum diperiksa</b><small>Status model</small></div></div><p class="muted" id="energyNote">Lolos pemeriksaan ini hanya berarti keseimbangan energi menutup pada batas numerik yang dipilih. Ini bukan bukti desain layak atau tervalidasi eksperimen.</p></div></section>
+<section class="section wrap" id="archive"><div class="section-head"><div><div class="eyebrow">04B / RESEARCH ARCHIVE</div><h2>Data mentah dan rekaman analisis.</h2><p class="muted">Buka arsip benchmark, eksperimen, dataset, hasil siklus riset, atau data uji mesin roket yang sudah tersimpan di repo.</p></div></div><div class="card"><div class="controls"><select id="archiveSelect"><option value="benchmarks.jsonl">Benchmark archive</option><option value="experiments.jsonl">Experiment archive</option><option value="published_experiments.jsonl">Published experiment summaries</option><option value="research_runs.jsonl">Research cycle records</option><option value="datasets.jsonl">Dataset metadata</option><option value="rl10_derivative_ii_1989_nasa_cr_179595.csv">RL10 Derivative II · NASA CR 179595 (CSV)</option><option value="rl10a_3_3b_1987_nasa_cr_183200.csv">RL10A-3-3B · NASA CR 183200 (CSV)</option></select><button id="loadArchive">Buka arsip</button></div><p id="archiveStatus" class="muted">Pilih file untuk membaca data yang tersimpan.</p><div id="archiveOutput"></div></div></section>
+</div>
+</main>
+<footer class="wrap footer">BEYOND-LIGHT · Ide liar boleh masuk. Bukti, asumsi, dan batas tetap harus terlihat.<br>Visualisasi pendidikan dan eksplorasi awal. Bukan perangkat sertifikasi, prediksi profesional, atau validasi eksperimen. <a href="https://github.com/rllibo833-sudo/Beyond-Light">Repository GitHub</a>.</footer>
+<script src="engine/symbolic.js"></script>
+<script src="engine/research.js"></script>
+<script src="engine/decision.js"></script>
+<script src="engine/feasibility.js"></script>
+<script src="engine/feasibility-assessment.js"></script>
+<script src="engine/technology-design.js"></script>
+<script src="engine/autonomous-model.js"></script>
+<script src="engine/research-core.js"></script>
+<script src="engine/chat-commands.js"></script>
+<script src="engine/mnemos-knowledge.js"></script>
+<script>
+const $=id=>document.getElementById(id), g0=9.80665;
+function fitCanvas(c){const dpr=window.devicePixelRatio||1,r=c.getBoundingClientRect();c.width=Math.max(1,Math.round(r.width*dpr));c.height=Math.max(1,Math.round(r.height*dpr));const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return {x,w:r.width,h:r.height}}
+function line(c,fn){const {x,w,h}=fitCanvas(c);x.clearRect(0,0,w,h);x.strokeStyle='#29415d';x.lineWidth=1;for(let i=1;i<5;i++){x.beginPath();x.moveTo(0,h*i/5);x.lineTo(w,h*i/5);x.stroke()}x.strokeStyle='#7be4ed';x.lineWidth=2;x.beginPath();for(let i=0;i<=w;i++){const p=fn(i/w);const y=h*(.86-.72*p);if(i===0)x.moveTo(i,y);else x.lineTo(i,y)}x.stroke()}
+function starfield(c){let {x,w,h}=fitCanvas(c);let stars=Array.from({length:110},(_,i)=>({x:(i*83%997)/997*w,y:(i*191%991)/991*h,r:(i%4)*.35+.35,p:i*.71}));let t=0;function frame(){x.clearRect(0,0,w,h);let g=x.createRadialGradient(w*.52,h*.52,2,w*.52,h*.52,w*.55);g.addColorStop(0,'#163a59');g.addColorStop(1,'#07101d');x.fillStyle=g;x.fillRect(0,0,w,h);for(const s of stars){x.globalAlpha=.35+.5*(.5+.5*Math.sin(t*.02+s.p));x.fillStyle='#d7f8ff';x.beginPath();x.arc(s.x,s.y,s.r,0,Math.PI*2);x.fill()}x.globalAlpha=1;const cx=w*.52,cy=h*.54;x.strokeStyle='#426b8b';x.setLineDash([3,8]);for(let r=45;r<Math.min(w,h)*.45;r+=35){x.beginPath();x.ellipse(cx,cy,r*1.5,r*.56,-.22,0,Math.PI*2);x.stroke()}x.setLineDash([]);x.shadowBlur=28;x.shadowColor='#76e8f2';x.fillStyle='#8fefff';x.beginPath();x.arc(cx,cy,10,0,Math.PI*2);x.fill();x.shadowBlur=0;const a=t*.013,rx=Math.min(w,h)*.35;x.save();x.translate(cx+Math.cos(a)*rx,cy+Math.sin(a)*rx*.38);x.rotate(a+.5);x.fillStyle='#f5f8ff';x.beginPath();x.moveTo(18,0);x.lineTo(-11,-6);x.lineTo(-7,0);x.lineTo(-11,6);x.closePath();x.fill();x.fillStyle='#7be4ed';x.beginPath();x.moveTo(-8,-3);x.lineTo(-22,0);x.lineTo(-8,3);x.fill();x.restore();t++;requestAnimationFrame(frame)}frame()}
+function rocket(){let {x,w,h}=fitCanvas($('rocketCanvas'));x.clearRect(0,0,w,h);for(let i=0;i<60;i++){x.fillStyle='#4e7291';x.globalAlpha=.25+(i%5)*.1;x.fillRect((i*67+20)%w,(i*43+7)%h,1.4,1.4)}x.globalAlpha=1;const ispNow=+$('isp').value||350,ratioNow=+$('massRatio').value||5,drive=Math.max(.35,Math.min(1.8,(ispNow/350)*Math.log(ratioNow)/Math.log(5)));let y=h*.48,px=w*.5;x.save();x.translate(px,y);x.rotate(-.22);x.fillStyle='#dbe9f6';x.beginPath();x.moveTo(38,0);x.quadraticCurveTo(18,-15,-24,-9);x.lineTo(-32,0);x.lineTo(-24,9);x.quadraticCurveTo(18,15,38,0);x.fill();x.fillStyle='#78e5ee';x.beginPath();x.arc(8,0,5,0,Math.PI*2);x.fill();x.fillStyle='#f7c873';x.beginPath();x.moveTo(-27,-5);x.lineTo(-27-24*drive,0);x.lineTo(-27,5);x.fill();x.restore();x.fillStyle='#a9bfd9';x.font='11px system-ui';x.fillText('Intensitas plume: '+drive.toFixed(2)+'× · visual konseptual',12,h-12);x.strokeStyle='#4d718b';x.setLineDash([4,6]);x.beginPath();x.moveTo(0,h*.82);x.lineTo(w,h*.82);x.stroke();x.setLineDash([])}
+function updateRocket(){const isp=+$('isp').value,mr=+$('massRatio').value,dv=isp*g0*Math.log(mr)/1000;$('dv').textContent=dv.toFixed(2);$('propFrac').textContent=(100*(1-1/mr)).toFixed(1)+'%';rocket()}
+function updateRel(){const v=+$('velocity').value,g=1/Math.sqrt(1-v*v);$('gamma').textContent=g.toFixed(3);$('clock').textContent=(1/g).toFixed(3)+' jam';line($('relCanvas'),t=>{const u=t*.99;return 1/Math.sqrt(1-u*u)-1 > 6 ? .95 : (1/Math.sqrt(1-u*u)-1)/6})}
+function updateThermal(){const k=+$('conductivity').value,dt=+$('deltaT').value,L=.02,q=k*dt/L;$('heatFlux').textContent=q.toFixed(0);$('gradient').textContent=(dt/L).toFixed(0);const strength=Math.min(1,Math.log10(1+q)/Math.log10(1+400*1000/L));line($('thermalCanvas'),t=>Math.max(0,Math.min(1,.12+.72*t+.12*strength*Math.sin(Math.PI*t))))}
+function updateUncertainty(){const s=+$('uncertainty').value/100,mu=+$('meanValue').value,sigma=mu*s;$('spread').textContent=sigma.toFixed(1);$('range68').textContent=(mu-sigma).toFixed(1)+' – '+(mu+sigma).toFixed(1);const {x,w,h}=fitCanvas($('uncertaintyCanvas'));x.clearRect(0,0,w,h);x.strokeStyle='#2b405b';x.beginPath();x.moveTo(10,h-20);x.lineTo(w-10,h-20);x.stroke();x.fillStyle='#7be4ed22';x.beginPath();for(let i=0;i<=w-20;i++){let z=(i/(w-20)-.5)*6,y=Math.exp(-.5*z*z);let py=h-20-y*(h-42);if(i===0)x.moveTo(10+i,py);else x.lineTo(10+i,py)}x.lineTo(w-10,h-20);x.closePath();x.fill();x.strokeStyle='#7be4ed';x.lineWidth=2;x.beginPath();for(let i=0;i<=w-20;i++){let z=(i/(w-20)-.5)*6,y=Math.exp(-.5*z*z),py=h-20-y*(h-42);if(i===0)x.moveTo(10+i,py);else x.lineTo(10+i,py)}x.stroke()}
+function blackhole(){const {x,w,h}=fitCanvas($('blackholeCanvas'));let t=0;function draw(){x.clearRect(0,0,w,h);let cx=w/2,cy=h/2;for(let i=0;i<120;i++){let a=i*2.4+t*.006,r=38+(i%20)*3,px=cx+Math.cos(a)*r*1.4,py=cy+Math.sin(a)*r*.55;x.fillStyle=i%3?'#e8b86c':'#a9e8f5';x.globalAlpha=.25+(i%5)*.12;x.beginPath();x.arc(px,py,1.1+(i%3)*.4,0,Math.PI*2);x.fill()}x.globalAlpha=1;x.strokeStyle='#6ea8c9';x.lineWidth=1.5;x.beginPath();x.ellipse(cx,cy,Math.min(w,h)*.38,Math.min(w,h)*.16,-.18,0,Math.PI*2);x.stroke();let g=x.createRadialGradient(cx,cy,9,cx,cy,48);g.addColorStop(0,'#000');g.addColorStop(.7,'#02050a');g.addColorStop(1,'#5d7d9b');x.fillStyle=g;x.beginPath();x.arc(cx,cy,42,0,Math.PI*2);x.fill();x.fillStyle='#000';x.beginPath();x.arc(cx,cy,31,0,Math.PI*2);x.fill();requestAnimationFrame(draw)}draw()}
+function wormhole(){const {x,w,h}=fitCanvas($('wormholeCanvas'));x.clearRect(0,0,w,h);let cx=w/2,cy=h*.43;for(let i=0;i<12;i++){let r=16+i*9;x.strokeStyle='hsl('+(185+i*5)+' 65% '+(65-i*2)+'% / .8)';x.lineWidth=1.3;x.beginPath();x.ellipse(cx,cy,r*1.7,r*.34,0,0,Math.PI*2);x.stroke()}x.strokeStyle='#8ee8ef';x.beginPath();x.moveTo(0,h*.78);x.quadraticCurveTo(cx*.55,h*.95,cx,h*.78);x.quadraticCurveTo(cx*1.45,h*.95,w,h*.78);x.stroke();x.fillStyle='#a9bfd9';x.font='12px system-ui';x.fillText('dua wilayah ruang-waktu · ilustrasi throat',12,h-14)}
+function darkMatter(){const {x,w,h}=fitCanvas($('darkCanvas'));x.clearRect(0,0,w,h);let cx=w/2,cy=h/2;for(let i=0;i<240;i++){let a=i*2.399,r=12+Math.sqrt(i/240)*Math.min(w,h)*.43,px=cx+Math.cos(a)*r,py=cy+Math.sin(a)*r*.55;x.fillStyle=i%4?'#9eb7dc':'#8be7e9';x.globalAlpha=.18+(i%7)*.08;x.beginPath();x.arc(px,py,1+(i%3),0,Math.PI*2);x.fill()}x.globalAlpha=1;let gr=x.createRadialGradient(cx,cy,3,cx,cy,Math.min(w,h)*.45);gr.addColorStop(0,'#8ae7ef44');gr.addColorStop(1,'#8ae7ef00');x.fillStyle=gr;x.fillRect(0,0,w,h);x.fillStyle='#dceeff';x.font='12px system-ui';x.fillText('halo massa tak bercahaya · skematik',12,h-14)}
+function lightWave(){const {x,w,h}=fitCanvas($('lightCanvas'));x.clearRect(0,0,w,h);for(let j=0;j<3;j++){x.strokeStyle=['#83eaf1','#8baeff','#e4a1ff'][j];x.globalAlpha=.9-j*.2;x.lineWidth=2;x.beginPath();for(let i=0;i<=w;i++){let y=h*(.5+(j-1)*.22)+Math.sin(i*.045-j*1.4)*h*.13;if(i===0)x.moveTo(i,y);else x.lineTo(i,y)}x.stroke()}x.globalAlpha=1;x.fillStyle='#a9bfd9';x.font='11px system-ui';x.fillText('E ⟂ B ⟂ arah rambat (skematik)',12,h-12)}
+function vacuum(){const {x,w,h}=fitCanvas($('vacuumCanvas'));x.clearRect(0,0,w,h);for(let i=0;i<52;i++){let px=(i*79%997)/997*w,py=(i*139%991)/991*h,r=2+(i%4);x.strokeStyle=i%2?'#7be4ed':'#d69aff';x.globalAlpha=.18+(i%5)*.1;x.beginPath();x.arc(px,py,r+Math.sin(i)*1.5,0,Math.PI*2);x.stroke();if(i%3===0){x.beginPath();x.moveTo(px-5,py);x.lineTo(px+5,py);x.moveTo(px,py-5);x.lineTo(px,py+5);x.stroke()}}x.globalAlpha=1}
+function chemistry(){const {x,w,h}=fitCanvas($('chemCanvas'));x.clearRect(0,0,w,h);let temp=+$('deltaT').value/1000;for(let row=0;row<4;row++)for(let col=0;col<8;col++){let phase=(row*8+col)*1.7,px=25+col*(w-50)/7+Math.sin(phase+temp*4)*temp*9,py=25+row*(h-50)/3+Math.cos(phase+temp*4)*temp*9;x.strokeStyle='#47657f';if(col<7){x.beginPath();x.moveTo(px,py);x.lineTo(px+(w-50)/7,py);x.stroke()}x.fillStyle=(row+col)%2?'#7be4ed':'#f7c873';x.beginPath();x.arc(px,py,5+(row%2),0,Math.PI*2);x.fill()}x.fillStyle='#a9bfd9';x.font='11px system-ui';x.fillText('getaran atom meningkat saat suhu naik',12,h-12)}
+let materialData=[],curveData=[],experiments=[];
+function safeLink(url,label){const a=document.createElement('a');a.href=url;a.textContent=label;a.target='_blank';a.rel='noopener noreferrer';return a}
+function renderMaterials(){const q=$('materialSearch').value.toLowerCase(),root=$('materialRows');root.replaceChildren();const rows=materialData.filter(m=>(m.name+' '+m.grade+' '+m.composition).toLowerCase().includes(q));$('materialCount').textContent=rows.length+' dari '+materialData.length+' rekaman material';rows.slice(0,80).forEach(m=>{let d=document.createElement('div');d.style.cssText='padding:10px 0;border-bottom:1px solid #20344d';let b=document.createElement('b');b.textContent=m.name;let p=document.createElement('p');p.className='muted';p.style.margin='3px 0';p.textContent='ρ '+(m.densityKgM3??'UNKNOWN')+' kg/m³ · E '+(m.youngPa? (m.youngPa/1e9).toFixed(1)+' GPa':'UNKNOWN')+' · k '+(m.conductivityWmK??'UNKNOWN')+' W/mK';d.append(b,p);if(m.source)d.append(safeLink(m.source,'Sumber'));root.append(d)})}
+function evalCurve(c,T){const lo=Math.max(c.dataMinK??c.sourceDataRangeK?.[0]??-Infinity,c.equationRangeK?.[0]??-Infinity),hi=Math.min(c.dataMaxK??c.sourceDataRangeK?.[1]??Infinity,c.equationRangeK?.[1]??Infinity);if(T<lo||T>hi)return null;let value;if(c.kind==='NIST_LOG10_POLYNOMIAL'){let x=Math.log10(T),s=0,p=1;for(const a of c.coefficients){s+=a*p;p*=x}value=Math.pow(10,s)}else if(c.kind==='NIST_POLYNOMIAL'){let p=1,s=0;for(const a of c.coefficients){s+=a*p;p*=T}value=T<(c.lowTemperatureK??-Infinity)?c.lowTemperatureValue:s}else return null;return {value,lo,hi}}
+function updateCurve(){const c=curveData.find(x=>x.id===$('curveSelect').value);if(!c)return;const T=+$('curveTemp').value,r=evalCurve(c,T);$('curveTempNumber').value=String(T);$('curveValue').textContent=r?r.value.toPrecision(4):'Out of range';$('curveUnit').textContent=c.propertyUnit||'Value';$('curveRange').textContent=(r?r.lo:c.dataMinK)+' – '+(r?r.hi:c.dataMaxK);$('curveSource').replaceChildren(document.createTextNode((c.property||'')+' · '),safeLink(c.source,'Sumber data'));const {x,w,h}=fitCanvas($('curveCanvas'));x.clearRect(0,0,w,h);x.strokeStyle='#29415d';x.lineWidth=1;for(let i=0;i<=3;i++){const gy=12+(h-34)*i/3;x.beginPath();x.moveTo(36,gy);x.lineTo(w-10,gy);x.stroke();}x.beginPath();x.moveTo(36,12);x.lineTo(36,h-22);x.lineTo(w-10,h-22);x.stroke();let vals=[];for(let t=c.dataMinK;t<=c.dataMaxK;t+=(c.dataMaxK-c.dataMinK)/100){let z=evalCurve(c,t);if(z&&Number.isFinite(z.value))vals.push([t,z.value])}if(!vals.length)return;let min=Math.min(...vals.map(v=>v[1])),max=Math.max(...vals.map(v=>v[1]));if(min===max)max=min+1;x.fillStyle='#9db0c9';x.font='10px system-ui';x.fillText(max.toPrecision(3),40,11);x.fillText(min.toPrecision(3),40,h-24);x.fillText(c.dataMinK+' K',36,h-5);x.textAlign='right';x.fillText(c.dataMaxK+' K',w-10,h-5);x.textAlign='left';x.strokeStyle='#7be4ed';x.lineWidth=2;x.beginPath();vals.forEach((v,i)=>{let px=36+(v[0]-c.dataMinK)/(c.dataMaxK-c.dataMinK)*(w-46),py=h-22-(v[1]-min)/(max-min)*(h-34);if(i===0)x.moveTo(px,py);else x.lineTo(px,py)});x.stroke();if(r){let px=36+(T-c.dataMinK)/(c.dataMaxK-c.dataMinK)*(w-46),py=h-22-(r.value-min)/(max-min)*(h-34);x.fillStyle='#f7c873';x.beginPath();x.arc(px,py,5,0,Math.PI*2);x.fill()}}
+async function loadData(){try{const [m,c,e]=await Promise.all(['data/materials.jsonl','data/material_curves.jsonl','data/published_experiments.jsonl'].map(u=>fetch(u).then(r=>{if(!r.ok)throw Error(u);return r.text()})));materialData=m.trim().split('\n').map(JSON.parse);curveData=c.trim().split('\n').map(JSON.parse);experiments=e.trim().split('\n').map(JSON.parse);renderMaterials();$('curveSelect').replaceChildren();curveData.forEach(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=v.materialId+' · '+v.property;$('curveSelect').append(o)});if(curveData.length){$('curveTemp').min=Math.ceil(curveData[0].dataMinK);$('curveTemp').max=Math.floor(curveData[0].dataMaxK);$('curveTemp').value=Math.round((+$('curveTemp').min + +$('curveTemp').max)/2);updateCurve()}$('experimentList').replaceChildren();experiments.forEach(e=>{const d=document.createElement('article');d.className='card';let tag=document.createElement('div');tag.className='tag';tag.textContent=(e.institution||'PUBLISHED RESEARCH')+' · '+(e.year||'');let h=document.createElement('h3');h.textContent=e.title;let p=document.createElement('p');p.textContent=e.method+' '+e.limits;d.append(tag,h,p,safeLink(e.source,'Buka sumber'));$('experimentList').append(d)})}catch(err){$('materialCount').textContent='Data gagal dimuat: '+err.message}}
+$('materialSearch').addEventListener('input',renderMaterials);$('curveSelect').addEventListener('change',()=>{const c=curveData.find(x=>x.id===$('curveSelect').value);if(c){$('curveTemp').min=Math.ceil(c.dataMinK);$('curveTemp').max=Math.floor(c.dataMaxK);$('curveTemp').value=Math.round((c.dataMinK+c.dataMaxK)/2);updateCurve()}});$('curveTemp').addEventListener('input',updateCurve);$('curveTempNumber').addEventListener('change',()=>{const v=Number($('curveTempNumber').value);$('curveTemp').value=String(Math.max(Number($('curveTemp').min),Math.min(Number($('curveTemp').max),v)));updateCurve()});
+$('isp').addEventListener('input',updateRocket);$('massRatio').addEventListener('input',updateRocket);$('velocity').addEventListener('input',updateRel);$('conductivity').addEventListener('input',updateThermal);$('deltaT').addEventListener('input',updateThermal);$('uncertainty').addEventListener('input',updateUncertainty);$('meanValue').addEventListener('input',updateUncertainty);
+$('mapIdea').onclick=()=>{const raw=$('idea').value.trim(),q=raw.toLowerCase();if(!q)return;const routes=[{name:'Propulsi & gerak',layer:'physics',keys:['roket','rocket','propulsi','mars','terbang','mesin','gaya','dorong'],concept:'Massa, percepatan, momentum, energi, impuls spesifik, dan kebutuhan daya.',evidence:'Persamaan gerak dan roket ideal; hasil benchmark; data uji mesin jika tersedia.',limits:'Model ideal belum mencakup aerodinamika, struktur lengkap, kontrol, atau kondisi penerbangan nyata.'},{name:'Material & temperatur',layer:'materials',keys:['material','panas','suhu','thermal','logam','dingin','kuat','ringan'],concept:'Densitas, kekuatan, konduktivitas, kapasitas panas, dan perubahan sifat terhadap suhu.',evidence:'Database properti material dan kurva bersumber; cocokkan grade serta kondisi pengujian.',limits:'Nilai katalog bukan otomatis design allowable; rentang kurva tidak boleh diekstrapolasi.'},{name:'Relativitas & cahaya',layer:'physics',keys:['cahaya','kecepatan','waktu','relativ','light','warp'],concept:'Kecepatan, faktor Lorentz, energi, momentum, dan struktur ruang-waktu.',evidence:'Persamaan relativitas dan benchmark analitik yang tersedia.',limits:'Visual konseptual atau solusi teoretis bukan bukti teknologi dapat direalisasikan.'},{name:'Gravitasi & ruang-waktu',layer:'physics',keys:['gravitasi','black hole','wormhole','lubang hitam','ruang'],concept:'Medan gravitasi, geometri, energi, dan kondisi batas.',evidence:'Persamaan dan kasus referensi yang dapat dihitung.',limits:'Model browser tidak melakukan simulasi numerik relativitas umum penuh.'},{name:'Energi & penyimpanan',layer:'materials',keys:['energi','baterai','daya','listrik','simpan'],concept:'Kebutuhan energi, daya, efisiensi, rugi konversi, dan massa penyimpanan.',evidence:'Persamaan energi, data material, serta parameter perangkat yang bersumber.',limits:'Screening energi belum memilih kimia sel atau memvalidasi perangkat nyata.'}];let hits=routes.filter(r=>r.keys.some(k=>q.includes(k)));if(!hits.length)hits=[{name:'Pemetaan lintas bidang',layer:'research',concept:'Ide belum cocok dengan kategori spesifik. Pecah tujuan menjadi besaran, sistem, dan kondisi yang bisa diuji.',evidence:'Belum ada bukti yang dipilih. Cari persamaan, sumber, dan dataset setelah konsep utama ditentukan.',limits:'Pemetaan kata kunci ini bukan penilaian kelayakan dan tidak menyimpulkan ide mustahil.'}];const root=$('ideaMap');root.replaceChildren();const cards=[{tag:'01 · TUJUAN',title:'Apa yang ingin dicapai?',body:raw},{tag:'02 · PENERJEMAH',title:'Konsep yang perlu diterjemahkan',body:hits.map(x=>x.concept).join(' ')},{tag:'03 · JALUR EKSPLORASI',title:hits.map(x=>x.name).join(' · '),body:'Pilih layer yang paling dekat dengan konsep utama.'},{tag:'04 · BUKTI & BATAS',title:'Apa yang perlu diperiksa?',body:hits.map(x=>'Bukti: '+x.evidence+' Batas: '+x.limits).join(' ')}];cards.forEach((item,i)=>{const d=document.createElement('article');d.className='card';const tag=document.createElement('span');tag.className='tag';tag.textContent=item.tag;const h=document.createElement('h3');h.textContent=item.title;const p=document.createElement('p');p.textContent=item.body;d.append(tag,h,p);if(i===2)hits.forEach(route=>{const b=document.createElement('button');b.className='secondary';b.type='button';b.textContent='Buka '+(route.layer==='physics'?'Fisika':route.layer==='materials'?'Material':'Riset');b.addEventListener('click',()=>activateLayer(route.layer));d.append(b)});root.append(d)});$('ideaNote').textContent='Peta awal berbasis kata kunci dan katalog lokal. Gunakan jalur sebagai titik mulai; bukti dan batas harus diperiksa sebelum menarik kesimpulan.'};
+
+
+function updateMonteCarlo(){const m=Number($('mcMass').value),sm=Number($('mcMassSigma').value),a=Number($('mcAccel').value),sa=Number($('mcAccelSigma').value);if(![m,sm,a,sa].every(Number.isFinite)||m<=0||a<=0||sm<0||sa<0){$('mcNote').textContent='Input tidak valid: m dan a harus positif, sigma tidak boleh negatif.';return}const nominal=m*a,linear=Math.sqrt((a*sm)**2+(m*sa)**2),N=10000,values=[],seed=0xB0A7D;let state=seed>>>0;const rand=()=>{state^=state<<13;state^=state>>>17;state^=state<<5;return (state>>>0)/4294967296};const normal=()=>{let u=Math.max(rand(),1e-12),v=rand();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};let rejected=0;for(let i=0;i<N;i++){const mi=m+sm*normal(),ai=a+sa*normal();if(mi<0||ai<0){rejected++;continue}values.push(mi*ai)}if(!values.length){$('mcNote').textContent='Semua sampel ditolak. Kurangi ketidakpastian relatif.';return}const mean=values.reduce((s,v)=>s+v,0)/values.length,sd=Math.sqrt(values.reduce((s,v)=>s+(v-mean)**2,0)/Math.max(1,values.length-1)),sorted=values.slice().sort((x,y)=>x-y),lo=sorted[Math.floor(.025*(sorted.length-1))],hi=sorted[Math.floor(.975*(sorted.length-1))];$('mcNominal').textContent=nominal.toPrecision(5);$('mcLinear').textContent=linear.toPrecision(5);$('mcMean').textContent=mean.toPrecision(5);$('mcInterval').textContent=lo.toPrecision(4)+' – '+hi.toPrecision(4);$('mcNote').textContent=values.length+' sampel diterima · '+rejected+' ditolak · PRNG seed tetap 0xB0A7D. Ini demonstrasi Monte Carlo, bukan pengukuran eksperimen.';const {x,w,h}=fitCanvas($('monteCarloCanvas'));x.clearRect(0,0,w,h);const bins=32,min=Math.min(...sorted),max=Math.max(...sorted),width=(max-min)||1,counts=Array(bins).fill(0);values.forEach(v=>counts[Math.min(bins-1,Math.floor((v-min)/width*bins))]++);const peak=Math.max(...counts,1);x.strokeStyle='#304760';x.beginPath();x.moveTo(12,h-22);x.lineTo(w-8,h-22);x.stroke();counts.forEach((v,i)=>{const bw=(w-30)/bins,bh=(h-38)*v/peak;x.fillStyle='#79dfe9';x.globalAlpha=.78;x.fillRect(18+i*bw,h-22-bh,Math.max(1,bw-2),bh)});x.globalAlpha=1;x.fillStyle='#a9bfd9';x.font='11px system-ui';x.fillText('Distribusi gaya (N) · '+min.toFixed(0)+' – '+max.toFixed(0),12,14)}
+$('runMonteCarlo').addEventListener('click',updateMonteCarlo);
+const dimensionExamples={newton:{lhs:[1,1,-2,0,0,0,0],rhs:[[1,0,0,0,0,0,0],[0,1,-2,0,0,0,0]],formula:'F = m × a'},energy:{lhs:[1,2,-2,0,0,0,0],rhs:[[1,0,0,0,0,0,0],[0,2,-2,0,0,0,0]],formula:'E = m × c²'},speed:{lhs:[0,1,-1,0,0,0,0],rhs:[[0,1,0,0,0,0,0],[0,0,-1,0,0,0,0]],formula:'v = s / t'},power:{lhs:[1,2,-3,0,0,0,0],rhs:[[1,1,-2,0,0,0,0],[0,1,-1,0,0,0,0]],formula:'P = F × v'},heat:{lhs:[1,0,-3,0,0,0,0],rhs:[[1,1,-3,-1,0,0,0],[0,0,0,0,1,0,0],[0,-1,0,0,0,0,0]],formula:'q″ = k × ΔT / L'}};
+function dimString(v){const names=['kg','m','s','A','K','mol','cd'],parts=[];v.forEach((n,i)=>{if(Math.abs(n)>1e-10)parts.push(names[i]+(n===1?'':'^'+n))});return parts.join(' · ')||'1 (dimensionless)'}
+function checkDimensions(){const d=dimensionExamples[$('dimensionPreset').value];const rhs=d.rhs.reduce((sum,v)=>sum.map((n,i)=>n+v[i]),[0,0,0,0,0,0,0]);const ok=d.lhs.every((n,i)=>Math.abs(n-rhs[i])<1e-10);$('dimensionLeft').textContent=dimString(d.lhs);$('dimensionRight').textContent=dimString(rhs);const root=$('dimensionResult');root.replaceChildren();let badge=document.createElement('span');badge.className='status-pill '+(ok?'connected':'source-only');badge.textContent=ok?'DIMENSIONALLY BALANCED':'DIMENSION MISMATCH';let p=document.createElement('p');p.textContent=d.formula+' · '+(ok?'Kedua sisi memiliki eksponen SI yang sama.':'Eksponen satuan kedua sisi berbeda.');root.append(badge,p)}
+$('checkDimensions').addEventListener('click',checkDimensions);$('dimensionPreset').addEventListener('change',checkDimensions);checkDimensions();
+function checkEnergy(){const a=Number($('energyInitial').value),b=Number($('energyFinal').value),tol=Number($('energyTolerance').value);if(!Number.isFinite(a)||!Number.isFinite(b)||!Number.isFinite(tol)||tol<0){$('energyStatus').textContent='Input tidak valid';$('energyNote').textContent='Gunakan angka finite dan toleransi tidak negatif.';return}const residual=a-b,limit=tol*Math.max(1,Math.abs(a),Math.abs(b)),ok=Math.abs(residual)<=limit;$('energyResidual').textContent=residual.toExponential(4);$('energyLimit').textContent=limit.toExponential(4);$('energyStatus').textContent=ok?'BALANCED':'RESIDUAL';$('energyNote').textContent=ok?'Keseimbangan menutup dalam toleransi numerik. Ini hanya satu pemeriksaan konservasi, bukan validasi seluruh sistem.':'Residual melampaui toleransi. Periksa batas sistem, energi yang belum dihitung, rugi, dan input.'}
+$('checkEnergy').addEventListener('click',checkEnergy);checkEnergy();
+async function loadScience(){try{const d=await fetch('data/scientific-catalog.json').then(r=>r.json());const render=()=>{const q=$('scienceSearch').value.toLowerCase();$('constantList').replaceChildren();$('equationList').replaceChildren();d.constants.filter(v=>(v.id+' '+v.name+' '+v.unit).toLowerCase().includes(q)).forEach(v=>{let box=document.createElement('div');box.style.cssText='padding:9px 0;border-bottom:1px solid #20344d';let b=document.createElement('b');b.textContent=v.id+' · '+v.name;let p=document.createElement('p');p.className='muted';p.textContent=v.value+' '+v.unit+' · '+v.uncertainty;box.append(b,p,safeLink(v.source,'Sumber'));$('constantList').append(box)});d.equations.filter(v=>(v.name+' '+v.equation+' '+v.domain).toLowerCase().includes(q)).forEach(v=>{let box=document.createElement('div');box.style.cssText='padding:9px 0;border-bottom:1px solid #20344d';let b=document.createElement('b');b.textContent=v.name;let formula=document.createElement('div');formula.className='formula';formula.textContent=v.equation;let p=document.createElement('p');p.className='muted';p.textContent=v.domain+' · '+v.limits;box.append(b,formula,p,safeLink(v.source,'Buka referensi'));$('equationList').append(box)})};render();$('scienceSearch').addEventListener('input',render)}catch(e){$('constantList').textContent='Katalog gagal dimuat: '+e.message}}
+async function openArchive(){const name=$('archiveSelect').value,root=$('archiveOutput');root.replaceChildren();$('archiveStatus').textContent='Memuat '+name+'…';try{const text=await fetch('data/'+name).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.text()});if(name.endsWith('.csv')){const rows=text.trim().split(/\\r?\\n/).map(r=>r.split(','));let table=document.createElement('table');let body=document.createElement('tbody');rows.slice(0,10).forEach((row,i)=>{let tr=document.createElement('tr');row.forEach(v=>{let cell=document.createElement(i===0?'th':'td');cell.textContent=v;tr.append(cell)});body.append(tr)});table.append(body);root.append(table);$('archiveStatus').textContent=rows.length+' baris CSV · cuplikan maksimum 10 baris.'}else{const rows=text.trim().split('\\n').filter(Boolean).map(JSON.parse);$('archiveStatus').textContent=rows.length+' rekaman berhasil dibaca · menampilkan 6 rekaman pertama.';rows.slice(0,6).forEach((item,i)=>{let d=document.createElement('div');d.className='module';let left=document.createElement('div');let b=document.createElement('strong');b.textContent=item.title||item.name||item.benchmarkId||item.runId||item.id||('Record '+(i+1));let p=document.createElement('small');p.textContent=[item.domain,item.status,item.year,item.equation].filter(Boolean).join(' · ')||'Data arsip';left.append(b,p);d.append(left);const url=item.sourceUrl||item.source||item.url;if(typeof url==='string'&&url.startsWith('https://'))d.append(safeLink(url,'Sumber ↗'));root.append(d)})}}catch(e){$('archiveStatus').textContent='Arsip tidak dapat dibaca: '+e.message}}
+$('loadArchive').addEventListener('click',openArchive);
+async function loadSources(){const r=await fetch('catalog.json');const data=await r.json();$('sourceCount').textContent=data.sourceCount;$('browserConnectedCount').textContent=data.modules.filter(m=>m.browserStatus!=='Source engine only'&&m.browserStatus!=='Android source only').length;$('moduleList').replaceChildren();function draw(){const q=$('sourceSearch').value.toLowerCase();const rows=data.modules.filter(m=>(m.file+' '+m.functionality+' '+m.category+' '+m.browserStatus+' '+m.browserConnection+' '+m.runtime).toLowerCase().includes(q));$('moduleList').replaceChildren();if(!rows.length){let empty=document.createElement('p');empty.className='empty';empty.textContent='Tidak ada modul yang cocok.';$('moduleList').append(empty);return}const groups=new Map();rows.forEach(m=>{if(!groups.has(m.category))groups.set(m.category,[]);groups.get(m.category).push(m)});groups.forEach((items,category)=>{let heading=document.createElement('h3');heading.className='module-group-title';heading.textContent=category+' · '+items.length+' modul';$('moduleList').append(heading);items.forEach(m=>{let d=document.createElement('article');d.className='module';let top=document.createElement('div');top.className='module-top';let left=document.createElement('div');let b=document.createElement('strong');b.textContent=m.file;let p=document.createElement('p');p.className='module-purpose';p.textContent=m.functionality;left.append(b,p);let status=document.createElement('span');status.className='status-pill '+(m.browserStatus==='Source engine only'||m.browserStatus==='Android source only'?'source-only':'connected');status.textContent=m.browserStatus;top.append(left,status);let detail=document.createElement('p');detail.className='module-connection';detail.textContent=m.browserConnection;let meta=document.createElement('small');meta.className='module-runtime';meta.textContent='Runtime: '+m.runtime;let actions=document.createElement('div');actions.className='module-actions';actions.append(safeLink(m.url,'Buka source ↗'));let jump=document.createElement('button');jump.className='layer-jump';jump.type='button';jump.textContent='Buka layer terkait →';jump.addEventListener('click',()=>activateLayer(m.layer));actions.append(jump);d.append(top,detail,meta,actions);$('moduleList').append(d)})})}draw();$('sourceSearch').addEventListener('input',draw)}
+const layerTabs=[...document.querySelectorAll('.layer-tab')];
+const layerPanels=[...document.querySelectorAll('[data-layer-panel]')];
+const layerStarted=new Set(['home']);
+function activateLayer(name,focus=false){const tab=layerTabs.find(t=>t.dataset.layer===name);if(!tab)return;layerTabs.forEach(t=>{const on=t===tab;t.classList.toggle('active',on);t.setAttribute('aria-selected',String(on));t.tabIndex=on?0:-1});layerPanels.forEach(p=>{p.hidden=p.dataset.layerPanel!==name});if(focus)tab.focus();if(!layerStarted.has(name)){layerStarted.add(name);requestAnimationFrame(()=>{if(name==='physics'){rocket();updateRel();updateThermal();updateUncertainty();updateMonteCarlo();blackhole();wormhole();darkMatter();lightWave();vacuum();chemistry()}if(name==='materials'&&curveData.length)updateCurve()})}window.scrollTo({top:0,behavior:'smooth'});history.replaceState(null,'','#'+(name==='home'?'top':name==='physics'?'physics':name==='materials'?'materials':name==='research'?'research':'source'))}
+layerTabs.forEach((tab,i)=>{tab.addEventListener('click',()=>activateLayer(tab.dataset.layer));tab.addEventListener('keydown',e=>{if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;e.preventDefault();let n=i;if(e.key==='ArrowRight')n=(i+1)%layerTabs.length;if(e.key==='ArrowLeft')n=(i-1+layerTabs.length)%layerTabs.length;if(e.key==='Home')n=0;if(e.key==='End')n=layerTabs.length-1;activateLayer(layerTabs[n].dataset.layer,true)})});
+$('goPhysics').addEventListener('click',()=>activateLayer('physics'));
+const initialHash=location.hash.replace('#','');const hashToLayer={top:'home',explore:'home',physics:'physics',science:'physics',materials:'materials',research:'research',archive:'research',source:'source'};if(hashToLayer[initialHash]&&hashToLayer[initialHash]!=='home')activateLayer(hashToLayer[initialHash]);
+function resizeAll(){starfield($('universe'));rocket();updateRel();updateThermal();updateUncertainty();blackhole();wormhole();darkMatter();lightWave();vacuum();chemistry()}
+window.addEventListener('resize',()=>{clearTimeout(window._resizeTimer);window._resizeTimer=setTimeout(resizeAll,180)});resizeAll();loadData();loadScience();
+
+const symbolicButton=$('runSymbolic');
+if(symbolicButton){
+  const runSymbolic=()=>{
+    const expression=$('symbolicExpression').value;
+    const variable=$('symbolicVariable').value.trim();
+    const value=$('symbolicValue').value;
+    try{
+      if(!/^[A-Za-z_][A-Za-z0-9_]*$/.test(variable))throw new Error('Nama variabel harus berupa identifier sederhana.');
+      const result=window.BeyondLightSymbolic.analyze(expression,variable,value);
+      $('symbolicCanonical').textContent=result.canonical;
+      $('symbolicValueResult').textContent=result.value===undefined?'—':Number(result.value.toPrecision(8)).toString();
+      $('symbolicDerivative').textContent=result.derivative||'Tidak tersedia';
+      $('symbolicIntegral').textContent=result.integral?'Integral dasar: '+result.integral:'Integral: '+(result.integralUnavailable||'tidak tersedia');
+      $('symbolicMessage').textContent=result.derivativeUnavailable?'Turunan: '+result.derivativeUnavailable:'Ekspresi berhasil diproses tanpa eval() atau eksekusi kode.';
+    }catch(error){
+      $('symbolicCanonical').textContent='Ekspresi belum dapat diproses';
+      $('symbolicValueResult').textContent='—';$('symbolicDerivative').textContent='—';
+      $('symbolicIntegral').textContent='Integral belum tersedia';
+      $('symbolicMessage').textContent=error.message;
+    }
+  };
+  symbolicButton.addEventListener('click',runSymbolic);
+  $('symbolicExpression').addEventListener('keydown',e=>{if(e.key==='Enter')runSymbolic()});
+  runSymbolic();
+}
+
+/* Equation registry and SI dimension checker */
+const equationApi=window.BeyondLightResearch?.equations;
+let equationIsValid=false;
+function renderEquationList(){
+ const root=$('equationSavedList');if(!root||!equationApi)return;
+ const items=equationApi.load();root.replaceChildren();
+ if(!items.length){root.textContent='Belum ada persamaan tersimpan.';root.className='empty';return;}
+ root.className='grid';
+ items.forEach(item=>{
+  const card=document.createElement('article');card.className='card';
+  const h=document.createElement('h3');h.textContent=item.name;card.append(h);
+  const formula=document.createElement('div');formula.className='formula';formula.textContent=item.equation;card.append(formula);
+  const meta=document.createElement('p');meta.className='muted';meta.textContent=[item.discipline,item.variables,item.status].filter(Boolean).join(' · ');card.append(meta);
+  if(item.source){const src=document.createElement('p');src.className='muted';src.textContent='Sumber: '+item.source;card.append(src);}
+  const del=document.createElement('button');del.className='secondary';del.textContent='Hapus';del.addEventListener('click',()=>{equationApi.remove(item.id);renderEquationList();});card.append(del);root.append(card);
+ });
+}
+function validateEquationUI(){
+ try{
+  const result=window.BeyondLightResearch.dimensions.validateEquation($('eqExpression').value,$('eqVariables').value);
+  equationIsValid=true;$('saveEquation').disabled=false;
+  $('equationDimensionResult').textContent='Konsisten: '+result.left+' = '+result.right;
+  $('equationStatus').textContent='Dimensi seimbang. Definisi dapat disimpan sebagai kandidat persamaan.';
+ }catch(e){equationIsValid=false;$('saveEquation').disabled=true;$('equationDimensionResult').textContent='Pemeriksaan gagal';$('equationStatus').textContent=e.message;}
+}
+if($('validateEquation')){
+ $('validateEquation').addEventListener('click',validateEquationUI);
+ $('saveEquation').addEventListener('click',()=>{
+  if(!equationIsValid)return;
+  try{
+   window.BeyondLightResearch.dimensions.validateEquation($('eqExpression').value,$('eqVariables').value);
+   equationApi.save({id:crypto.randomUUID(),name:$('eqName').value.trim(),equation:$('eqExpression').value.trim(),variables:$('eqVariables').value.trim(),discipline:$('eqDiscipline').value.trim(),source:$('eqSource').value.trim(),url:$('eqUrl').value.trim(),assumptions:$('eqAssumptions').value.trim(),created:new Date().toISOString(),status:$('eqSource').value.trim()&&$('eqUrl').value.trim()?'UNVERIFIED — SOURCE PROVIDED':'UNVERIFIED — INCOMPLETE SOURCE'});
+   $('equationStatus').textContent='Persamaan tersimpan di browser ini; status bukti tetap belum terverifikasi.';renderEquationList();
+  }catch(e){$('equationStatus').textContent=e.message;}
+ });
+ $('exportEquations').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify(equationApi.load(),null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='beyond-light-equations.json';a.click();URL.revokeObjectURL(url);
+ });
+ $('importEquations').addEventListener('click',()=>{
+  try{const n=equationApi.import($('equationImport').value);$('equationStatus').textContent=n+' persamaan berhasil diimpor setelah pemeriksaan dimensi.';renderEquationList();}
+  catch(e){$('equationStatus').textContent='Impor ditolak: '+e.message;}
+ });
+ renderEquationList();validateEquationUI();
+}
+/* Benchmark browser port */
+const benchmarkApi=window.BeyondLightResearch?.benchmarks;
+function renderBenchmarkInputs(){
+ const spec=benchmarkApi.catalog.find(x=>x.id===$('benchmarkSelect').value),root=$('benchmarkInputs');root.replaceChildren();
+ if(!spec)return;
+ $('benchmarkTolerance').value=spec.tol;
+ Object.entries(spec.inputs).forEach(([key,value])=>{
+  const label=document.createElement('label');label.className='control';label.textContent=key;
+  const input=document.createElement('input');input.type='number';input.step='any';input.dataset.benchmarkInput=key;input.value=value;label.append(input);root.append(label);
+ });
+ $('benchmarkNote').textContent=spec.domain+' · '+spec.method+' · '+spec.assumptions+' Source: '+spec.source+' ('+spec.url+')';
+ $('benchmarkStatus').textContent=spec.browser===false?'INCONCLUSIVE':'Ready';
+ $('benchmarkComputed').textContent='—';$('benchmarkError').textContent='—';
+}
+function selectedBenchmarkInputs(){const out={};document.querySelectorAll('[data-benchmark-input]').forEach(input=>out[input.dataset.benchmarkInput]=Number(input.value));return out;}
+function showBenchmark(result){
+ $('benchmarkStatus').textContent=result.status;
+ $('benchmarkComputed').textContent=result.computed===undefined?'—':Number(result.computed.toPrecision(10)).toString()+' '+(result.spec.units||'');
+ $('benchmarkError').textContent=result.absoluteError===undefined?'—':result.absoluteError.toExponential(3);
+ $('benchmarkNote').textContent=result.reason||('Reference: '+result.reference+' '+result.spec.units+' · tolerance: '+result.tolerance+' · '+result.spec.assumptions+' Source: '+result.spec.source+' — '+result.spec.url);
+}
+function showBenchmarkBatch(results){
+ const root=$('benchmarkBatch');root.replaceChildren();const table=document.createElement('table');
+ const head=document.createElement('tr');['Kasus','Domain','Status','Hasil','Galat absolut'].forEach(t=>{const th=document.createElement('th');th.textContent=t;head.append(th);});table.append(head);
+ results.forEach(r=>{const tr=document.createElement('tr');[r.id,r.spec.domain,r.status,r.computed===undefined?'—':String(r.computed),r.absoluteError===undefined?'—':r.absoluteError.toExponential(3)].forEach(t=>{const td=document.createElement('td');td.textContent=t;tr.append(td);});table.append(tr);});
+ root.append(table);
+ const pass=results.filter(r=>r.status==='PASS').length,fail=results.filter(r=>r.status==='FAIL').length,inc=results.filter(r=>r.status==='INCONCLUSIVE').length;
+ $('benchmarkNote').textContent='Hasil batch: '+pass+' PASS · '+fail+' FAIL · '+inc+' INCONCLUSIVE. PASS adalah kesesuaian numerik terhadap referensi, bukan bukti eksperimen.';
+}
+if(benchmarkApi&&$('benchmarkSelect')){
+ benchmarkApi.catalog.forEach(spec=>{const option=document.createElement('option');option.value=spec.id;option.textContent=spec.id+(spec.browser===false?' · Java only':'');$('benchmarkSelect').append(option);});
+ $('benchmarkSelect').addEventListener('change',renderBenchmarkInputs);
+ $('runBenchmark').addEventListener('click',()=>{
+  const result=benchmarkApi.run($('benchmarkSelect').value,selectedBenchmarkInputs(),$('benchmarkTolerance').value);showBenchmark(result);showBenchmarkBatch([result]);
+ });
+ $('runAllBenchmarks').addEventListener('click',()=>{const results=benchmarkApi.runAll();showBenchmarkBatch(results);});
+ $('benchmarkCount').textContent=String(benchmarkApi.catalog.length);
+ renderBenchmarkInputs();
+}
+
+/* Human-readable result rendering for the research layer */
+const researchLabels={stressPa:'Tegangan ekuivalen',vonMisesPa:'Tegangan von Mises',strain:'Regangan',deformationM:'Perubahan panjang',safetyFactor:'Faktor keselamatan',criticalLoadN:'Beban kritis',criticalEulerLoadN:'Beban tekuk Euler',hoopStressPa:'Tegangan keliling',thermalExpansionM:'Pertambahan panjang termal',powerW:'Daya listrik',energyJ:'Energi listrik',energyRequiredJ:'Energi yang dibutuhkan',residualJ:'Selisih energi',relativeError:'Galat relatif',massKg:'Massa',densityKgM3:'Densitas',thrustN:'Gaya dorong',deltaV_m_s:'Perubahan kecepatan',inputPowerW:'Daya masukan',wasteHeatW:'Panas terbuang'};
+const statusLabels={PASS:'Lolos pemeriksaan model',FAIL:'Tidak lolos pemeriksaan',INCONCLUSIVE:'Belum dapat disimpulkan',INSUFFICIENT_DATA:'Data belum cukup',NOT_IMPLEMENTED:'Belum tersedia',UNSUPPORTED:'Belum didukung',REQUIRES_EXPERIMENTAL_VALIDATION:'Perlu validasi eksperimen',MATHEMATICALLY_VALIDATED:'Konsisten secara matematis',PHYSICALLY_SUPPORTED_WITHIN_MODEL:'Konsisten dalam model fisika',ENGINEERING_SUPPORTED_WITHIN_MODEL:'Lolos screening rekayasa',MAT_BAD:'Ada masalah matematika',PHYS_BAD:'Ada masalah fisika',ENG_BAD:'Ada masalah rekayasa',MATHEMATICALLY_INCONSISTENT:'Tidak konsisten secara matematis',PHYSICAL_VIOLATION_DETECTED:'Ada pelanggaran dalam model fisika',ENGINEERINGALLY_PLAUSIBLE_WITH_AVAILABLE_DATA:'Lolos screening rekayasa dengan data tersedia',ENGINEERINGALLY_INFEASIBLE:'Tidak lolos screening rekayasa',THEORETICAL_ONLY:'Masih bersifat teoretis',NUMERICALLY_INCONCLUSIVE:'Belum dapat disimpulkan secara numerik',ENGINEERING_ESTIMATE:'Estimasi rekayasa dari model',ENGINEERING_SCREENING:'Lolos screening rekayasa',MISSING:'Data belum tersedia',EXPERIMENT:'Memerlukan bukti eksperimen',BALANCED:'Seimbang dalam toleransi',RESIDUAL:'Selisih melewati toleransi',CALCULATED:'Selesai dihitung'};
+function humanStatus(value){const raw=String(value??'—');return statusLabels[raw]||raw.replaceAll('_',' ').toLowerCase().replace(/^./,c=>c.toUpperCase());}
+function humanLabel(key){return researchLabels[key]||key.replaceAll(/([A-Z])/g,' $1').replaceAll('_',' ').replace(/^./,c=>c.toUpperCase());}
+function appendResearchMetric(root,label,value){
+ const card=document.createElement('div');card.className='metric';const b=document.createElement('b');
+ b.textContent=typeof value==="number"?(Number.isFinite(value)?new Intl.NumberFormat("id-ID",{maximumSignificantDigits:6}).format(value):"—"):statusLabels[String(value)]||String(value??"—");
+ const small=document.createElement('small');small.textContent=label;card.append(b,small);root.append(card);
+}
+function renderPrimitiveResult(root,payload){
+ root.replaceChildren();const result=payload.result||{};
+ const status=document.createElement('p');status.className='notice';status.textContent='Status pemeriksaan: '+humanStatus(result.status||'CALCULATED');root.append(status);
+ const metrics=document.createElement('div');metrics.className='readout';
+ Object.entries(result).forEach(([k,v])=>{if(k==="status"||k==="reasoning"||k==="unknowns"||Array.isArray(v)||v&&typeof v==="object")return;appendResearchMetric(metrics,humanLabel(k),v);});
+ root.append(metrics);
+ if(result.reasoning){const p=document.createElement('p');p.className='muted';p.textContent=result.reasoning;root.append(p);}
+ if(result.unknowns?.length){const p=document.createElement('p');p.className='notice';p.textContent='Data yang belum tersedia: '+result.unknowns.join('; ');root.append(p);}
+}
+function renderAssessmentResult(root,result){
+ root.replaceChildren();const stages=[["Matematika",result.mathematical],["Konservasi",result.conservation],["Energi & termal",result.energyThermal],["Engineering",result.engineering]];
+ const stageGrid=document.createElement('div');stageGrid.className='grid';stageGrid.style.gridTemplateColumns='repeat(auto-fit,minmax(220px,1fr))';
+ stages.forEach(([name,data])=>{const card=document.createElement('article');card.className='card';const h=document.createElement('h4');h.textContent=name;const badge=document.createElement('span');badge.className='pill';badge.textContent=humanStatus(data?.status||'NOT_REPORTED');card.append(h,badge);(data?.checks||[]).forEach(check=>{const p=document.createElement('p');p.textContent=humanLabel(check.law||check.name||'Pemeriksaan')+': '+(check.reasoning||humanStatus(check.status)||'');card.append(p);});stageGrid.append(card);});root.append(stageGrid);
+ const resultGrid=document.createElement('div');resultGrid.className='readout';Object.entries(result.results||{}).forEach(([k,v])=>{if(typeof v==="number"||typeof v==="string"||typeof v==="boolean")appendResearchMetric(resultGrid,humanLabel(k),v);});if(resultGrid.childElementCount)root.append(resultGrid);
+ const overall=document.createElement('p');overall.className='notice';overall.textContent='Klasifikasi keseluruhan: '+humanStatus(result.overallClassification)+'. Ini adalah hasil model, bukan validasi eksperimen.';root.append(overall);
+}
+/* Bounded FeasibilityEngine primitive browser port */
+const feasibilityApi=window.BeyondLightFeasibility;
+const feasibilityExamples={
+ stress:{operation:"stress",tensileN:100,compressiveN:0,shearN:10,areaM2:0.0001,shearAreaM2:0.0001,lengthM:2,youngPa:200000000000,yieldPa:300000000,safetyRequired:1.5},
+ eulerBuckling:{operation:"eulerBuckling",youngPa:200000000000,secondMomentM4:0.000001,lengthM:2,effectiveLengthFactor:1},
+ pressureHoop:{operation:"pressureHoop",pressurePa:1000000,radiusM:0.1,wallM:0.01},
+ thermalExpansion:{operation:"thermalExpansion",alphaPerK:0.000012,lengthM:2,deltaK:100},
+ electrical:{operation:"electrical",voltage:12,current:2,resistance:6,duration:3},
+ energyStorage:{operation:"energyStorage",deliveredEnergyJ:1000,energyDensityJkg:500,conversionEfficiency:0.8},
+ energyBalance:{operation:"energyBalance",beforeJ:100000,afterJ:99999.9,relativeTolerance:0.0001},
+ chargeBalance:{operation:"chargeBalance",beforeC:1,afterC:1.0000000001,absoluteTolerance:0.000000001},
+ vectorBalance:{operation:"vectorBalance",law:"momentum",before:[1,2,3],after:[1,2,3],tolerance:0.000000001,unit:"kg m/s"},
+ relativisticInvariant:{operation:"relativisticInvariant",massKg:1,energyJ:89875517873681760,momentum:[0,0,0],relativeTolerance:0.000000000001},
+ energyConditions:{operation:"energyConditions",rhoJm3:1,pressures:[0,0,0]}
+};
+const feasibilityLabels={tensileN:'Gaya tarik (N)',compressiveN:'Gaya tekan (N)',shearN:'Gaya geser (N)',areaM2:'Luas penampang (m²)',shearAreaM2:'Luas geser (m²)',lengthM:'Panjang (m)',youngPa:'Modulus Young (Pa)',yieldPa:'Batas luluh (Pa)',safetyRequired:'Faktor keselamatan minimum',secondMomentM4:'Momen inersia area (m⁴)',effectiveLengthFactor:'Faktor panjang efektif',pressurePa:'Tekanan (Pa)',radiusM:'Jari-jari (m)',wallM:'Tebal dinding (m)',alphaPerK:'Koefisien muai (1/K)',deltaK:'Perubahan suhu (K)',voltage:'Tegangan listrik (V)',current:'Arus (A)',resistance:'Hambatan (Ω)',duration:'Durasi (s)',deliveredEnergyJ:'Energi tersalur (J)',energyDensityJkg:'Densitas energi (J/kg)',conversionEfficiency:'Efisiensi konversi',beforeJ:'Energi awal (J)',afterJ:'Energi akhir (J)',relativeTolerance:'Toleransi relatif',beforeC:'Muatan awal (C)',afterC:'Muatan akhir (C)',absoluteTolerance:'Toleransi absolut',massKg:'Massa (kg)',energyJ:'Energi (J)',momentum:'Momentum (kg·m/s)',rhoJm3:'Kerapatan energi (J/m³)',pressures:'Tekanan (Pa)'};
+function loadFeasibilityExample(){const op=$('feasibilityOperation').value,packet=feasibilityExamples[op],root=$('feasibilityFields');$('feasibilityInput').value='';root.replaceChildren();Object.entries(packet).forEach(([key,value])=>{if(key==='operation'||Array.isArray(value)||value&&typeof value==='object')return;const label=document.createElement('label');label.className='control';label.textContent=feasibilityLabels[key]||key;const input=document.createElement('input');input.type=typeof value==='number'?'number':'text';input.step='any';input.value=String(value);input.dataset.feasibilityKey=key;label.append(input);root.append(label);});}
+if(feasibilityApi&&$('runFeasibility')){
+ $('feasibilityOperation').addEventListener('change',loadFeasibilityExample);
+ $('loadFeasibilityExample').addEventListener('click',loadFeasibilityExample);
+ $('runFeasibility').addEventListener('click',()=>{
+  try{const base=feasibilityExamples[$('feasibilityOperation').value],typed=$('feasibilityInput').value.trim(),packet=typed?JSON.parse(typed):{...base};if(!typed)document.querySelectorAll('[data-feasibility-key]').forEach(el=>{packet[el.dataset.feasibilityKey]=el.type==='number'?Number(el.value):el.value;});const result=feasibilityApi.evaluate(packet);const value=result.result;$('feasibilityStatus').textContent=humanStatus(value.status||'CALCULATED');$('feasibilityOperationName').textContent=result.operation;renderPrimitiveResult($('feasibilityOutput'),result);}
+  catch(e){$('feasibilityStatus').textContent='INPUT ERROR';$('feasibilityOperationName').textContent='—';$('feasibilityOutput').textContent=e.message;}
+ });
+ loadFeasibilityExample();
+}
+
+/* Staged FeasibilityEngine.assess() and MachineDesign.assemble() browser port */
+const stagedFeasibility=window.BeyondLightFeasibilityAssessment;
+let lastStagedAssessment=null;
+function runStagedAssessment(){
+ try{
+  const raw=$('assessmentAssembly').value.trim();
+  const assembly=raw?JSON.parse(raw):null;
+  const result=stagedFeasibility.assess({
+   family:$('assessmentFamily').value,
+   dryKg:Number($('assessmentDry').value),payloadKg:Number($('assessmentPayload').value),
+   dv:Number($('assessmentDv').value),isp:Number($('assessmentIsp').value),
+   thrust:Number($('assessmentThrust').value),efficiency:Number($('assessmentEfficiency').value),
+   duration:Number($('assessmentDuration').value),availablePowerW:Number($('assessmentPower').value),
+   coolingW:Number($('assessmentCooling').value),assembly
+  });
+  lastStagedAssessment=result;
+  $('assessmentOverall').textContent=humanStatus(result.overallClassification);
+  $('assessmentMath').textContent=humanStatus(result.mathematical.status);
+  $('assessmentConservation').textContent=humanStatus(result.conservation.status);
+  $('assessmentEnergy').textContent=humanStatus(result.energyThermal.status);
+  $('assessmentEngineering').textContent=humanStatus(result.engineering.status);
+  renderAssessmentResult($('stagedAssessmentOutput'),result);
+ }catch(error){
+  $('assessmentOverall').textContent='INPUT ERROR';
+  $('stagedAssessmentOutput').textContent=error.message;
+ }
+}
+if(stagedFeasibility&&$('runStagedAssessment')){
+ $('runStagedAssessment').addEventListener('click',runStagedAssessment);
+ $('clearAssessmentAssembly').addEventListener('click',()=>{$('assessmentAssembly').value='';runStagedAssessment();});
+ $('exportStagedAssessment').addEventListener('click',()=>{
+  if(!lastStagedAssessment){runStagedAssessment();if(!lastStagedAssessment)return;}
+  const blob=new Blob([JSON.stringify(lastStagedAssessment,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='beyond-light-feasibility-assessment.json';a.click();URL.revokeObjectURL(url);
+ });
+ runStagedAssessment();
+}
+
+/* Evidence classification and Pareto re-ranking of imported domain results */
+const decisionApi=window.BeyondLightDecision;
+function renderLabelChips(labels){
+ const root=$('evidenceLabels');root.replaceChildren();
+ labels.forEach(label=>{const el=document.createElement('span');el.className='pill';el.textContent=humanStatus(label);el.style.margin='3px';root.append(el);});
+}
+if(decisionApi&&$('classifyEvidence')){
+ $('classifyEvidence').addEventListener('click',()=>{
+  try{
+   const imported=$('evidenceBundle').value.trim();
+   const packet=imported?JSON.parse(imported):{assessment:{mathematical:{status:$('evMath').value},conservation:{status:$('evConservation').value},energyThermal:{status:$('evThermal').value},engineering:{status:$('evEngineering').value,checks:[]},results:{}},benchmarkResults:[],experimentalEvidence:{recordId:$('evRecordId').value.trim(),rawDataReference:$('evRawData').value.trim(),testConditions:$('evConditions').value.trim(),measurementUnits:$('evUnits').value.trim()}};
+   const result=decisionApi.classify(packet);
+   renderLabelChips(result.classifications);
+   const lines=[...result.reasons.map(x=>'Alasan: '+x),...result.missingEvidence.map(x=>'Belum ada: '+x),'Gerbang eksperimen: '+result.experimentalEvidenceGate,result.conclusion];
+   $('evidenceReasons').textContent=lines.join(' ');
+  }catch(e){renderLabelChips(['INVALID_EVIDENCE_PACKAGE']);$('evidenceReasons').textContent='Paket tidak dapat dibaca: '+e.message;}
+ });
+ $('rankDesigns').addEventListener('click',()=>{
+  try{
+   const result=decisionApi.rankCandidates(JSON.parse($('designCandidates').value));
+   $('paretoSummary').textContent=result.status+' · '+result.candidatesEvaluated+' kandidat diterima · '+result.withinEnvelope+' lolos envelope · '+result.paretoCandidates.length+' kandidat Pareto · '+result.invalidOrUnsolvableCandidates+' kandidat gagal evaluasi domain.';
+   const table=document.createElement('table'),head=document.createElement('tr');
+   ['Kandidat',...result.objectives.map(o=>o.metric),'Status model'].forEach(x=>{const th=document.createElement('th');th.textContent=x;head.append(th);});table.append(head);
+   result.paretoCandidates.forEach((item,i)=>{const tr=document.createElement('tr');[item.id||('candidate-'+(i+1)),...result.objectives.map(o=>item[o.metric]),item.candidateFeasible?'Within model envelope':'Not feasible'].forEach(x=>{const td=document.createElement('td');td.textContent=String(x??'—');tr.append(td);});table.append(tr);});
+   $('paretoOutput').replaceChildren(table);
+  }catch(e){$('paretoSummary').textContent='Data kandidat tidak dapat diproses: '+e.message;$('paretoOutput').replaceChildren();}
+ });
+}
+
+/* Interactive presentation layer for domain candidate generation and evaluation */
+const technologyApi=window.BeyondLightTechnologyDesign;
+const techLabels={
+ specificImpulseS:"Impuls spesifik",efficiency:"Efisiensi",burnDurationDays:"Durasi pembakaran",propellantKg:"Propelan",initialMassKg:"Massa awal",thrustN:"Gaya dorong",massFlowKgS:"Laju aliran massa",exhaustVelocityMS:"Kecepatan gas buang",inputPowerW:"Daya input",idealizedWasteHeatW:"Perkiraan panas buang",
+ sectionScale:"Skala penampang",areaM2:"Luas penampang",shearAreaM2:"Luas bidang geser",secondMomentM4:"Momen inersia area",estimatedMemberMassKg:"Estimasi massa batang",vonMisesStressPa:"Tegangan von Mises",stressSafetyFactor:"Faktor keselamatan tegangan",stressMargin:"Margin keselamatan tegangan",criticalEulerLoadN:"Beban kritis Euler",appliedCompressionLoadN:"Beban tekan",bucklingSafetyFactor:"Faktor keselamatan tekuk",bucklingMarginN:"Margin beban tekuk",minimumSafetyMargin:"Margin keselamatan minimum",
+ coolingCapacityW:"Kapasitas pendinginan",conductionW:"Panas konduksi",radiationW:"Panas radiasi",netRejectedW:"Total panas terbuang",requiredHeatW:"Beban panas",marginW:"Margin pendinginan",
+ energyDensityJkg:"Densitas energi",deliveredEnergyJ:"Energi tersalur",minimumStorageMassKg:"Massa penyimpanan minimum",requiredInputEnergyJ:"Energi input",conversionLossJ:"Rugi konversi"
+};
+const techUnits={specificImpulseS:"s",efficiency:"",burnDurationDays:"hari",propellantKg:"kg",initialMassKg:"kg",thrustN:"N",massFlowKgS:"kg/s",exhaustVelocityMS:"m/s",inputPowerW:"W",idealizedWasteHeatW:"W",sectionScale:"×",areaM2:"m²",shearAreaM2:"m²",secondMomentM4:"m⁴",estimatedMemberMassKg:"kg",vonMisesStressPa:"Pa",stressSafetyFactor:"×",stressMargin:"×",criticalEulerLoadN:"N",appliedCompressionLoadN:"N",bucklingSafetyFactor:"×",bucklingMarginN:"N",minimumSafetyMargin:"×",coolingCapacityW:"W",conductionW:"W",radiationW:"W",netRejectedW:"W",requiredHeatW:"W",marginW:"W",energyDensityJkg:"J/kg",deliveredEnergyJ:"J",minimumStorageMassKg:"kg",requiredInputEnergyJ:"J",conversionLossJ:"J"};
+function techFormat(value,key){
+ if(typeof value!=="number")return String(value??"—");
+ if(!Number.isFinite(value))return value===Infinity?"∞":"—";
+ const n=Math.abs(value),s=n!==0&&(n>=1e8||n<1e-3)?value.toExponential(3):new Intl.NumberFormat("id-ID",{maximumSignificantDigits:5}).format(value);
+ return s+(techUnits[key]?" "+techUnits[key]:"");
+}
+function techMetricCard(root,key,value){
+ const card=document.createElement("div");card.className="metric";
+ const b=document.createElement("b");b.textContent=techFormat(value,key);
+ const small=document.createElement("small");small.textContent=techLabels[key]||key;
+ card.append(b,small);root.append(card);
+}
+function techDrawInputs(){
+ const id=$("technologyDomain").value,d=technologyApi.domains[id],root=$("technologyDesignInputs");root.replaceChildren();
+ $("technologyDomainDescription").textContent=d.model+" Tujuan: "+d.objectives.map(o=>(techLabels[o.metric]||o.metric)+" ("+(o.direction==="MINIMIZE"?"diminimalkan":"dimaksimalkan")+")").join(" · ");
+ d.fields.forEach(([key,label,unit,def,min,max])=>{
+  const wrap=document.createElement("label");wrap.className="control";wrap.textContent=label+" ("+unit+")";
+  const input=document.createElement("input");input.type="number";input.step="any";input.min=String(min);input.max=String(max);input.value=String(def);input.dataset.techInput=key;input.setAttribute("aria-label",label);
+  wrap.append(input);root.append(wrap);
+ });
+}
+function techRenderChart(result){
+ const wrap=$("technologyChartWrap"),svg=$("technologyParetoChart"),front=result.paretoCandidates;
+ svg.replaceChildren();if(front.length<2||result.objectives.length<2){wrap.hidden=true;return;}wrap.hidden=false;
+ const ns="http://www.w3.org/2000/svg",xObj=result.objectives[0],yObj=result.objectives[1],xs=front.map(x=>x[xObj.metric]),ys=front.map(x=>x[yObj.metric]);
+ let xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);if(xmin===xmax){xmin-=1;xmax+=1;}if(ymin===ymax){ymin-=1;ymax+=1;}
+ const pad={l:76,r:24,t:20,b:54},W=720,H=300,iw=W-pad.l-pad.r,ih=H-pad.t-pad.b;
+ const add=(tag,attrs,parent=svg)=>{const e=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,String(v)));parent.append(e);return e;};
+ for(let i=0;i<=4;i++){const x=pad.l+iw*i/4,y=pad.t+ih*i/4;add("line",{x1:x,y1:pad.t,x2:x,y2:pad.t+ih,class:"design-plot-grid"});add("line",{x1:pad.l,y1:y,x2:pad.l+iw,y2:y,class:"design-plot-grid"});}
+ add("line",{x1:pad.l,y1:pad.t+ih,x2:pad.l+iw,y2:pad.t+ih,class:"design-plot-axis"});add("line",{x1:pad.l,y1:pad.t,x2:pad.l,y2:pad.t+ih,class:"design-plot-axis"});
+ const xlabel=add("text",{x:pad.l+iw/2,y:H-12,"text-anchor":"middle",class:"design-plot-label"});xlabel.textContent=(techLabels[xObj.metric]||xObj.metric)+" · "+(xObj.direction==="MINIMIZE"?"lebih kecil lebih baik":"lebih besar lebih baik");
+ const ylabel=add("text",{x:16,y:pad.t+ih/2,transform:"rotate(-90 16 "+(pad.t+ih/2)+")","text-anchor":"middle",class:"design-plot-label"});ylabel.textContent=(techLabels[yObj.metric]||yObj.metric)+" · "+(yObj.direction==="MINIMIZE"?"lebih kecil lebih baik":"lebih besar lebih baik");
+ front.forEach((c,i)=>{let xn=(c[xObj.metric]-xmin)/(xmax-xmin),yn=(c[yObj.metric]-ymin)/(ymax-ymin);if(xObj.direction==="MINIMIZE")xn=1-xn;if(yObj.direction==="MAXIMIZE")yn=1-yn;const cx=pad.l+xn*iw,cy=pad.t+yn*ih;const p=add("circle",{cx,cy,r:6,class:"design-plot-point"});const title=add("title",{},p);title.textContent=(c.candidateId||"Kandidat")+" · "+techFormat(c[xObj.metric],xObj.metric)+" · "+techFormat(c[yObj.metric],yObj.metric);});
+ $("technologyChartCaption").textContent="Sumbu X: "+(techLabels[xObj.metric]||xObj.metric)+"; sumbu Y: "+(techLabels[yObj.metric]||yObj.metric)+". Titik yang lebih ke kanan/atas lebih baik sesuai arah optimasi.";
+}
+function techRenderResult(result){
+ $("technologyStatus").textContent=result.status==="CANDIDATE_DESIGNS_WITHIN_MODEL_ENVELOPE"?"Ada kandidat dalam batas model":"Tidak ada kandidat yang lolos";
+ $("technologyGenerated").textContent=result.candidatesGenerated;
+ $("technologyPassing").textContent=result.withinEnvelope;
+ $("technologyParetoCount").textContent=result.paretoCandidates.length;
+ $("technologyInvalid").textContent=result.invalidOrUnsolvableCandidates;
+ $("technologySummary").textContent=result.candidatesEvaluated+" kandidat berhasil dievaluasi dari "+result.candidatesGenerated+" kombinasi yang dibentuk. "+result.withinEnvelope+" memenuhi seluruh batas model; "+result.paretoCandidates.length+" ditampilkan sebagai trade-off Pareto. "+(result.invalidOrUnsolvableCandidates?"Ada kandidat yang gagal dihitung dan tidak dimasukkan ke perbandingan.":"Semua kandidat dapat dihitung.");
+ const best=result.paretoCandidates[0]||result.allCandidates[0],metrics=$("technologyKeyMetrics");metrics.replaceChildren();
+ if(best){const keys=result.domainId==="propulsion.reaction.ideal"?["propellantKg","inputPowerW","burnDurationDays","thrustN"]:result.domainId==="structures.member.envelope"?["estimatedMemberMassKg","vonMisesStressPa","stressSafetyFactor","bucklingSafetyFactor"]:result.domainId==="thermal.management.steady-state"?["coolingCapacityW","conductionW","radiationW","marginW"]:["minimumStorageMassKg","requiredInputEnergyJ","conversionLossJ","efficiency"];keys.forEach(k=>{if(best[k]!==undefined)techMetricCard(metrics,k,best[k]);});}
+ const table=$("technologyParetoTable");table.replaceChildren();
+ if(!result.paretoCandidates.length){const p=document.createElement("p");p.className="empty";p.textContent="Belum ada kandidat yang memenuhi semua batas model. Coba ubah batas input atau periksa data yang digunakan.";table.append(p);}
+ else{const t=document.createElement("table"),head=document.createElement("tr");["Kandidat",...result.objectives.map(o=>techLabels[o.metric]||o.metric),"Status"].forEach(x=>{const th=document.createElement("th");th.textContent=x;head.append(th);});t.append(head);result.paretoCandidates.forEach(c=>{const tr=document.createElement("tr");[c.candidateId,...result.objectives.map(o=>techFormat(c[o.metric],o.metric)),"Lolos screening model"].forEach(x=>{const td=document.createElement("td");td.textContent=String(x);tr.append(td);});t.append(tr);});table.append(t);}
+ techDrawChart(result);
+ $("technologyModelText").textContent=result.model;
+ const eq=$("technologyEquations");eq.replaceChildren();result.equations.forEach(x=>{const d=document.createElement("div");d.className="design-formula";d.textContent=x;eq.append(d);});
+ const src=$("technologySources");src.replaceChildren();result.sources.forEach(s=>{const p=document.createElement("p");p.className="design-source";if(s.url){const a=document.createElement("a");a.href=s.url;a.target="_blank";a.rel="noopener noreferrer";a.textContent=s.title+" ↗";p.append(a);}else p.textContent=s.title+(s.description?" — "+s.description:"");src.append(p);});
+ const limits=$("technologyLimitations");limits.replaceChildren();result.limitations.forEach(x=>{const li=document.createElement("li");li.textContent=x;limits.append(li);});
+}
+if(technologyApi&&$("technologyDomain")){
+ $("technologyDomain").addEventListener("change",techDrawInputs);
+ $("runTechnologyDesign").addEventListener("click",()=>{
+  try{const inputs={};document.querySelectorAll("[data-tech-input]").forEach(el=>{if(el.value.trim()==="")throw new Error("Lengkapi semua input sebelum menjalankan eksplorasi.");inputs[el.dataset.techInput]=Number(el.value);});
+   const result=technologyApi.explore($("technologyDomain").value,inputs);techRenderResult(result);
+  }catch(e){$("technologyStatus").textContent="Input belum valid";$("technologySummary").textContent=e.message;$("technologyKeyMetrics").replaceChildren();$("technologyParetoTable").textContent="Perbaiki input, lalu jalankan kembali.";$("technologyChartWrap").hidden=true;}
+ });
+ techDrawInputs();
+ $("runTechnologyDesign").click();
+}
+
+/* Chat-first UI shell. The deployed Node.js API contract is intentionally not guessed here. */
+(()=>{
+ const shell=document.getElementById('chatShell');
+ if(!shell)return;
+ const storageKey='beyond-light-chat-history-v1';
+ const historyRoot=document.getElementById('chatHistoryList');
+ const messagesRoot=document.getElementById('chatMessages');
+ const welcome=document.getElementById('chatWelcome');
+ const input=document.getElementById('chatInput');
+ const send=document.getElementById('sendChat');
+ const notice=document.getElementById('chatNotice');
+ const connection=document.getElementById('chatConnection');
+ let chats=[];
+ let activeId=null;
+ let messages=[];
+ const makeId=()=>Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
+ const safeLoad=()=>{try{const x=JSON.parse(localStorage.getItem(storageKey)||'[]');return Array.isArray(x)?x:[]}catch(_){return[]}};
+ const save=()=>{try{localStorage.setItem(storageKey,JSON.stringify(chats.slice(0,40)))}catch(_){notice.textContent='Riwayat tidak dapat disimpan di perangkat ini.'}};
+ const escapeText=value=>String(value??'');
+ function renderHistory(){
+  historyRoot.replaceChildren();
+  if(!chats.length){const p=document.createElement('p');p.className='history-empty';p.textContent='Percakapanmu akan muncul di sini.';historyRoot.append(p);return}
+  chats.forEach(chat=>{const b=document.createElement('button');b.type='button';b.className='history-item'+(chat.id===activeId?' active':'');b.textContent=chat.title||'Percakapan baru';b.title=b.textContent;b.addEventListener('click',()=>{activeId=chat.id;messages=chat.messages||[];renderMessages();renderHistory()});historyRoot.append(b)});
+ }
+ function addMessage(role,text,system=false){
+  const wrap=document.createElement('article');wrap.className='chat-message '+(role==='user'?'user':'assistant');
+  const avatar=document.createElement('div');avatar.className='message-avatar';avatar.textContent=role==='user'?'K':'✦';
+  const content=document.createElement('div');content.className='message-content';
+  const label=document.createElement('p');label.className='message-role';label.textContent=role==='user'?'Kamu':'Beyond-Light';
+  const bubble=document.createElement('div');bubble.className='message-bubble'+(system?' system':'');bubble.textContent=escapeText(text);
+  content.append(label,bubble);wrap.append(avatar,content);messagesRoot.append(wrap);
+ }
+ function renderMessages(){
+  messagesRoot.replaceChildren();welcome.hidden=messages.length>0;
+  messages.forEach(m=>addMessage(m.role,m.text,m.system));
+  document.getElementById('chatScroll').scrollTop=document.getElementById('chatScroll').scrollHeight;
+ }
+ function persist(){
+  if(!activeId)activeId=makeId();
+  const title=(messages.find(m=>m.role==='user')?.text||'Percakapan baru').slice(0,64);
+  const item={id:activeId,title,messages,updatedAt:new Date().toISOString()};
+  chats=[item,...chats.filter(c=>c.id!==activeId)].slice(0,40);save();renderHistory();
+ }
+ function startNewChat(){activeId=null;messages=[];renderMessages();renderHistory();input.value='';input.focus()}
+ document.getElementById('newChat').addEventListener('click',startNewChat);
+ const labQuestionButton=document.getElementById('sendResearch');
+ if(labQuestionButton)labQuestionButton.addEventListener('click',()=>{
+  const draft=document.getElementById('idea').value.trim();
+  document.body.classList.remove('show-labs');
+  document.getElementById('toggleLabs').textContent='Buka laboratorium';
+  if(draft)input.value=draft;
+  input.focus();
+ });
+ document.getElementById('toggleLabs').addEventListener('click',()=>{
+  const show=!document.body.classList.contains('show-labs');
+  document.body.classList.toggle('show-labs',show);
+  document.getElementById('toggleLabs').textContent=show?'Kembali ke chat':'Buka laboratorium';
+  if(show){requestAnimationFrame(()=>{try{resizeAll()}catch(_){}});window.scrollTo(0,0)}
+  else window.scrollTo({top:0,behavior:'instant'});
+ });
+ document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.prompt;input.focus();}));
+ async function submitQuestion(){
+  const question=input.value.trim();if(question.length<2)return;
+  messages.push({role:'user',text:question});persist();renderMessages();input.value='';input.style.height='auto';
+  connection.innerHTML='<i></i> Mengakses Mnemos Knowledge';
+  notice.textContent='Pertanyaan diproses di browser. Tidak ada backend aplikasi atau request ke endpoint Beyond-Light.';
+  try{
+   const command=window.BeyondLightChatCommands?await window.BeyondLightChatCommands.execute(question):null;
+   if(command&&command.handled){
+    messages.push({role:'assistant',text:command.text});
+    persist();renderMessages();
+    connection.innerHTML='<i></i> Mesin browser aktif';
+    notice.textContent='Perintah dijalankan lokal oleh engine browser. Tidak ada request ke backend aplikasi.';
+   }else{
+    await window.BeyondLightMnemos.ready;
+    const result=window.BeyondLightMnemos.answer(question);
+    messages.push({role:'assistant',text:result.text});
+    persist();renderMessages();
+    const status=window.BeyondLightMnemos.getStatus();
+    connection.innerHTML='<i></i> Knowledge '+status.loadedNodes+'/'+(status.expectedNodes||status.loadedNodes)+' · '+window.BeyondLightMnemos.listEngines().length+' mesin browser';
+    notice.textContent='Terhubung langsung ke mnemos-RLI / Knowledge. Ketik “bantuan mesin” untuk daftar kalkulasi browser; tidak ada backend server.';
+   }
+  }catch(error){
+   messages.push({role:'assistant',system:true,text:'Pemrosesan gagal: '+error.message+'. Periksa format perintah atau koneksi Knowledge.'});
+   persist();renderMessages();
+   connection.innerHTML='<i></i> Pemrosesan gagal';
+   notice.textContent='Perintah browser atau koneksi Knowledge belum berhasil.';
+  }
+ }
+ send.addEventListener('click',submitQuestion);
+ input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submitQuestion()}});
+ input.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,180)+'px'});
+ chats=safeLoad();renderHistory();
+})();
+
+</script></body></html>

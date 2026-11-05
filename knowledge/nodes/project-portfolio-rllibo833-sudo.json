@@ -15,9 +15,9 @@
     "owner": "rllibo833-sudo",
     "canonical_index": true,
     "project_count": 5,
-    "note": "Five current public GitHub repositories, one retained historical project, and two user-authorized local source snapshots are cataloged here.",
+    "note": "Five current public GitHub repositories and three user-authorized local source snapshots are cataloged here; Beyond-Light is a previously imported project whose upstream repository was unavailable at transfer time.",
     "historical_project_count": 1,
-    "local_snapshot_count": 2
+    "local_snapshot_count": 3
   },
   "created_at": "2026-11-05T00:00:00Z",
   "updated_at": "2026-11-05T00:00:00Z",

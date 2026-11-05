@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rllibo833-sudo.github.io/Beyond-Light/contracts/mnemos-knowledge-event-v1.schema.json",
+  "title": "Mnemos Knowledge Outbox Event v1",
+  "description": "Beyond-Light to Mnemos transport envelope. Supabase is temporary transport; mnemos-RLI:Knowledge is canonical.",
+  "type": "object",
+  "required": [
+    "workspace_id",
+    "event_type",
+    "idempotency_key",
+    "payload",
+    "payload_sha256"
+  ],
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_type": {
+      "const": "knowledge.graph.upsert.v1"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "beyond-light:research:<request-id>:<payload-sha256>"
+    },
+    "payload_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 over payload serialized with Mnemos stableJson semantics: recursively sorted object keys and JavaScript-compatible JSON number encoding."
+    },
+    "payload": {
+      "type": "object",
+      "required": ["nodes", "edges"],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/edge"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "node": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "content",
+        "source",
+        "metadata",
+        "media",
+        "workspace_id",
+        "content_sha256",
+        "schema_version",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "kind": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "title": { "type": "string", "maxLength": 512 },
+        "content": { "type": "string", "maxLength": 65536 },
+        "source": { "type": "object" },
+        "metadata": { "type": "object", "properties": { "knowledge_layer": { "enum": ["historical", "philosophical", "scientific", "cross-disciplinary", "experimental"] }, "knowledge": { "type": "object", "description": "Layer-specific structured knowledge; required fields are enforced by Mnemos Knowledge publication validation." } }, "additionalProperties": true },
+        "media": { "type": "object" },
+        "workspace_id": { "type": "string", "format": "uuid" },
+        "content_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "schema_version": { "const": 1 },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": true
+    },
+    "edge": {
+      "type": "object",
+      "required": ["source", "target", "relation", "created_at", "metadata"],
+      "properties": {
+        "source": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "target": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "relation": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "created_at": { "type": "string", "format": "date-time" },
+        "metadata": { "type": "object", "properties": { "knowledge_layer": { "enum": ["historical", "philosophical", "scientific", "cross-disciplinary", "experimental"] }, "knowledge": { "type": "object", "description": "Layer-specific structured knowledge; required fields are enforced by Mnemos Knowledge publication validation." } }, "additionalProperties": true }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

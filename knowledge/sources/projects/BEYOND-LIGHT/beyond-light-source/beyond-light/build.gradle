@@ -1,0 +1,17 @@
+plugins { id 'java' }
+group = 'org.beyondlight'
+version = '0.1.0'
+java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
+
+// Java is retained as a source-reference and regression-test project.
+// The user-facing Beyond-Light application is static browser code under /docs.
+// Intentionally no application run task or container packaging task.
+tasks.register('verifyCore', JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath + sourceSets.main.runtimeClasspath
+    mainClass = 'org.beyondlight.CoreChecks'
+}
+
+tasks.register('verifyIntegrationCore', JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath + sourceSets.main.runtimeClasspath
+    mainClass = 'org.beyondlight.ResearchIntegrationChecks'
+}

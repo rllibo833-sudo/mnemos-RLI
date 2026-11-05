@@ -1,0 +1,174 @@
+name: Sync Beyond-Light source archive and verify reference code
+
+on:
+  workflow_dispatch:
+    inputs:
+      direction:
+        description: "Which copy should be treated as the source?"
+        required: true
+        type: choice
+        options:
+          - zip-to-source
+          - source-to-zip
+  push:
+    branches: [main]
+    paths:
+      - "beyond-light.zip"
+      - "beyond-light-source/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "beyond-light.zip"
+      - "beyond-light-source/**"
+      - ".github/workflows/extract-archive.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beyond-light-sync-main
+  cancel-in-progress: false
+
+jobs:
+  sync-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Choose synchronization direction
+        id: direction
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MANUAL_DIRECTION: ${{ inputs.direction }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "value=$MANUAL_DIRECTION" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git diff --name-only "$BASE_SHA...$HEAD_SHA" > /tmp/changed-files.txt
+          else
+            git diff --name-only "$BEFORE" "$AFTER" > /tmp/changed-files.txt
+          fi
+          ZIP_CHANGED=false
+          SOURCE_CHANGED=false
+          grep -Fxq "beyond-light.zip" /tmp/changed-files.txt && ZIP_CHANGED=true || true
+          grep -q '^beyond-light-source/' /tmp/changed-files.txt && SOURCE_CHANGED=true || true
+
+          if [ "$ZIP_CHANGED" = true ] && [ "$SOURCE_CHANGED" = true ]; then
+            echo "Both ZIP and extracted source changed in the same push."
+            echo "Refusing to guess which copy is authoritative. Run manually and choose a direction."
+            exit 1
+          elif [ "$ZIP_CHANGED" = true ]; then
+            echo "value=zip-to-source" >> "$GITHUB_OUTPUT"
+          elif [ "$SOURCE_CHANGED" = true ]; then
+            echo "value=source-to-zip" >> "$GITHUB_OUTPUT"
+          elif [ "$EVENT_NAME" = "pull_request" ]; then
+            # Workflow-only PR changes still validate a fresh archive from source.
+            echo "value=source-to-zip" >> "$GITHUB_OUTPUT"
+          else
+            echo "No source or ZIP changes detected."
+            exit 1
+          fi
+
+      - name: Check ZIP and extract into repository
+        if: steps.direction.outputs.value == 'zip-to-source'
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import shutil
+
+          archive = Path("beyond-light.zip")
+          destination = Path("beyond-light-source")
+          if not archive.is_file():
+              raise SystemExit("beyond-light.zip was not found")
+
+          with ZipFile(archive) as z:
+              bad = z.testzip()
+              if bad:
+                  raise SystemExit(f"ZIP integrity check failed at: {bad}")
+              disabled = [name for name in z.namelist()
+                          if name.endswith("/Dockerfile") or name.endswith("/start.sh")]
+              if disabled:
+                  raise SystemExit(
+                      "Archive contains retired server deployment files. "
+                      "Choose source-to-zip to rebuild it from the current source: "
+                      + ", ".join(disabled)
+                  )
+              if destination.exists():
+                  shutil.rmtree(destination)
+              destination.mkdir()
+              root = destination.resolve()
+              for item in z.infolist():
+                  target = (destination / item.filename).resolve()
+                  if target != root and root not in target.parents:
+                      raise SystemExit(f"Unsafe ZIP path: {item.filename}")
+                  if item.is_dir():
+                      target.mkdir(parents=True, exist_ok=True)
+                  else:
+                      target.parent.mkdir(parents=True, exist_ok=True)
+                      with z.open(item) as source, target.open("wb") as output:
+                          shutil.copyfileobj(source, output)
+          print("ZIP integrity passed; source extracted.")
+          PY
+
+      - name: Rebuild ZIP from repository source
+        if: steps.direction.outputs.value == 'source-to-zip'
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+
+          source = Path("beyond-light-source")
+          archive = Path("beyond-light.zip")
+          if not source.is_dir() or not any(source.rglob("*")):
+              raise SystemExit("beyond-light-source is missing or empty")
+          with ZipFile(archive, "w", ZIP_DEFLATED) as z:
+              for path in sorted(source.rglob("*")):
+                  if path.is_file():
+                      z.write(path, path.relative_to(source).as_posix())
+          with ZipFile(archive) as z:
+              bad = z.testzip()
+              if bad:
+                  raise SystemExit(f"Rebuilt ZIP integrity check failed at: {bad}")
+          print("ZIP rebuilt from beyond-light-source and integrity verified.")
+          PY
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+
+      - name: Run Java source regression checks (no application package)
+        working-directory: beyond-light-source/beyond-light
+        run: gradle --no-daemon clean verifyCore verifyIntegrationCore
+
+      - name: Commit synchronized copy
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add beyond-light.zip beyond-light-source
+          if git diff --cached --quiet; then
+            echo "ZIP and extracted source are already synchronized."
+          else
+            git commit -m "Synchronize Beyond Light ZIP and source [skip ci]"
+            git fetch origin main
+            git rebase origin/main
+            git push
+          fi
