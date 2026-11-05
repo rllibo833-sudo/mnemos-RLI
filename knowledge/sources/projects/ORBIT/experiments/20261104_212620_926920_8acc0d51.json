@@ -1,0 +1,11 @@
+{
+  "model": "gravity_calculator",
+  "mass_1_kg": 7000.0,
+  "mass_2_kg": 4000.0,
+  "distance_m": 560000.0,
+  "force_N": 5.959196428571428e-15,
+  "acceleration_1_m_s2": 8.513137755102041e-19,
+  "acceleration_2_m_s2": 1.4897991071428571e-18,
+  "experiment_id": "20261104_212620_926920_8acc0d51",
+  "created": "2026-11-04T21:26:20.927102"
+}

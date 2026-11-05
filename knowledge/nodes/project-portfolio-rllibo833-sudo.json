@@ -3,7 +3,7 @@
   "id": "project-portfolio-rllibo833-sudo",
   "kind": "project_portfolio",
   "title": "rllibo833-sudo Project Portfolio",
-  "content": "Canonical index of the public GitHub projects owned by rllibo833-sudo, observed on 2026-11-05. This is one source collection within the larger personal knowledge graph; files, media, and Notion content require separate, explicitly scoped imports.",
+  "content": "Index of selected projects represented in this graph: public GitHub repositories and explicitly imported local source snapshots. It is one collection index in the larger living shared knowledge graph, not a boundary on graph scope.",
   "source": {
     "type": "github_account_snapshot",
     "uri": "https://github.com/rllibo833-sudo",
@@ -11,12 +11,13 @@
     "observed_at": "2026-11-05T00:00:00Z"
   },
   "metadata": {
-    "scope": "public_github_repositories",
+    "scope": "selected_public_repositories_and_authorized_local_snapshots",
     "owner": "rllibo833-sudo",
     "canonical_index": true,
     "project_count": 5,
-    "note": "Five public repositories were listed on 2026-11-05; Beyond-Light is retained as a historical source project because its prior import remains in this graph but the repository is no longer resolvable.",
-    "historical_project_count": 1
+    "note": "Five current public GitHub repositories, one retained historical project, and two user-authorized local source snapshots are cataloged here.",
+    "historical_project_count": 1,
+    "local_snapshot_count": 2
   },
   "created_at": "2026-11-05T00:00:00Z",
   "updated_at": "2026-11-05T00:00:00Z",

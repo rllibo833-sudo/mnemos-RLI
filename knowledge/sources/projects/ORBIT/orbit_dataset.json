@@ -1,0 +1,53 @@
+{
+  "created": "2026-11-04T21:20:44.575930",
+  "planets": {
+    "Mercury": {
+      "distance_AU": 0.387,
+      "period_days": 87.97,
+      "orbital_velocity_km_s": 47.88528370931915,
+      "gravity_force_N": 2.3653071886800284e+23
+    },
+    "Venus": {
+      "distance_AU": 0.723,
+      "period_days": 224.7,
+      "orbital_velocity_km_s": 35.03389295965336,
+      "gravity_force_N": 6.77692824276861e+22
+    },
+    "Earth": {
+      "distance_AU": 1.0,
+      "period_days": 365.25,
+      "orbital_velocity_km_s": 29.789111319772672,
+      "gravity_force_N": 3.5424969234141915e+22
+    },
+    "Mars": {
+      "distance_AU": 1.524,
+      "period_days": 686.98,
+      "orbital_velocity_km_s": 24.13043015767358,
+      "gravity_force_N": 1.5252447814040064e+22
+    },
+    "Jupiter": {
+      "distance_AU": 5.203,
+      "period_days": 4332.59,
+      "orbital_velocity_km_s": 13.059622829814312,
+      "gravity_force_N": 1.3085846751115514e+21
+    },
+    "Saturn": {
+      "distance_AU": 9.537,
+      "period_days": 10759.22,
+      "orbital_velocity_km_s": 9.646097693642709,
+      "gravity_force_N": 3.8948067721894606e+20
+    },
+    "Uranus": {
+      "distance_AU": 19.191,
+      "period_days": 30688.5,
+      "orbital_velocity_km_s": 6.799997368641228,
+      "gravity_force_N": 9.618653295578959e+19
+    },
+    "Neptune": {
+      "distance_AU": 30.069,
+      "period_days": 60182,
+      "orbital_velocity_km_s": 5.432478983228211,
+      "gravity_force_N": 3.918063872311916e+19
+    }
+  }
+}

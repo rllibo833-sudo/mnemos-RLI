@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "id": "project-orbit",
+  "kind": "project",
+  "title": "ORBIT",
+  "content": "ORBIT is a Python orbital-mechanics simulation project. Its source snapshot includes the Python scripts, generated planetary dataset, HTML visualization, and saved experiment outputs. These records represent software calculations and simulations, not physical measurements.",
+  "source": {
+    "type": "authorized_local_project_snapshot",
+    "uri": "https://github.com/rllibo833-sudo/mnemos-RLI/tree/Knowledge/knowledge/sources/projects/ORBIT",
+    "filename": "ORBIT",
+    "extraction_method": "User-directed source transfer with generated build outputs and secrets excluded",
+    "observed_at": "2026-11-05T00:00:00Z"
+  },
+  "metadata": {
+    "owner": "rllibo833-sudo",
+    "snapshot_path": "knowledge/sources/projects/ORBIT",
+    "visibility": "public",
+    "import_manifest": "knowledge/sources/projects/ORBIT/IMPORT_MANIFEST.json"
+  },
+  "created_at": "2026-11-05T00:00:00Z",
+  "updated_at": "2026-11-05T00:00:00Z",
+  "deleted_at": null
+}

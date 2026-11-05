@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "id": "project-nexus",
+  "kind": "project",
+  "title": "NEXUS",
+  "content": "NEXUS is a native offline-first Android knowledge notebook built with Kotlin, Jetpack Compose, and Room/SQLite. Its source snapshot includes application code, Gradle configuration, manifest, and the release build script. Build outputs and private signing assets are not part of the public snapshot.",
+  "source": {
+    "type": "authorized_local_project_snapshot",
+    "uri": "https://github.com/rllibo833-sudo/mnemos-RLI/tree/Knowledge/knowledge/sources/projects/NEXUS",
+    "filename": "NEXUS",
+    "extraction_method": "User-directed source transfer with generated build outputs and secrets excluded",
+    "observed_at": "2026-11-05T00:00:00Z"
+  },
+  "metadata": {
+    "owner": "rllibo833-sudo",
+    "snapshot_path": "knowledge/sources/projects/NEXUS",
+    "visibility": "public",
+    "import_manifest": "knowledge/sources/projects/NEXUS/IMPORT_MANIFEST.json"
+  },
+  "created_at": "2026-11-05T00:00:00Z",
+  "updated_at": "2026-11-05T00:00:00Z",
+  "deleted_at": null
+}

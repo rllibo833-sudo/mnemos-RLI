@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "project": "NEXUS",
+  "imported_at": "2026-11-05T00:00:00Z",
+  "source_kind": "user_authorized_local_project_snapshot",
+  "files_count": 12,
+  "total_bytes": 34912,
+  "excluded_patterns": [
+    ".gradle/",
+    "**/build/",
+    "*.apk",
+    "*.aab",
+    "keystore.properties",
+    "*.jks",
+    "*.keystore"
+  ],
+  "files": [
+    {
+      "path": ".gitignore",
+      "size_bytes": 90,
+      "sha256": "cc2021a55cc28e9bf1b369316f39433eab6503b0314ac49743dfd89db62014f8"
+    },
+    {
+      "path": "README.md",
+      "size_bytes": 1813,
+      "sha256": "8aed17cbf0aa825b83cf38cead2fd9338a8ae927e19df3f2f57a6683d6210e33"
+    },
+    {
+      "path": "app/build.gradle.kts",
+      "size_bytes": 2099,
+      "sha256": "adfda88708b576ab30ee6824a67beb035d868a984d3bd7715d044bbe49561247"
+    },
+    {
+      "path": "app/src/main/AndroidManifest.xml",
+      "size_bytes": 779,
+      "sha256": "f48f617082b286b6a02f1375eb33bafe7f8ee013fa97f80fb9dfee70b0504586"
+    },
+    {
+      "path": "app/src/main/java/com/nexus/app/MainActivity.kt",
+      "size_bytes": 18321,
+      "sha256": "def7f5a65d3b7337ea2b928dd15bf871a0fe58461dd2322f70b148d040738afa"
+    },
+    {
+      "path": "app/src/main/java/com/nexus/app/data/Models.kt",
+      "size_bytes": 3208,
+      "sha256": "167e9dfcad6bb897bbe0482c74aa07dd71c1ecab22d9bc9b3fd21e97b7cd0d77"
+    },
+    {
+      "path": "app/src/main/java/com/nexus/app/data/NexusRepository.kt",
+      "size_bytes": 6621,
+      "sha256": "f91b874003b66f28931d149d11bee6e22671996294f8f3eeff2f1e3fe5838738"
+    },
+    {
+      "path": "app/src/main/res/xml/file_paths.xml",
+      "size_bytes": 128,
+      "sha256": "9af390019bdfaf229e9adf770c2ee73891a74cfeee65374c61f1b4ce36ef34dc"
+    },
+    {
+      "path": "build-release.sh",
+      "size_bytes": 933,
+      "sha256": "986b8a4e403ac5feb6313c7afa506dae45f1a8d8a9eac846a859e005da00763f"
+    },
+    {
+      "path": "build.gradle.kts",
+      "size_bytes": 287,
+      "sha256": "795b5a8e9889cfcfa1e63dba93d57645ef60cab5a8d19de1524aac5331764412"
+    },
+    {
+      "path": "gradle.properties",
+      "size_bytes": 366,
+      "sha256": "0b952638ba02484985a0d66691699e7a1da4adfe0187bde1247a4865f804e674"
+    },
+    {
+      "path": "settings.gradle.kts",
+      "size_bytes": 267,
+      "sha256": "d66c5430768d8bdd067f988741c2e966f8528da7908be692c16a74ff6acffd4c"
+    }
+  ]
+}

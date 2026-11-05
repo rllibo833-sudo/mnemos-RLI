@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "project": "ORBIT",
+  "imported_at": "2026-11-05T00:00:00Z",
+  "source_kind": "user_authorized_local_project_snapshot",
+  "files_count": 14,
+  "total_bytes": 1114012,
+  "excluded_patterns": [
+    ".git/",
+    "__pycache__/",
+    "*.pyc"
+  ],
+  "files": [
+    {
+      "path": "experiments/20261104_212553_520715_24a77bb1.json",
+      "size_bytes": 53015,
+      "sha256": "6053efa6b8baf765fc37fd6a39f09a3c11fe70421c92431367143d1eb42886ed"
+    },
+    {
+      "path": "experiments/20261104_212620_926920_8acc0d51.json",
+      "size_bytes": 337,
+      "sha256": "62d738e1dafbed92a6f08226a8286c63d147015b6ff0c5c54b417b7ef242265c"
+    },
+    {
+      "path": "experiments/20261104_212907_558347_62bf45_earth.json",
+      "size_bytes": 91825,
+      "sha256": "4b15be48ebbfb1e07c6935f9c5be7809e0a33ef3ea97ae6de185549c5342753d"
+    },
+    {
+      "path": "experiments/20261104_212907_558347_62bf45_nbody.json",
+      "size_bytes": 299414,
+      "sha256": "3c9ba9a73e615f1b42303a906a6f9bb3dae04e3b2a026dc03a7e034b92922eec"
+    },
+    {
+      "path": "experiments/20261104_221016_957954_9dc070_earth.json",
+      "size_bytes": 91825,
+      "sha256": "4b15be48ebbfb1e07c6935f9c5be7809e0a33ef3ea97ae6de185549c5342753d"
+    },
+    {
+      "path": "experiments/20261104_221016_957954_9dc070_nbody.json",
+      "size_bytes": 299414,
+      "sha256": "3c9ba9a73e615f1b42303a906a6f9bb3dae04e3b2a026dc03a7e034b92922eec"
+    },
+    {
+      "path": "experiments/20261104_221144_380787_d813d987.json",
+      "size_bytes": 945,
+      "sha256": "e0e558a4e7fbc43693cddbc933e87f7a3b5e661a3a51ae3c93b9fdd830dc9119"
+    },
+    {
+      "path": "experiments/orbit_20261104_212209.json",
+      "size_bytes": 25148,
+      "sha256": "ee27756b44d873fb18a3cccfe0b61a95d5ac73a11ebeea6f74a39d83df3fe991"
+    },
+    {
+      "path": "orbit.py",
+      "size_bytes": 1608,
+      "sha256": "1a022394f02bab321ca1b2967db648c78adf54893940666dc75eb1bdfb513566"
+    },
+    {
+      "path": "orbit2.py",
+      "size_bytes": 3201,
+      "sha256": "ef342fb980a48923c72516fd0e122f2db9d9a34c88f02106c8c38b8497e14221"
+    },
+    {
+      "path": "orbit3.py",
+      "size_bytes": 14693,
+      "sha256": "84a8553b05edd4e0ad9285531bb97c1f220e125856728aa0e89ac24ad28d49d5"
+    },
+    {
+      "path": "orbit4.py",
+      "size_bytes": 13399,
+      "sha256": "56ee6362f0f6453d43768ccccf35bcd7c0de098aa649fc46c2691ad3325a9ead"
+    },
+    {
+      "path": "orbit4_visualization.html",
+      "size_bytes": 217702,
+      "sha256": "216fea944b3659b046ec9692da13596afeab72ae82808c7a2aad1347b440d729"
+    },
+    {
+      "path": "orbit_dataset.json",
+      "size_bytes": 1486,
+      "sha256": "b46ba461ae532015ac3a087c9073f0b1d21618f61d25beeaf258ad4acf5452f4"
+    }
+  ]
+}

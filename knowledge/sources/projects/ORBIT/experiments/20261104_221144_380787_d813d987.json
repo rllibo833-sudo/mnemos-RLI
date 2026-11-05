@@ -1,0 +1,43 @@
+{
+  "model": "two_body",
+  "sun_mass_factor": 50.0,
+  "initial_speed_factor": 3.0,
+  "duration_days": 5.0,
+  "timestep_seconds": 1800.0,
+  "orbit_type": "HYPERBOLIC / ESCAPE",
+  "eccentricity": 8.0,
+  "initial_velocity_km_s": 592.8965958012504,
+  "final_velocity_km_s": 596.2245075181812,
+  "final_distance_AU": 1.9765352285190516,
+  "minimum_distance_AU": 1.0,
+  "maximum_distance_AU": 1.9765352285190516,
+  "periapsis_AU": 1.0,
+  "apoapsis_AU": null,
+  "initial_energy_J_kg": 155293451813.8165,
+  "final_energy_J_kg": 155293682506.81308,
+  "energy_error_percent": 0.00014855294533514028,
+  "trajectory": [
+    [
+      0.99999679,
+      0.00760345
+    ],
+    [
+      0.99252162,
+      0.3716621
+    ],
+    [
+      0.97285988,
+      0.7313841
+    ],
+    [
+      0.94511084,
+      1.08526747
+    ],
+    [
+      0.912554,
+      1.43379471
+    ]
+  ],
+  "experiment_id": "20261104_221144_380787_d813d987",
+  "created": "2026-11-04T22:11:44.381873"
+}

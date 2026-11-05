@@ -119,5 +119,31 @@
       "confidence": 1,
       "note": "Historical project; not counted among the five repositories listed publicly on observation date."
     }
+  },
+  {
+    "source": "project-portfolio-rllibo833-sudo",
+    "target": "project-nexus",
+    "relation": "catalogs_project",
+    "created_at": "2026-11-05T00:00:00Z",
+    "metadata": {
+      "provenance": {
+        "type": "user_authorized_local_project_snapshot",
+        "uri": "knowledge/sources/projects/NEXUS/IMPORT_MANIFEST.json"
+      },
+      "confidence": 1
+    }
+  },
+  {
+    "source": "project-portfolio-rllibo833-sudo",
+    "target": "project-orbit",
+    "relation": "catalogs_project",
+    "created_at": "2026-11-05T00:00:00Z",
+    "metadata": {
+      "provenance": {
+        "type": "user_authorized_local_project_snapshot",
+        "uri": "knowledge/sources/projects/ORBIT/IMPORT_MANIFEST.json"
+      },
+      "confidence": 1
+    }
   }
 ]

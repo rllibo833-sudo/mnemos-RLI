@@ -18,3 +18,8 @@ Use the existing node fields: `source.type`, `source.uri`, `source.filename`, `s
 ## Intake status
 
 The `project-portfolio-rllibo833-sudo` node currently indexes public GitHub repositories only. File, photo, video, and Notion collections have not yet been imported. Add them in scoped batches and review the resulting records before publishing this public branch.
+
+
+## Authorized project source snapshots
+
+Selected project source code can be included under `sources/projects/` when explicitly requested. Keep only source and user-selected research records; exclude credentials, signing keys, machine-local configuration, caches, and generated build artifacts. Record exclusions and SHA-256 hashes in each project’s `IMPORT_MANIFEST.json`. A project collection is one part of the living shared graph, with a project node and typed links to related knowledge.
